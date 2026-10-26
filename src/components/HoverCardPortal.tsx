@@ -41,27 +41,31 @@ export const HoverCardPortal: React.FC<HoverCardPortalProps> = ({
     left = window.innerWidth - cardWidth - padding;
   }
 
-  // Mini preview playback
+  // Mini preview playback (deferred by 700ms to avoid freezing on rapid hover)
   useEffect(() => {
     const video = videoRef.current;
     const streamUrl = item.trailerUrl || item.streamUrl || DEFAULT_STREAM;
+    let timer: number | null = null;
 
     if (!video) return;
 
-    if (Hls.isSupported() && streamUrl.includes('.m3u8')) {
-      const hls = new Hls({ maxMaxBufferLength: 10, enableWorker: true });
-      hlsRef.current = hls;
-      hls.loadSource(streamUrl);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+    timer = window.setTimeout(() => {
+      if (Hls.isSupported() && streamUrl.includes('.m3u8')) {
+        const hls = new Hls({ maxMaxBufferLength: 4, enableWorker: true });
+        hlsRef.current = hls;
+        hls.loadSource(streamUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play().then(() => setIsVideoLoaded(true)).catch(() => {});
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = streamUrl;
         video.play().then(() => setIsVideoLoaded(true)).catch(() => {});
-      });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = streamUrl;
-      video.play().then(() => setIsVideoLoaded(true)).catch(() => {});
-    }
+      }
+    }, 700);
 
     return () => {
+      if (timer) clearTimeout(timer);
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
@@ -112,6 +116,7 @@ export const HoverCardPortal: React.FC<HoverCardPortalProps> = ({
           <img
             src={item.backdrop_path || item.poster_path}
             alt={item.title || item.name}
+            decoding="async"
             className={`h-full w-full object-cover transition-opacity duration-500 ${
               isVideoLoaded ? 'opacity-0' : 'opacity-100'
             }`}

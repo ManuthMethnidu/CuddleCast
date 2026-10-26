@@ -141,6 +141,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                     src={item.poster_path || item.backdrop_path}
                     alt={item.title || item.name}
                     loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover"
                   />
 

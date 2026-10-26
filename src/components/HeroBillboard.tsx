@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { Play, Info, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import Hls from 'hls.js';
 import { BillboardData } from '../types/schema';
@@ -10,7 +10,7 @@ interface HeroBillboardProps {
   onMoreInfo: (item: BillboardData) => void;
 }
 
-export const HeroBillboard: React.FC<HeroBillboardProps> = ({
+const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
   items,
   onPlay,
   onMoreInfo,
@@ -20,34 +20,67 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const timerRef = useRef<number | null>(null);
 
   const currentItem = items[currentIndex] || items[0];
 
-  // Auto-advance billboard slide if video is not actively running
+  // Pause offscreen billboard to save GPU & CPU cycles
   useEffect(() => {
-    if (isVideoPlaying) return;
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+        if (!entry.isIntersecting) {
+          if (videoRef.current && !videoRef.current.paused) {
+            videoRef.current.pause();
+          }
+        } else if (videoRef.current && isVideoPlaying) {
+          videoRef.current.play().catch(() => {});
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isVideoPlaying]);
+
+  // Auto-advance billboard slide if video is not actively running and billboard is visible
+  useEffect(() => {
+    if (isVideoPlaying || !isVisible) return;
     const interval = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % items.length);
     }, 9000);
     return () => clearInterval(interval);
-  }, [items.length, isVideoPlaying]);
+  }, [items.length, isVideoPlaying, isVisible]);
 
-  // Trailer autoplay preview delay (1200ms)
+  // Trailer autoplay preview delay (1500ms) with visibility gating
   useEffect(() => {
     setIsVideoPlaying(false);
     setVideoEnded(false);
 
     if (timerRef.current) clearTimeout(timerRef.current);
 
+    if (!isVisible) {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      return;
+    }
+
     timerRef.current = window.setTimeout(() => {
       const video = videoRef.current;
       const streamUrl = currentItem?.trailerUrl || currentItem?.streamUrl;
 
-      if (!video || !streamUrl) return;
+      if (!video || !streamUrl || !isVisible) return;
 
       if (hlsRef.current) {
         hlsRef.current.destroy();
@@ -58,20 +91,22 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
         const hls = new Hls({
           enableWorker: true,
           lowLatencyMode: true,
-          maxMaxBufferLength: 30,
+          maxMaxBufferLength: 10,
         });
         hlsRef.current = hls;
         hls.loadSource(streamUrl);
         hls.attachMedia(video);
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play().then(() => setIsVideoPlaying(true)).catch(() => {});
+          if (isVisible) {
+            video.play().then(() => setIsVideoPlaying(true)).catch(() => {});
+          }
         });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = streamUrl;
         video.play().then(() => setIsVideoPlaying(true)).catch(() => {});
       }
-    }, 1200);
+    }, 1500);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -80,7 +115,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
         hlsRef.current = null;
       }
     };
-  }, [currentIndex, currentItem]);
+  }, [currentIndex, currentItem, isVisible]);
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -101,7 +136,10 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
   if (!currentItem) return null;
 
   return (
-    <div className="relative w-full h-[min(84vh,58vw)] min-h-[30rem] -mb-[5vw] overflow-hidden bg-[#0b0b0d] isolate select-none">
+    <div
+      ref={containerRef}
+      className="relative w-full h-[min(84vh,58vw)] min-h-[30rem] -mb-[5vw] overflow-hidden bg-[#0b0b0d] isolate select-none contain-paint"
+    >
       {/* Background Poster Image with Ken Burns Zoom */}
       <div
         key={`backdrop-${currentIndex}`}
@@ -111,6 +149,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
         style={{
           backgroundImage: `url(${currentItem.backdrop_path || currentItem.poster_path})`,
           animation: 'dx-kenburns 16s linear both',
+          animationPlayState: isVisible ? 'running' : 'paused',
         }}
       />
 
@@ -145,6 +184,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
             <img
               src={currentItem.logo_path}
               alt={currentItem.title || currentItem.name}
+              decoding="async"
               className="max-h-24 sm:max-h-28 w-auto object-contain drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)]"
             />
           ) : (
@@ -163,7 +203,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
             <i>IMDb</i>
             <span>{currentItem.vote_average.toFixed(1)}</span>
           </span>
-          <span>{currentItem.release_date.split('-')[0]}</span>
+          <span>{currentItem.release_date?.split('-')[0] || '2024'}</span>
           <span className="dx-pill">4K UHD</span>
           <span className="dx-pill">HDR</span>
           <span className="dx-pill">5.1 AUDIO</span>
@@ -230,7 +270,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
               idx === currentIndex ? 'w-12 bg-white/30' : 'w-6 bg-white/20 hover:bg-white/40'
             }`}
           >
-            {idx === currentIndex && !isVideoPlaying && (
+            {idx === currentIndex && !isVideoPlaying && isVisible && (
               <span
                 className="absolute inset-0 bg-white"
                 style={{
@@ -239,7 +279,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
                 }}
               />
             )}
-            {idx === currentIndex && isVideoPlaying && (
+            {idx === currentIndex && (isVideoPlaying || !isVisible) && (
               <span className="absolute inset-0 bg-white" />
             )}
           </button>
@@ -248,3 +288,5 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
     </div>
   );
 };
+
+export const HeroBillboard = memo(HeroBillboardComponent);

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, memo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CarouselRail, MediaItem } from '../types/schema';
 import { HoverCardPortal } from './HoverCardPortal';
@@ -10,24 +10,32 @@ interface CarouselRowProps {
   onPlay: (item: MediaItem) => void;
 }
 
-export const CarouselRow: React.FC<CarouselRowProps> = ({
+const CarouselRowComponent: React.FC<CarouselRowProps> = ({
   rail,
   onSelect,
   onPlay,
 }) => {
   const { accentHex } = useAccent();
   const rowRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
   const [hoveredItem, setHoveredItem] = useState<{ item: MediaItem; rect: DOMRect } | null>(null);
   const hoverTimeoutRef = useRef<number | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  // Throttled scroll boundary calculation using rAF
   const checkScrollLimits = () => {
-    if (rowRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = rowRef.current;
-      setCanScrollLeft(scrollLeft > 10);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
-    }
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      if (rowRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = rowRef.current;
+        const leftLimit = scrollLeft > 10;
+        const rightLimit = scrollLeft + clientWidth < scrollWidth - 10;
+        setCanScrollLeft(prev => (prev !== leftLimit ? leftLimit : prev));
+        setCanScrollRight(prev => (prev !== rightLimit ? rightLimit : prev));
+      }
+    });
   };
 
   const scroll = (direction: 'left' | 'right') => {
@@ -38,7 +46,7 @@ export const CarouselRow: React.FC<CarouselRowProps> = ({
         left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
         behavior: 'smooth',
       });
-      setTimeout(checkScrollLimits, 300);
+      setTimeout(checkScrollLimits, 350);
     }
   };
 
@@ -49,7 +57,7 @@ export const CarouselRow: React.FC<CarouselRowProps> = ({
     hoverTimeoutRef.current = window.setTimeout(() => {
       const rect = target.getBoundingClientRect();
       setHoveredItem({ item, rect });
-    }, 400);
+    }, 550);
   };
 
   const handleMouseLeave = () => {
@@ -59,7 +67,7 @@ export const CarouselRow: React.FC<CarouselRowProps> = ({
   if (!rail.items || rail.items.length === 0) return null;
 
   return (
-    <section className="group/row relative my-6 px-[var(--dx-gutter,3rem)] max-w-[1560px] mx-auto select-none">
+    <section className="group/row relative my-6 px-[var(--dx-gutter,3rem)] max-w-[1560px] mx-auto select-none dx-row-section">
       {/* Row Header with Title and Page Indicator */}
       <div className="flex items-center justify-between pb-2.5">
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -109,9 +117,10 @@ export const CarouselRow: React.FC<CarouselRowProps> = ({
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {rail.items.map((item, index) => {
-          const progressPercent = item.progress_seconds && item.total_seconds
-            ? Math.min(100, Math.round((item.progress_seconds / item.total_seconds) * 100))
-            : null;
+          const progressPercent =
+            item.progress_seconds && item.total_seconds
+              ? Math.min(100, Math.round((item.progress_seconds / item.total_seconds) * 100))
+              : null;
 
           return (
             <div
@@ -129,7 +138,7 @@ export const CarouselRow: React.FC<CarouselRowProps> = ({
                     : 'h-52 w-36 sm:h-64 sm:w-44 md:h-72 md:w-48'
                 }`}
               >
-                {/* Floating IMDb Badge */}
+                {/* Floating Hardware-Optimized IMDb Badge */}
                 <div className="dx-badge">
                   <i>IMDb</i>
                   <span>{item.vote_average.toFixed(1)}</span>
@@ -143,7 +152,8 @@ export const CarouselRow: React.FC<CarouselRowProps> = ({
                   }
                   alt={item.title || item.name}
                   loading="lazy"
-                  className="h-full w-full object-cover transition-opacity duration-300"
+                  decoding="async"
+                  className="h-full w-full object-cover"
                 />
 
                 {/* Continue Watching Wide Card Overlay */}
@@ -187,3 +197,5 @@ export const CarouselRow: React.FC<CarouselRowProps> = ({
     </section>
   );
 };
+
+export const CarouselRow = memo(CarouselRowComponent);

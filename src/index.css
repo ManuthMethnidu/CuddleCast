@@ -187,7 +187,7 @@ body {
   background: var(--dx-text-3);
 }
 
-/* IMDb badge on posters */
+/* IMDb badge on posters (hardware optimized, no heavy per-card blur) */
 .dx-badge {
   position: absolute;
   z-index: 4;
@@ -199,12 +199,13 @@ body {
   height: 1.35rem;
   padding: 0 0.4rem 0 0.25rem;
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
+  background: rgba(11, 11, 13, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 0.72rem;
   font-weight: 700;
   color: #fff;
   pointer-events: none;
+  contain: content;
 }
 
 .dx-badge i {
@@ -218,15 +219,22 @@ body {
   line-height: 1;
 }
 
-/* Aura Glow for Hover Card */
+/* Aura Glow for Hover Card (lightweight GPU blur) */
 .dx-preview-aura {
   position: absolute;
   z-index: -1;
-  inset: -16px -20px -24px;
-  border-radius: 24px;
-  filter: blur(32px) saturate(1.6) brightness(0.9);
-  opacity: 0.55;
+  inset: -14px -18px -20px;
+  border-radius: 20px;
+  filter: blur(16px);
+  opacity: 0.45;
   pointer-events: none;
+  will-change: opacity, transform;
+}
+
+/* Off-screen row virtualization for smooth 60fps scrolling */
+.dx-row-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 340px;
 }
 
 /* Action button in preview */

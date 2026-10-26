@@ -193,6 +193,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
                 src={item.poster_path || item.backdrop_path}
                 alt={item.title || item.name}
                 loading="lazy"
+                decoding="async"
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2.5 flex flex-col justify-end">
