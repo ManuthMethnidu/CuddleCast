@@ -132,7 +132,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-red-500 selection:text-white">
+    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Sticky Header Navbar */}
       <Navbar
         activeProfile={activeProfile}
@@ -149,8 +149,13 @@ export const App: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1">
         {isLoading ? (
-          <div className="flex h-screen items-center justify-center bg-black">
-            <div className="h-12 w-12 rounded-full border-4 border-red-600 border-t-transparent animate-spin" />
+          <div className="flex h-screen items-center justify-center bg-[#070b14]">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-12 w-12 rounded-full border-4 border-sky-400 border-t-transparent animate-spin shadow-[0_0_20px_rgba(56,189,248,0.5)]" />
+              <span className="text-sm font-semibold tracking-wider uppercase text-sky-300">
+                Loading CuddleCast...
+              </span>
+            </div>
           </div>
         ) : searchQuery || activeCategory === 'watchlist' ? (
           <SearchGrid

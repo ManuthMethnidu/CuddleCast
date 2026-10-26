@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Info, Volume2, VolumeX, RotateCcw, Star, Calendar } from 'lucide-react';
+import { Play, Info, Volume2, VolumeX, RotateCcw, Star, Calendar, Sparkles } from 'lucide-react';
 import Hls from 'hls.js';
 import { BillboardData } from '../types/schema';
 
@@ -30,7 +30,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
     if (isVideoPlaying) return;
     const interval = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % items.length);
-    }, 8000);
+    }, 8500);
     return () => clearInterval(interval);
   }, [items.length, isVideoPlaying]);
 
@@ -99,7 +99,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
   if (!currentItem) return null;
 
   return (
-    <div className="relative h-[80vh] min-h-[550px] w-full overflow-hidden bg-black lg:h-screen">
+    <div className="relative h-[82vh] min-h-[580px] w-full overflow-hidden bg-[#070b14] lg:h-[90vh]">
       {/* Background Poster Image */}
       <img
         src={currentItem.backdrop_path || currentItem.poster_path}
@@ -124,53 +124,53 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
         }`}
       />
 
-      {/* Multi-stop Vignette Protection Gradients */}
+      {/* Multi-stop Midnight Cinema Protection Gradients */}
       <div className="absolute inset-0 billboard-vignette pointer-events-none" />
       <div className="absolute inset-0 billboard-left-protection pointer-events-none" />
 
       {/* Billboard Hero Content Placement */}
-      <div className="absolute bottom-[16%] left-0 right-0 z-20 text-white sm:bottom-[18%] lg:bottom-[20%]">
+      <div className="absolute bottom-[16%] left-0 right-0 z-20 text-white sm:bottom-[18%] lg:bottom-[22%]">
         <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
           {/* Logo or Stylized Typography Title */}
-          <div className="mb-4 max-w-xl">
+          <div className="mb-4 max-w-2xl">
             {currentItem.logo_path ? (
               <img
                 src={currentItem.logo_path}
                 alt={currentItem.title || currentItem.name}
-                className="max-h-[90px] sm:max-h-[110px] w-auto object-contain drop-shadow-2xl"
+                className="max-h-[100px] sm:max-h-[125px] w-auto object-contain drop-shadow-[0_4px_25px_rgba(0,0,0,0.9)]"
               />
             ) : (
-              <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl drop-shadow-lg">
+              <h1 className="text-3xl font-black tracking-tight sm:text-5xl lg:text-6xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)] bg-gradient-to-r from-white via-slate-100 to-sky-200 bg-clip-text text-transparent">
                 {currentItem.title || currentItem.name}
               </h1>
             )}
           </div>
 
           {/* Badges & Meta Info */}
-          <div className="mb-3 flex items-center gap-3 text-sm font-medium text-gray-300">
+          <div className="mb-3.5 flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs sm:text-sm font-medium text-slate-300">
             {currentItem.rank && (
-              <span className="flex items-center rounded bg-red-600 px-2 py-0.5 text-xs font-bold text-white uppercase tracking-wider">
-                TOP 10 TODAY
+              <span className="flex items-center gap-1 rounded-md bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 px-2.5 py-0.5 text-xs font-black text-white uppercase tracking-wider shadow-[0_0_15px_rgba(37,99,235,0.6)]">
+                <Sparkles className="h-3 w-3" /> TOP 10 TODAY
               </span>
             )}
-            <span className="rounded border border-gray-600 px-1.5 py-0.2 text-xs uppercase text-gray-200">
+            <span className="rounded-md border border-slate-700 bg-slate-900/60 px-2 py-0.5 text-xs uppercase text-slate-200">
               {currentItem.media_type}
             </span>
-            <span className="flex items-center gap-1 text-amber-400">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <span className="text-white font-semibold">{currentItem.vote_average.toFixed(1)}</span>
+            <span className="flex items-center gap-1 text-amber-400 font-semibold bg-slate-900/60 px-2 py-0.5 rounded-md border border-slate-700">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              <span>{currentItem.vote_average.toFixed(1)}</span>
             </span>
-            <span className="flex items-center gap-1 text-gray-300">
-              <Calendar className="h-4 w-4" />
+            <span className="flex items-center gap-1 text-slate-300 bg-slate-900/60 px-2 py-0.5 rounded-md border border-slate-700">
+              <Calendar className="h-3.5 w-3.5 text-sky-400" />
               <span>{currentItem.release_date.split('-')[0]}</span>
             </span>
-            <span className="rounded border border-gray-500/80 px-1.5 py-0.2 text-[11px] font-bold text-gray-300">
-              HD
+            <span className="rounded-md border border-sky-500/40 bg-sky-950/40 px-2 py-0.5 text-[11px] font-bold text-sky-300">
+              4K ULTRA HD
             </span>
           </div>
 
           {/* Synopsis */}
-          <p className="line-clamp-3 max-w-xl text-sm text-gray-200 sm:text-base lg:text-lg drop-shadow-md">
+          <p className="line-clamp-3 max-w-xl text-sm text-slate-200 sm:text-base lg:text-lg leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
             {currentItem.overview}
           </p>
 
@@ -178,16 +178,16 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
           <div className="mt-6 flex items-center gap-4">
             <button
               onClick={() => onPlay(currentItem)}
-              className="flex items-center justify-center gap-2 rounded-md bg-white px-7 py-2.5 text-base font-bold text-black shadow-lg transition-transform hover:scale-105 hover:bg-gray-200 active:scale-95"
+              className="flex items-center justify-center gap-2.5 rounded-xl bg-white px-8 py-3 text-base font-bold text-slate-950 shadow-[0_4px_25px_rgba(255,255,255,0.3)] transition-all hover:scale-105 hover:bg-sky-100 hover:shadow-[0_4px_30px_rgba(56,189,248,0.5)] active:scale-95"
             >
-              <Play className="h-5 w-5 fill-black" /> Play
+              <Play className="h-5 w-5 fill-slate-950" /> Play
             </button>
 
             <button
               onClick={() => onMoreInfo(currentItem)}
-              className="flex items-center justify-center gap-2 rounded-md border border-white/60 bg-zinc-900/60 px-6 py-2.5 text-base font-semibold text-white backdrop-blur-sm transition-transform hover:scale-105 hover:bg-zinc-800/80 active:scale-95"
+              className="flex items-center justify-center gap-2.5 rounded-xl border border-sky-400/30 bg-slate-900/70 px-7 py-3 text-base font-semibold text-white backdrop-blur-md transition-all hover:scale-105 hover:bg-blue-900/40 hover:border-sky-400 active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
             >
-              <Info className="h-5 w-5" /> More Info
+              <Info className="h-5 w-5 text-sky-400" /> More Info
             </button>
           </div>
         </div>
@@ -198,7 +198,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
         {videoEnded ? (
           <button
             onClick={handleReplay}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/50 text-white backdrop-blur-sm transition-transform hover:scale-110 hover:border-white"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-400/40 bg-slate-900/70 text-white backdrop-blur-md transition-all hover:scale-110 hover:border-sky-400 hover:text-sky-300 shadow-lg"
             title="Replay Preview"
           >
             <RotateCcw className="h-5 w-5" />
@@ -206,14 +206,14 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
         ) : isVideoPlaying ? (
           <button
             onClick={toggleMute}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/50 text-white backdrop-blur-sm transition-transform hover:scale-110 hover:border-white"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-400/40 bg-slate-900/70 text-white backdrop-blur-md transition-all hover:scale-110 hover:border-sky-400 hover:text-sky-300 shadow-lg"
             title={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
           </button>
         ) : null}
 
-        <div className="flex items-center border-l-2 border-white bg-black/40 px-3 py-1 text-xs font-semibold text-gray-200 backdrop-blur-sm">
+        <div className="flex items-center border-l-2 border-sky-400 bg-slate-950/70 px-3.5 py-1 text-xs font-bold text-sky-200 backdrop-blur-md rounded-r-md">
           TV-MA
         </div>
       </div>
@@ -225,7 +225,9 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
             key={idx}
             onClick={() => setCurrentIndex(idx)}
             className={`h-1.5 rounded-full transition-all duration-300 ${
-              idx === currentIndex ? 'w-6 bg-red-600' : 'w-2 bg-white/40 hover:bg-white/70'
+              idx === currentIndex
+                ? 'w-8 bg-gradient-to-r from-sky-400 to-blue-500 shadow-[0_0_12px_rgba(56,189,248,0.8)]'
+                : 'w-2.5 bg-slate-600/60 hover:bg-slate-400'
             }`}
             aria-label={`Slide ${idx + 1}`}
           />
