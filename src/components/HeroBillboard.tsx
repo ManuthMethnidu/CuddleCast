@@ -138,7 +138,7 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[min(84vh,58vw)] min-h-[30rem] -mb-[5vw] overflow-hidden bg-[#0b0b0d] isolate select-none contain-paint"
+      className="relative w-full h-[68vh] sm:h-[min(84vh,58vw)] min-h-[26rem] sm:min-h-[30rem] -mb-[4vw] overflow-hidden bg-[#0b0b0d] isolate select-none contain-paint"
     >
       {/* Background Poster Image with Ken Burns Zoom */}
       <div
@@ -171,7 +171,7 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
       <div className="absolute inset-0 dx-hero-shade pointer-events-none z-[1]" />
 
       {/* Billboard Hero Content Placement */}
-      <div className="absolute z-[2] left-[var(--dx-gutter,3rem)] bottom-[calc(5vw+3.5rem)] max-w-[min(38rem,45vw)] flex flex-col justify-end items-start gap-3">
+      <div className="absolute z-[2] left-4 sm:left-[var(--dx-gutter,3rem)] right-4 sm:right-auto bottom-6 sm:bottom-[calc(5vw+3.5rem)] max-w-full sm:max-w-[min(38rem,45vw)] flex flex-col justify-end items-start gap-2.5 sm:gap-3">
         {/* dx.bi Kicker */}
         <div className="dx-hero-kicker">
           <b style={{ color: accentHex }}>DX.BI</b>
@@ -185,17 +185,17 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
               src={currentItem.logo_path}
               alt={currentItem.title || currentItem.name}
               decoding="async"
-              className="max-h-24 sm:max-h-28 w-auto object-contain drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)]"
+              className="max-h-14 sm:max-h-28 w-auto object-contain drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)]"
             />
           ) : (
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] leading-[1.05]">
+            <h1 className="text-2xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] leading-[1.05]">
               {currentItem.title || currentItem.name}
             </h1>
           )}
         </div>
 
         {/* Metadata Row */}
-        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs sm:text-sm font-medium text-zinc-300">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium text-zinc-300">
           <span className="dx-match font-bold text-emerald-400">
             {Math.round(currentItem.vote_average * 10)}% Match
           </span>
@@ -211,32 +211,32 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
         </div>
 
         {/* Synopsis */}
-        <p className="line-clamp-3 text-sm sm:text-base text-zinc-200 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] max-w-lg">
+        <p className="line-clamp-2 sm:line-clamp-3 text-xs sm:text-base text-zinc-200 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] max-w-lg">
           {currentItem.overview}
         </p>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full sm:w-auto">
           <button
             onClick={() => onPlay(currentItem)}
-            className="flex items-center justify-center gap-2.5 h-12 px-7 rounded-lg bg-white text-black font-bold text-base transition-all hover:bg-white/85 active:scale-95 shadow-lg"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 h-11 sm:h-12 px-6 sm:px-7 rounded-lg bg-white text-black font-bold text-sm sm:text-base transition-all hover:bg-white/85 active:scale-95 shadow-lg"
           >
-            <Play className="h-5 w-5 fill-black" />
+            <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-black" />
             <span>Play</span>
           </button>
 
           <button
             onClick={() => onMoreInfo(currentItem)}
-            className="flex items-center justify-center gap-2.5 h-12 px-6 rounded-lg bg-[rgba(109,109,118,0.55)] hover:bg-[rgba(109,109,118,0.4)] text-white font-semibold text-base backdrop-blur-md transition-all active:scale-95"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 h-11 sm:h-12 px-5 sm:px-6 rounded-lg bg-[rgba(109,109,118,0.55)] hover:bg-[rgba(109,109,118,0.4)] text-white font-semibold text-sm sm:text-base backdrop-blur-md transition-all active:scale-95"
           >
-            <Info className="h-5 w-5 stroke-white" />
+            <Info className="h-4 sm:h-5 w-4 sm:w-5 stroke-white" />
             <span>More Info</span>
           </button>
         </div>
       </div>
 
       {/* Right Edge: Sound Toggle & Maturity Badge */}
-      <div className="absolute z-[3] right-[var(--dx-gutter,3rem)] bottom-[calc(5vw+3.5rem)] flex items-center gap-3">
+      <div className="absolute z-[3] right-4 sm:right-[var(--dx-gutter,3rem)] top-16 sm:top-auto sm:bottom-[calc(5vw+3.5rem)] flex items-center gap-2 sm:gap-3">
         {videoEnded ? (
           <button
             onClick={handleReplay}

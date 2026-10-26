@@ -277,10 +277,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const remainingSeconds = duration - currentTime;
   const isNearEnd = duration > 60 && remainingSeconds > 0 && remainingSeconds <= 20;
 
+  const handleContainerClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button, input, select, [role="button"]')) return;
+    setShowControls(prev => !prev);
+  };
+
   return (
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
+      onClick={handleContainerClick}
       className={`fixed inset-0 z-[1000] flex items-center justify-center bg-black ${
         showControls ? 'cursor-default' : 'cursor-none'
       }`}
@@ -288,28 +294,27 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       <video
         ref={videoRef}
         onTimeUpdate={handleTimeUpdate}
-        onClick={togglePlay}
         className="h-full w-full object-contain"
         playsInline
       />
 
       {/* Top Header Bar */}
       <div
-        className={`absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-6 bg-gradient-to-b from-black/80 via-black/40 to-transparent transition-opacity duration-300 ${
+        className={`absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-3.5 sm:p-6 bg-gradient-to-b from-black/80 via-black/40 to-transparent transition-opacity duration-300 ${
           showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
         <button
           onClick={onClose}
-          className="flex items-center gap-3.5 text-white transition-transform hover:scale-105"
+          className="flex items-center gap-2.5 sm:gap-3.5 text-white transition-transform hover:scale-105"
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/50 backdrop-blur-md border border-white/10 hover:bg-white/20">
-            <ArrowLeft className="h-6 w-6" />
+          <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-black/50 backdrop-blur-md border border-white/10 hover:bg-white/20">
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div className="text-left">
-            <h3 className="text-base sm:text-lg font-bold">{item.title || item.name}</h3>
+            <h3 className="text-sm sm:text-lg font-bold truncate max-w-[200px] sm:max-w-md">{item.title || item.name}</h3>
             {episode && (
-              <p className="text-xs text-zinc-400">
+              <p className="text-[11px] sm:text-xs text-zinc-400">
                 S{episode.season_number}:E{episode.episode_number} - {episode.title}
               </p>
             )}
@@ -361,7 +366,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
       {/* Bottom Controls Bar */}
       <div
-        className={`absolute bottom-0 left-0 right-0 z-20 flex flex-col p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 z-20 flex flex-col p-3.5 sm:p-6 pb-6 sm:pb-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 ${
           showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -395,7 +400,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             max={duration || 100}
             value={currentTime}
             onChange={handleScrubberChange}
-            className="relative z-10 h-2 w-full opacity-0 cursor-pointer"
+            className="relative z-10 h-3 w-full opacity-0 cursor-pointer"
           />
 
           {/* Hover Time Tooltip */}
@@ -411,33 +416,33 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
         {/* Buttons Row */}
         <div className="flex items-center justify-between text-white">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={togglePlay}
-              className="transition-transform hover:scale-110 active:scale-95"
+              className="transition-transform hover:scale-110 active:scale-95 p-1"
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 fill-white" />}
+              {isPlaying ? <Pause className="h-5 w-5 sm:h-6 sm:w-6" /> : <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-white" />}
             </button>
 
             <button
               onClick={() => seekBy(-10)}
-              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white"
+              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white p-1"
               title="Seek back 10s"
             >
-              <RotateCcw className="h-5 w-5" />
+              <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
 
             <button
               onClick={() => seekBy(10)}
-              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white"
+              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white p-1"
               title="Seek forward 10s"
             >
-              <RotateCw className="h-5 w-5" />
+              <RotateCw className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
 
-            {/* Volume Control */}
-            <div className="flex items-center gap-2 group">
+            {/* Volume Control - desktop only */}
+            <div className="hidden sm:flex items-center gap-2 group">
               <button onClick={toggleMute} className="transition-transform hover:scale-110 text-zinc-300 hover:text-white">
                 {isMuted || volume === 0 ? (
                   <VolumeX className="h-5 w-5" />
@@ -459,27 +464,27 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               />
             </div>
 
-            <span className="text-xs text-zinc-300 font-mono ml-2">
+            <span className="text-[11px] sm:text-xs text-zinc-300 font-mono ml-1 sm:ml-2">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-4">
             {/* Picture & Sound Panel Button */}
             <button
               onClick={() => setShowPanel(!showPanel)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-zinc-300 hover:text-white transition-colors"
+              className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg hover:bg-white/10 text-zinc-300 hover:text-white transition-colors"
               title="Picture & Sound (Black bars, dialogue boost, subtitle sync) [D]"
               style={{ color: showPanel ? accentHex : undefined }}
             >
-              <Sliders className="h-5 w-5" />
+              <Sliders className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
 
             {/* Speed Selector */}
             <div className="relative">
               <button
                 onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded hover:bg-white/10 text-zinc-300 hover:text-white"
+                className="flex items-center gap-0.5 text-xs font-semibold px-1.5 sm:px-2 py-1 rounded hover:bg-white/10 text-zinc-300 hover:text-white"
               >
                 <span>{playbackSpeed}x</span>
               </button>
@@ -505,10 +510,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             {/* Fullscreen Toggle */}
             <button
               onClick={toggleFullscreen}
-              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white"
+              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white p-1"
               aria-label="Toggle Fullscreen"
             >
-              {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+              {isFullscreen ? <Minimize className="h-4 w-4 sm:h-5 sm:w-5" /> : <Maximize className="h-4 w-4 sm:h-5 sm:w-5" />}
             </button>
           </div>
         </div>

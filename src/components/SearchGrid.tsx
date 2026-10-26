@@ -33,15 +33,15 @@ export const SearchGrid: React.FC<SearchGridProps> = ({
 }) => {
 
   return (
-    <div className="mx-auto max-w-[1560px] px-4 pt-24 pb-20 md:px-8 lg:px-12 select-none">
+    <div className="mx-auto max-w-[1560px] px-3.5 pt-16 sm:pt-24 pb-20 md:px-8 lg:px-12 select-none">
       {/* Exploration Suggestions */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <span className="text-xs text-zinc-400">Explore titles related to:</span>
+      <div className="mb-6 flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <span className="text-xs text-zinc-400 whitespace-nowrap flex-shrink-0">Explore titles:</span>
         {SUGGESTIONS.map(sug => (
           <button
             key={sug}
             onClick={() => onSuggestionClick(sug)}
-            className="rounded-full border border-white/10 bg-[#18181d] px-3.5 py-1 text-xs text-zinc-300 transition-all hover:border-white/30 hover:text-white"
+            className="rounded-full border border-white/10 bg-[#18181d] px-3 py-1 text-xs text-zinc-300 transition-all hover:border-white/30 hover:text-white whitespace-nowrap flex-shrink-0"
           >
             {sug}
           </button>
@@ -60,7 +60,7 @@ export const SearchGrid: React.FC<SearchGridProps> = ({
 
       {/* Media Poster Grid */}
       {items.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {items.map(item => (
             <div
               key={item.id}
@@ -81,7 +81,16 @@ export const SearchGrid: React.FC<SearchGridProps> = ({
                   decoding="async"
                   className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
+
+                {/* Mobile title subtle bottom gradient */}
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-2 sm:hidden">
+                  <span className="text-[11px] font-semibold text-white line-clamp-1">
+                    {item.title || item.name}
+                  </span>
+                </div>
+
+                {/* Desktop hover overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 hidden sm:flex flex-col justify-end">
                   <span className="text-sm font-bold text-white line-clamp-1">
                     {item.title || item.name}
                   </span>

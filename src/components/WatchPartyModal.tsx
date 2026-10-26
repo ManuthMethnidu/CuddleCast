@@ -49,12 +49,12 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-[1200] flex items-end sm:items-center justify-center bg-black/85 backdrop-blur-md p-0 sm:p-4 animate-fadeIn">
       <div className="fixed inset-0" onClick={onClose} />
 
-      <div className="relative z-10 w-full max-w-lg rounded-2xl bg-[#131317] border border-white/10 text-white shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-[#131317] border border-white/10 text-white shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 bg-[#0b0b0d]">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3.5 sm:py-4 bg-[#0b0b0d] flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div
               className="flex h-9 w-9 items-center justify-center rounded-lg"
@@ -63,7 +63,7 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
               <Users className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base flex items-center gap-2">
+              <h3 className="font-bold text-sm sm:text-base flex items-center gap-2">
                 <span>Watch Party</span>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   Live Sync
@@ -82,7 +82,7 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto">
           {!inParty ? (
             <div className="space-y-6">
               {/* Start party card */}

@@ -51,6 +51,9 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
   };
 
   const handleMouseEnter = (item: MediaItem, e: React.MouseEvent<HTMLDivElement>) => {
+    if (typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+      return;
+    }
     const target = e.currentTarget;
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
 
@@ -67,7 +70,7 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
   if (!rail.items || rail.items.length === 0) return null;
 
   return (
-    <section className="group/row relative my-6 px-[var(--dx-gutter,3rem)] max-w-[1560px] mx-auto select-none dx-row-section">
+    <section className="group/row relative my-4 sm:my-6 px-3.5 sm:px-[var(--dx-gutter,3rem)] max-w-[1560px] mx-auto select-none dx-row-section">
       {/* Row Header with Title and Page Indicator */}
       <div className="flex items-center justify-between pb-2.5">
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -134,8 +137,8 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
               <div
                 className={`relative overflow-hidden rounded-md bg-[#18181d] border border-white/5 shadow-md ${
                   rail.isContinueWatching
-                    ? 'h-36 w-60 sm:h-40 sm:w-72'
-                    : 'h-52 w-36 sm:h-64 sm:w-44 md:h-72 md:w-48'
+                    ? 'h-28 w-48 sm:h-40 sm:w-72'
+                    : 'h-44 w-28 sm:h-64 sm:w-44 md:h-72 md:w-48'
                 }`}
               >
                 {/* Floating Hardware-Optimized IMDb Badge */}

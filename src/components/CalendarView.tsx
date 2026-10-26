@@ -20,7 +20,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ items, onSelect }) =
   ];
 
   return (
-    <div className="mx-auto max-w-[1560px] px-6 sm:px-12 pt-20 pb-20 select-none animate-fadeIn">
+    <div className="mx-auto max-w-[1560px] px-3.5 sm:px-12 pt-16 sm:pt-20 pb-20 select-none animate-fadeIn">
       <div className="flex items-center gap-3 pb-6 border-b border-white/10">
         <CalendarIcon className="h-6 w-6" style={{ color: accentHex }} />
         <div>

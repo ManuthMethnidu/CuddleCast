@@ -148,7 +148,7 @@ const MainApp: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1">
+      <main className="flex-1 pb-16 md:pb-0">
         {isLoading ? (
           <div className="flex h-screen items-center justify-center bg-[#0b0b0d]">
             <div className="flex flex-col items-center gap-4">

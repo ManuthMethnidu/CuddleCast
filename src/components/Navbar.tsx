@@ -7,6 +7,11 @@ import {
   LogOut,
   Sliders,
   Settings as SettingsIcon,
+  Home,
+  Compass,
+  Film,
+  Calendar,
+  Blocks,
 } from 'lucide-react';
 import { UserProfile } from '../types/schema';
 import { useAccent } from '../context/AccentContext';
@@ -72,25 +77,26 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [searchQuery]);
 
   const navCategories = [
-    { id: 'all', label: 'Home' },
-    { id: 'discover', label: 'Discover' },
-    { id: 'library', label: 'Library' },
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'addons', label: 'Addons' },
+    { id: 'all', label: 'Home', icon: Home },
+    { id: 'discover', label: 'Discover', icon: Compass },
+    { id: 'library', label: 'Library', icon: Film },
+    { id: 'calendar', label: 'Calendar', icon: Calendar },
+    { id: 'addons', label: 'Addons', icon: Blocks },
   ];
 
   return (
     <>
+      {/* Top Header Navbar */}
       <header
-        className={`fixed top-0 z-[100] w-full transition-all duration-300 ${
+        className={`fixed top-0 z-[100] w-full transition-all duration-300 pt-[env(safe-area-inset-top,0px)] ${
           isScrolled
-            ? 'bg-[#0b0b0d]/95 backdrop-blur-xl border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-3'
-            : 'bg-gradient-to-b from-black/80 via-black/30 to-transparent pt-4 pb-3'
+            ? 'bg-[#0b0b0d]/95 backdrop-blur-xl border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-2.5 sm:py-3'
+            : 'bg-gradient-to-b from-black/85 via-black/40 to-transparent pt-3 pb-2.5 sm:pt-4 sm:pb-3'
         }`}
       >
-        <div className="mx-auto flex items-center justify-between max-w-[1560px] px-4 md:px-8 lg:px-12">
+        <div className="mx-auto flex items-center justify-between max-w-[1560px] px-3.5 sm:px-8 lg:px-12">
           {/* Left: DX.BI Wordmark + Desktop Nav Tabs */}
-          <div className="flex items-center gap-7 lg:gap-10">
+          <div className="flex items-center gap-5 sm:gap-7 lg:gap-10">
             {/* DX.BI Wordmark in Bebas Neue */}
             <a
               href="#home"
@@ -101,7 +107,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center transition-transform hover:scale-105 active:scale-95"
             >
               <span
-                className="font-black text-3xl sm:text-4xl tracking-tight leading-none uppercase select-none"
+                className="font-black text-2xl sm:text-4xl tracking-tight leading-none uppercase select-none"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   color: accentHex,
@@ -112,7 +118,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             </a>
 
-            {/* Nav Tabs */}
+            {/* Desktop Nav Tabs (Hidden on mobile) */}
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
               {navCategories.map(cat => {
                 const isSelected = activeCategory === cat.id;
@@ -149,14 +155,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Right: Search, Watch Party, Settings Icon & Profile */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {/* Search Bar ("Search or paste link") */}
             <div ref={searchContainerRef} className="relative flex items-center">
               <div
                 className={`relative flex items-center rounded-lg border transition-all duration-300 ${
                   isSearchActive || searchQuery
-                    ? 'w-48 sm:w-64 md:w-80 bg-black/90 border-white/50 shadow-lg'
-                    : 'w-36 sm:w-56 bg-white/[0.06] border-white/10 hover:bg-white/[0.09]'
+                    ? 'w-36 sm:w-64 md:w-80 bg-black/90 border-white/50 shadow-lg'
+                    : 'w-28 sm:w-56 bg-white/[0.06] border-white/10 hover:bg-white/[0.09]'
                 }`}
               >
                 <input
@@ -165,8 +171,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   value={searchQuery}
                   onChange={e => onSearchChange(e.target.value)}
                   onFocus={() => setIsSearchActive(true)}
-                  placeholder="Search or paste link"
-                  className="h-9 w-full bg-transparent pl-3.5 pr-8 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
+                  placeholder="Search..."
+                  className="h-8 sm:h-9 w-full bg-transparent pl-2.5 sm:pl-3.5 pr-7 sm:pr-8 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
                 />
 
                 {searchQuery ? (
@@ -174,33 +180,33 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onClick={() => onSearchChange('')}
                     className="absolute right-2 text-zinc-400 hover:text-white"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
                   </button>
                 ) : (
                   <button
                     onClick={() => searchInputRef.current?.focus()}
                     className="absolute right-2 text-zinc-400 hover:text-white"
                   >
-                    <Search className="h-4 w-4" />
+                    <Search className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Watch Party Button */}
+            {/* Watch Party Button (Desktop only on top bar) */}
             <button
               onClick={() => setIsWatchPartyOpen(true)}
-              className="flex h-9 items-center gap-1.5 px-3 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-semibold text-zinc-200 hover:text-white transition-all active:scale-95"
+              className="hidden sm:flex h-9 items-center gap-1.5 px-3 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-semibold text-zinc-200 hover:text-white transition-all active:scale-95"
               title="Watch Party"
             >
               <Users className="h-3.5 w-3.5" style={{ color: accentHex }} />
-              <span className="hidden sm:inline">Party</span>
+              <span>Party</span>
             </button>
 
-            {/* Quick Settings Button */}
+            {/* Quick Settings Button (Desktop only on top bar) */}
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-zinc-200 hover:text-white transition-all active:scale-95"
+              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-zinc-200 hover:text-white transition-all active:scale-95"
               title="dx.bi Settings & Accents"
             >
               <SettingsIcon className="h-4 w-4" />
@@ -210,17 +216,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative">
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="flex items-center rounded-md overflow-hidden border-2 transition-transform hover:scale-105"
-                style={{ borderColor: accentHex }}
-                aria-label="User Profile"
+                className="group flex items-center gap-1 rounded-lg p-0.5 transition-transform hover:scale-105 active:scale-95"
+                title={activeProfile.name}
               >
                 <img
                   src={activeProfile.avatar_url}
                   alt={activeProfile.name}
-                  className="h-8 w-8 object-cover"
+                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-md object-cover border border-white/20 shadow"
                 />
               </button>
 
+              {/* Profile Dropdown */}
               {isProfileMenuOpen && (
                 <div className="absolute right-0 mt-2 w-52 rounded-xl border border-white/10 bg-[#18181d] py-2 text-sm text-white shadow-2xl backdrop-blur-xl animate-fadeIn z-50">
                   <div className="border-b border-white/10 px-4 py-2">
@@ -236,7 +242,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       }}
                       className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
                     >
-                      <User className="h-3.5 w-3.5" /> Switch Profile
+                      <User className="h-3.5 w-3.5" /> Manage Profiles
                     </button>
 
                     <button
@@ -247,6 +253,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
                     >
                       <Sliders className="h-3.5 w-3.5" /> Library
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        setIsWatchPartyOpen(true);
+                      }}
+                      className="flex sm:hidden w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
+                    >
+                      <Users className="h-3.5 w-3.5" /> Watch Party
                     </button>
                   </div>
 
@@ -267,6 +283,33 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       </header>
+
+      {/* Mobile Bottom Navigation Bar (iOS / Android Stremio Style) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-[#0c0c10]/95 backdrop-blur-2xl border-t border-white/10 px-1 py-1 pb-[calc(0.4rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.8)] select-none">
+        {navCategories.map(cat => {
+          const Icon = cat.icon;
+          const isSelected = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => onCategoryChange(cat.id)}
+              className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
+              style={{ color: isSelected ? accentHex : 'var(--dx-text-3)' }}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px] font-semibold mt-0.5 tracking-tight">{cat.label}</span>
+            </button>
+          );
+        })}
+
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="flex flex-col items-center justify-center flex-1 py-1 text-zinc-400 hover:text-white transition-all active:scale-95"
+        >
+          <SettingsIcon className="h-5 w-5" />
+          <span className="text-[10px] font-semibold mt-0.5 tracking-tight">Settings</span>
+        </button>
+      </nav>
 
       {/* Watch Party Modal */}
       <WatchPartyModal

@@ -63,9 +63,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   };
 
   return (
-    <div className="mx-auto max-w-[1560px] px-6 sm:px-12 pt-20 pb-20 select-none animate-fadeIn">
+    <div className="mx-auto max-w-[1560px] px-3.5 sm:px-12 pt-16 sm:pt-20 pb-20 select-none animate-fadeIn">
       {/* Header and Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-6 border-b border-white/10">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             Library
@@ -75,14 +75,14 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex w-full sm:w-auto items-center justify-between sm:justify-start gap-2 overflow-x-auto no-scrollbar">
           {/* Filter Tabs */}
-          <div className="flex items-center rounded-xl bg-[#18181d] border border-white/10 p-1">
+          <div className="flex items-center rounded-xl bg-[#18181d] border border-white/10 p-1 flex-shrink-0">
             {(['all', 'movie', 'tv', 'continue'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setFilter(tab)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${
+                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-semibold capitalize transition-all whitespace-nowrap ${
                   filter === tab
                     ? 'bg-white/15 text-white shadow'
                     : 'text-zinc-400 hover:text-white'
@@ -100,12 +100,12 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
           </div>
 
           {/* Sort Selector */}
-          <div className="flex items-center gap-2 rounded-xl bg-[#18181d] border border-white/10 px-3 py-1.5 text-xs text-zinc-300">
+          <div className="flex items-center gap-1.5 rounded-xl bg-[#18181d] border border-white/10 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs text-zinc-300 flex-shrink-0">
             <ArrowUpDown className="h-3.5 w-3.5 text-zinc-400" />
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
-              className="bg-transparent font-semibold text-white outline-none cursor-pointer"
+              className="bg-transparent font-semibold text-white outline-none cursor-pointer text-xs"
             >
               <option value="recent" className="bg-[#18181d]">Recently Added</option>
               <option value="rating" className="bg-[#18181d]">IMDb Rating</option>
@@ -118,7 +118,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
 
       {/* Grid of Posters or Empty State */}
       {filteredItems.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4 pt-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4 pt-6 sm:pt-8">
           {filteredItems.map(item => {
             const percent = item.progress_seconds && item.total_seconds
               ? Math.min(100, Math.round((item.progress_seconds / item.total_seconds) * 100))
@@ -155,8 +155,15 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                     </div>
                   )}
 
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
+                  {/* Mobile title banner always subtle at bottom */}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-2 sm:hidden">
+                    <span className="text-[11px] font-semibold text-white line-clamp-1">
+                      {item.title || item.name}
+                    </span>
+                  </div>
+
+                  {/* Hover Overlay for desktop */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 hidden sm:flex flex-col justify-end">
                     <span className="text-xs font-bold text-white line-clamp-1">
                       {item.title || item.name}
                     </span>

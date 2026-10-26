@@ -43,7 +43,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* Settings Body */}
-        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-6 max-h-[75vh] overflow-y-auto">
           {/* Accent Color Section */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <p className="text-xs text-zinc-400">
               Colour used for the logo, progress bars, active tabs, and player highlights.
             </p>
-            <div className="grid grid-cols-4 gap-2.5 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
               {ACCENT_OPTIONS.map(opt => (
                 <button
                   key={opt.id}
