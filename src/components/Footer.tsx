@@ -45,7 +45,6 @@ export const Footer: React.FC = () => {
             <div className="flex flex-col gap-2.5">
               <span className="font-semibold text-zinc-200">Connect</span>
               <a href="https://github.com/ManuthMethnidu/CuddleCast" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub Repository</a>
-              <a href="https://discord.gg/nnVBjqZ84F" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Discord Community</a>
               <span className="text-zinc-600">v2.15 Clean-Room 1:1 Edition</span>
             </div>
           </div>

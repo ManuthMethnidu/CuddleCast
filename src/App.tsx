@@ -21,8 +21,6 @@ import { HistoryView } from './components/HistoryView';
 import { RadioPlayer } from './components/RadioPlayer';
 import { RadioAtlasView } from './components/RadioAtlasView';
 import { AIAssistantBot } from './components/AIAssistantBot';
-import { DonateModal } from './components/DonateModal';
-import { DiscordModal } from './components/DiscordModal';
 import { ProfileGate } from './components/ProfileGate';
 import { Footer } from './components/Footer';
 import { BillboardData, CarouselRail, Episode, MediaItem, UserProfile } from './types/schema';
@@ -47,8 +45,6 @@ const MainApp: React.FC = () => {
   // Navigation State
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDonateOpen, setIsDonateOpen] = useState(false);
-  const [isDiscordOpen, setIsDiscordOpen] = useState(false);
   const [isRadioOpen, setIsRadioOpen] = useState(false);
 
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
@@ -143,11 +139,7 @@ const MainApp: React.FC = () => {
 
   // Sidebar selection handler
   const handleSelectNavView = (view: NavViewId) => {
-    if (view === 'donate') {
-      setIsDonateOpen(true);
-    } else if (view === 'discord') {
-      setIsDiscordOpen(true);
-    } else if (view === 'home') {
+    if (view === 'home') {
       setActiveCategory('all');
       if (searchQuery) setSearchQuery('');
     } else {
@@ -349,18 +341,6 @@ const MainApp: React.FC = () => {
           onPlay={handlePlay}
         />
       )}
-
-      {/* Crypto Donate Modal */}
-      <DonateModal
-        isOpen={isDonateOpen}
-        onClose={() => setIsDonateOpen(false)}
-      />
-
-      {/* Discord Community Modal */}
-      <DiscordModal
-        isOpen={isDiscordOpen}
-        onClose={() => setIsDiscordOpen(false)}
-      />
 
       {/* Footer */}
       <Footer />
