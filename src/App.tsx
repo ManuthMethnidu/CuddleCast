@@ -29,10 +29,12 @@ export const App: React.FC = () => {
 
   // Initial load
   useEffect(() => {
-    Promise.all([api.getBillboard(), api.getRails()]).then(([b, r]) => {
-      setBillboardItems(b);
-      setRails(r);
-      setIsLoading(false);
+    authStorage.initSync().then(() => {
+      Promise.all([api.getBillboard(), api.getRails()]).then(([b, r]) => {
+        setBillboardItems(b);
+        setRails(r);
+        setIsLoading(false);
+      });
     });
   }, []);
 
