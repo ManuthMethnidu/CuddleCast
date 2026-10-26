@@ -630,239 +630,8 @@
       ]
     },
     {
-      "id": "top-10",
-      "title": "Top 10 Today",
-      "isTop10": true,
-      "items": [
-        {
-          "id": 96677,
-          "title": "Lupin",
-          "name": "Lupin",
-          "original_title": "Lupin",
-          "overview": "Inspired by the adventures of Arsène Lupin, gentleman thief Assane Diop sets out to avenge his father for an injustice inflicted by a wealthy family.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/h6Z2oogE4mJk2uffdtIlLhb0EHx.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/aY7zv2pfk9H0QxaaL3PBjvalbKQ.jpg",
-          "media_type": "tv",
-          "release_date": "2021-01-08",
-          "first_air_date": "2021-01-08",
-          "vote_average": 7.7,
-          "vote_count": 2702,
-          "genre_ids": [
-            80,
-            18,
-            9648
-          ],
-          "popularity": 124.0241,
-          "logo_path": "https://image.tmdb.org/t/p/w500/kbOHTAwtFNhGzObaeSbRHJgNRuv.png",
-          "adult": false,
-          "rank": 1
-        },
-        {
-          "id": 1400940,
-          "title": "Clayface",
-          "name": "Clayface",
-          "original_title": "Clayface",
-          "overview": "Matt Hagen's meteoric rise from Gotham street kid to Hollywood leading man is tragically cut short when a local crime boss's actions leave him horribly disfigured. Abandoned by his team and with nothing left, Matt seeks out a cutting edge treatment that miraculously returns him to his former self… but also unexpectedly affects his grip on reality, spiraling him down a destructive path of all-consuming revenge.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/9l1NuFjel2j89hiuiJbsxfblqjy.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/uL4cIrNi2uaUnWIOQQ28EVnkETG.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-19",
-          "first_air_date": "2026-10-19",
-          "vote_average": 7.6,
-          "vote_count": 108,
-          "genre_ids": [
-            27,
-            53,
-            878
-          ],
-          "popularity": 240.8093,
-          "logo_path": "https://image.tmdb.org/t/p/w500/3NdFVn110FxT266MZ4OeUuleWUp.png",
-          "adult": false,
-          "rank": 2
-        },
-        {
-          "id": 314360,
-          "title": "YAGA",
-          "name": "YAGA",
-          "original_title": "YAGA",
-          "overview": "While a private investigator probes the disappearance of the young heir to a powerful fishery, he finds himself at odds with an apprehensive local detective, a charismatic university professor with a taste for younger men, and a labyrinth of enigmatic suspects, secret lives, and ancient magic.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/2kxIViR7g3e08ZHLlvNFFJkgJtI.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/owhTL4n2r9ryfxyYlhHKt97ogVk.jpg",
-          "media_type": "tv",
-          "release_date": "2026-10-23",
-          "first_air_date": "2026-10-23",
-          "vote_average": 8.3,
-          "vote_count": 3,
-          "genre_ids": [
-            18,
-            10765
-          ],
-          "popularity": 51.9348,
-          "logo_path": "https://image.tmdb.org/t/p/w500/csAe6BpoxRFQoaZpETzOYuxUS2b.svg",
-          "adult": false,
-          "rank": 3
-        },
-        {
-          "id": 1422041,
-          "title": "La bola negra",
-          "name": "La bola negra",
-          "original_title": "La bola negra",
-          "overview": "The intertwined lives of three men in three different eras, three lives intimately linked by sexuality and desire, pain, and legacy.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/jT5SR5qc9KvVg7HUEmjMWEUYMce.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/bDsmYvrzto7xrEwqDpLC3SPhn9A.jpg",
-          "media_type": "movie",
-          "release_date": "2026-09-25",
-          "first_air_date": "2026-09-25",
-          "vote_average": 8.2,
-          "vote_count": 101,
-          "genre_ids": [
-            18,
-            10752
-          ],
-          "popularity": 51.8507,
-          "logo_path": "https://image.tmdb.org/t/p/w500/6MCU6m6kgtbSoh5UuUD069fRVn4.png",
-          "adult": false,
-          "rank": 4
-        },
-        {
-          "id": 1453407,
-          "title": "Gajab Raat",
-          "name": "Gajab Raat",
-          "original_title": "ग़ज़ब रात",
-          "overview": "A corrupt, troubled cop's night spirals out of control when a reluctant act of mercy toward an injured girl pulls him into a deadly web of crime.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/lbxsAJpf5dajPkEjsMWKNWfgaI5.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/cdcW8GeAyBLPVBhTbOoTlBywNtp.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-23",
-          "first_air_date": "2026-10-23",
-          "vote_average": 7.5,
-          "vote_count": 100,
-          "genre_ids": [
-            53,
-            80
-          ],
-          "popularity": 24.265,
-          "logo_path": "https://image.tmdb.org/t/p/w500/2svlTPieFNM60IsNXyKS9jL1WeR.png",
-          "adult": false,
-          "rank": 5
-        },
-        {
-          "id": 1780005,
-          "title": "Surviving Hurricane Otis",
-          "name": "Surviving Hurricane Otis",
-          "original_title": "Contra el huracán",
-          "overview": "In the middle of the sea, Wirpul and his half-brother Candi fight for survival when an unexpected storm turns into Hurricane Otis, a category 5 hurricane, off the coast of Acapulco.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/chZa8Jd9kSDj11bekGjwwotFPEw.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/cpNMIRCrDl0sxDL1tHBzfWi0UZC.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-23",
-          "first_air_date": "2026-10-23",
-          "vote_average": 6.2,
-          "vote_count": 3,
-          "genre_ids": [
-            18
-          ],
-          "popularity": 38.7524,
-          "logo_path": "https://image.tmdb.org/t/p/w500/tNfFbBOuyBbKl4WhKXCbUOwI8Tb.png",
-          "adult": false,
-          "rank": 6
-        },
-        {
-          "id": 213375,
-          "title": "VisionQuest",
-          "name": "VisionQuest",
-          "original_title": "VisionQuest",
-          "overview": "With a bounty on his head, Vision must confront his nature and resist Ultron's influence to survive.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/xK27l5uwaVyZSlENWnmLlWwDQNS.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/uoXXbN2PrOxH6UKyP7kYwmGpAAP.jpg",
-          "media_type": "tv",
-          "release_date": "2026-10-13",
-          "first_air_date": "2026-10-13",
-          "vote_average": 8.8,
-          "vote_count": 167,
-          "genre_ids": [
-            10765,
-            18
-          ],
-          "popularity": 342.2431,
-          "logo_path": "https://image.tmdb.org/t/p/w500/mQwaoWvWJGiuVY6CT1V6AiuSIqi.png",
-          "adult": false,
-          "rank": 7
-        },
-        {
-          "id": 1477104,
-          "title": "Shaun the Sheep: The Beast of Mossy Bottom",
-          "name": "Shaun the Sheep: The Beast of Mossy Bottom",
-          "original_title": "Shaun the Sheep: The Beast of Mossy Bottom",
-          "overview": "On Halloween Eve at Mossy Bottom Farm, excitement turns to dismay when the clumsy Farmer ruins the pumpkin patch. Shaun tries fixing it with science experiments, but things go awry when a wild beast appears in the woods.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/mMOptSPBVGUA9GHgnpsC35GzZ7e.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/mG8tVv1RPAKnARWxKTND5dRgMpw.jpg",
-          "media_type": "movie",
-          "release_date": "2026-09-17",
-          "first_air_date": "2026-09-17",
-          "vote_average": 7.4,
-          "vote_count": 29,
-          "genre_ids": [
-            16,
-            35,
-            10751,
-            12,
-            878
-          ],
-          "popularity": 27.8759,
-          "logo_path": "https://image.tmdb.org/t/p/w500/6fr3VBoNd6Y74m4AiP62027Nrjc.png",
-          "adult": false,
-          "rank": 8
-        },
-        {
-          "id": 120911,
-          "title": "The Terminal List",
-          "name": "The Terminal List",
-          "original_title": "The Terminal List",
-          "overview": "Navy SEAL Commander James Reece turns to vengeance as he investigates the mysterious forces behind the murder of his entire platoon. Free from the military's command structure, Reece applies the lessons he's learned from nearly two decades of warfare to hunt down the people responsible.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/xyFAzP7RKK8cARCSalIZ9A9T0jV.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/98mdtfkJ77vVikylIbOQYfJvxpJ.jpg",
-          "media_type": "tv",
-          "release_date": "2022-06-30",
-          "first_air_date": "2022-06-30",
-          "vote_average": 8,
-          "vote_count": 1263,
-          "genre_ids": [
-            10759,
-            18
-          ],
-          "popularity": 157.4266,
-          "logo_path": "https://image.tmdb.org/t/p/w500/29glkftEea1IEUG8WcNq017mCAr.png",
-          "adult": false,
-          "rank": 9
-        },
-        {
-          "id": 250923,
-          "title": "Nobody Wants This",
-          "name": "Nobody Wants This",
-          "original_title": "Nobody Wants This",
-          "overview": "An agnostic sex podcaster and a newly single rabbi fall in love, but can their relationship survive their wildly different lives and meddling families?",
-          "poster_path": "https://image.tmdb.org/t/p/w500/cUpIceeJJoRqUHSCzh6jRSmlpkA.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/q8BwtVM3t0SOtB1nZsXpOKZp8IM.jpg",
-          "media_type": "tv",
-          "release_date": "2024-09-26",
-          "first_air_date": "2024-09-26",
-          "vote_average": 7.3,
-          "vote_count": 304,
-          "genre_ids": [
-            35,
-            18
-          ],
-          "popularity": 53.7775,
-          "logo_path": "https://image.tmdb.org/t/p/w500/yoIDGAhWvPFxPknG3pgQSdvnVAr.png",
-          "adult": false,
-          "rank": 10
-        }
-      ]
-    },
-    {
-      "id": "trending-movies",
-      "title": "Trending Movies",
+      "id": "popular-movies",
+      "title": "Popular - Movies",
       "items": [
         {
           "id": 1400940,
@@ -1251,8 +1020,8 @@
       ]
     },
     {
-      "id": "trending-tv",
-      "title": "Trending TV Shows",
+      "id": "popular-series",
+      "title": "Popular - Series",
       "items": [
         {
           "id": 96677,
@@ -1643,8 +1412,626 @@
       ]
     },
     {
-      "id": "now-playing",
-      "title": "Now Playing in Theaters",
+      "id": "top-rated-movies",
+      "title": "Top Rated - Movies",
+      "items": [
+        {
+          "id": 96677,
+          "title": "Lupin",
+          "name": "Lupin",
+          "original_title": "Lupin",
+          "overview": "Inspired by the adventures of Arsène Lupin, gentleman thief Assane Diop sets out to avenge his father for an injustice inflicted by a wealthy family.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/h6Z2oogE4mJk2uffdtIlLhb0EHx.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/aY7zv2pfk9H0QxaaL3PBjvalbKQ.jpg",
+          "media_type": "tv",
+          "release_date": "2021-01-08",
+          "first_air_date": "2021-01-08",
+          "vote_average": 7.7,
+          "vote_count": 2702,
+          "genre_ids": [
+            80,
+            18,
+            9648
+          ],
+          "popularity": 124.0241,
+          "logo_path": "https://image.tmdb.org/t/p/w500/kbOHTAwtFNhGzObaeSbRHJgNRuv.png",
+          "adult": false,
+          "rank": 1
+        },
+        {
+          "id": 1400940,
+          "title": "Clayface",
+          "name": "Clayface",
+          "original_title": "Clayface",
+          "overview": "Matt Hagen's meteoric rise from Gotham street kid to Hollywood leading man is tragically cut short when a local crime boss's actions leave him horribly disfigured. Abandoned by his team and with nothing left, Matt seeks out a cutting edge treatment that miraculously returns him to his former self… but also unexpectedly affects his grip on reality, spiraling him down a destructive path of all-consuming revenge.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/9l1NuFjel2j89hiuiJbsxfblqjy.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/uL4cIrNi2uaUnWIOQQ28EVnkETG.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-19",
+          "first_air_date": "2026-10-19",
+          "vote_average": 7.6,
+          "vote_count": 108,
+          "genre_ids": [
+            27,
+            53,
+            878
+          ],
+          "popularity": 240.8093,
+          "logo_path": "https://image.tmdb.org/t/p/w500/3NdFVn110FxT266MZ4OeUuleWUp.png",
+          "adult": false,
+          "rank": 2
+        },
+        {
+          "id": 314360,
+          "title": "YAGA",
+          "name": "YAGA",
+          "original_title": "YAGA",
+          "overview": "While a private investigator probes the disappearance of the young heir to a powerful fishery, he finds himself at odds with an apprehensive local detective, a charismatic university professor with a taste for younger men, and a labyrinth of enigmatic suspects, secret lives, and ancient magic.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/2kxIViR7g3e08ZHLlvNFFJkgJtI.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/owhTL4n2r9ryfxyYlhHKt97ogVk.jpg",
+          "media_type": "tv",
+          "release_date": "2026-10-23",
+          "first_air_date": "2026-10-23",
+          "vote_average": 8.3,
+          "vote_count": 3,
+          "genre_ids": [
+            18,
+            10765
+          ],
+          "popularity": 51.9348,
+          "logo_path": "https://image.tmdb.org/t/p/w500/csAe6BpoxRFQoaZpETzOYuxUS2b.svg",
+          "adult": false,
+          "rank": 3
+        },
+        {
+          "id": 1422041,
+          "title": "La bola negra",
+          "name": "La bola negra",
+          "original_title": "La bola negra",
+          "overview": "The intertwined lives of three men in three different eras, three lives intimately linked by sexuality and desire, pain, and legacy.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/jT5SR5qc9KvVg7HUEmjMWEUYMce.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/bDsmYvrzto7xrEwqDpLC3SPhn9A.jpg",
+          "media_type": "movie",
+          "release_date": "2026-09-25",
+          "first_air_date": "2026-09-25",
+          "vote_average": 8.2,
+          "vote_count": 101,
+          "genre_ids": [
+            18,
+            10752
+          ],
+          "popularity": 51.8507,
+          "logo_path": "https://image.tmdb.org/t/p/w500/6MCU6m6kgtbSoh5UuUD069fRVn4.png",
+          "adult": false,
+          "rank": 4
+        },
+        {
+          "id": 1453407,
+          "title": "Gajab Raat",
+          "name": "Gajab Raat",
+          "original_title": "ग़ज़ब रात",
+          "overview": "A corrupt, troubled cop's night spirals out of control when a reluctant act of mercy toward an injured girl pulls him into a deadly web of crime.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/lbxsAJpf5dajPkEjsMWKNWfgaI5.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/cdcW8GeAyBLPVBhTbOoTlBywNtp.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-23",
+          "first_air_date": "2026-10-23",
+          "vote_average": 7.5,
+          "vote_count": 100,
+          "genre_ids": [
+            53,
+            80
+          ],
+          "popularity": 24.265,
+          "logo_path": "https://image.tmdb.org/t/p/w500/2svlTPieFNM60IsNXyKS9jL1WeR.png",
+          "adult": false,
+          "rank": 5
+        },
+        {
+          "id": 1780005,
+          "title": "Surviving Hurricane Otis",
+          "name": "Surviving Hurricane Otis",
+          "original_title": "Contra el huracán",
+          "overview": "In the middle of the sea, Wirpul and his half-brother Candi fight for survival when an unexpected storm turns into Hurricane Otis, a category 5 hurricane, off the coast of Acapulco.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/chZa8Jd9kSDj11bekGjwwotFPEw.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/cpNMIRCrDl0sxDL1tHBzfWi0UZC.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-23",
+          "first_air_date": "2026-10-23",
+          "vote_average": 6.2,
+          "vote_count": 3,
+          "genre_ids": [
+            18
+          ],
+          "popularity": 38.7524,
+          "logo_path": "https://image.tmdb.org/t/p/w500/tNfFbBOuyBbKl4WhKXCbUOwI8Tb.png",
+          "adult": false,
+          "rank": 6
+        },
+        {
+          "id": 213375,
+          "title": "VisionQuest",
+          "name": "VisionQuest",
+          "original_title": "VisionQuest",
+          "overview": "With a bounty on his head, Vision must confront his nature and resist Ultron's influence to survive.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/xK27l5uwaVyZSlENWnmLlWwDQNS.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/uoXXbN2PrOxH6UKyP7kYwmGpAAP.jpg",
+          "media_type": "tv",
+          "release_date": "2026-10-13",
+          "first_air_date": "2026-10-13",
+          "vote_average": 8.8,
+          "vote_count": 167,
+          "genre_ids": [
+            10765,
+            18
+          ],
+          "popularity": 342.2431,
+          "logo_path": "https://image.tmdb.org/t/p/w500/mQwaoWvWJGiuVY6CT1V6AiuSIqi.png",
+          "adult": false,
+          "rank": 7
+        },
+        {
+          "id": 1477104,
+          "title": "Shaun the Sheep: The Beast of Mossy Bottom",
+          "name": "Shaun the Sheep: The Beast of Mossy Bottom",
+          "original_title": "Shaun the Sheep: The Beast of Mossy Bottom",
+          "overview": "On Halloween Eve at Mossy Bottom Farm, excitement turns to dismay when the clumsy Farmer ruins the pumpkin patch. Shaun tries fixing it with science experiments, but things go awry when a wild beast appears in the woods.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/mMOptSPBVGUA9GHgnpsC35GzZ7e.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/mG8tVv1RPAKnARWxKTND5dRgMpw.jpg",
+          "media_type": "movie",
+          "release_date": "2026-09-17",
+          "first_air_date": "2026-09-17",
+          "vote_average": 7.4,
+          "vote_count": 29,
+          "genre_ids": [
+            16,
+            35,
+            10751,
+            12,
+            878
+          ],
+          "popularity": 27.8759,
+          "logo_path": "https://image.tmdb.org/t/p/w500/6fr3VBoNd6Y74m4AiP62027Nrjc.png",
+          "adult": false,
+          "rank": 8
+        },
+        {
+          "id": 120911,
+          "title": "The Terminal List",
+          "name": "The Terminal List",
+          "original_title": "The Terminal List",
+          "overview": "Navy SEAL Commander James Reece turns to vengeance as he investigates the mysterious forces behind the murder of his entire platoon. Free from the military's command structure, Reece applies the lessons he's learned from nearly two decades of warfare to hunt down the people responsible.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/xyFAzP7RKK8cARCSalIZ9A9T0jV.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/98mdtfkJ77vVikylIbOQYfJvxpJ.jpg",
+          "media_type": "tv",
+          "release_date": "2022-06-30",
+          "first_air_date": "2022-06-30",
+          "vote_average": 8,
+          "vote_count": 1263,
+          "genre_ids": [
+            10759,
+            18
+          ],
+          "popularity": 157.4266,
+          "logo_path": "https://image.tmdb.org/t/p/w500/29glkftEea1IEUG8WcNq017mCAr.png",
+          "adult": false,
+          "rank": 9
+        },
+        {
+          "id": 250923,
+          "title": "Nobody Wants This",
+          "name": "Nobody Wants This",
+          "original_title": "Nobody Wants This",
+          "overview": "An agnostic sex podcaster and a newly single rabbi fall in love, but can their relationship survive their wildly different lives and meddling families?",
+          "poster_path": "https://image.tmdb.org/t/p/w500/cUpIceeJJoRqUHSCzh6jRSmlpkA.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/q8BwtVM3t0SOtB1nZsXpOKZp8IM.jpg",
+          "media_type": "tv",
+          "release_date": "2024-09-26",
+          "first_air_date": "2024-09-26",
+          "vote_average": 7.3,
+          "vote_count": 304,
+          "genre_ids": [
+            35,
+            18
+          ],
+          "popularity": 53.7775,
+          "logo_path": "https://image.tmdb.org/t/p/w500/yoIDGAhWvPFxPknG3pgQSdvnVAr.png",
+          "adult": false,
+          "rank": 10
+        }
+      ]
+    },
+    {
+      "id": "top-rated-series",
+      "title": "Top Rated - Series",
+      "items": [
+        {
+          "id": 1003596,
+          "title": "Avengers: Doomsday",
+          "name": "Avengers: Doomsday",
+          "original_title": "Avengers: Doomsday",
+          "overview": "Beloved heroes from three distinct universes are set on a deadly collision course and face an existential threat unlike anything they've ever encountered.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/jzPwsojjFStf5lR5Nm07w2hH56G.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/g3gpP5YDbA85DsA0bt5mgGQIe5q.jpg",
+          "media_type": "movie",
+          "release_date": "2026-12-16",
+          "first_air_date": "2026-12-16",
+          "vote_average": 7.5,
+          "vote_count": 100,
+          "genre_ids": [
+            878,
+            28,
+            12
+          ],
+          "popularity": 764.9682,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1101412,
+          "title": "Fall 2: Deadpoint",
+          "name": "Fall 2: Deadpoint",
+          "original_title": "Fall 2: Deadpoint",
+          "overview": "On a perilous climb across Thailand's Mount Kwan, two climbers become trapped thousands of feet above the ground, where vertigo-inducing heights, sheer exposure, and impossible odds turn every moment into a fight for survival.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/fgSm5ylwiXbIHn8UbUXDjk9RRu4.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/nGau0KBOaRILSK5MqFcuTfv7GMl.jpg",
+          "media_type": "movie",
+          "release_date": "2026-09-01",
+          "first_air_date": "2026-09-01",
+          "vote_average": 7.3,
+          "vote_count": 627,
+          "genre_ids": [
+            53
+          ],
+          "popularity": 272.829,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1148365,
+          "title": "Matchbox the Movie",
+          "name": "Matchbox the Movie",
+          "original_title": "Matchbox the Movie",
+          "overview": "When a group of former childhood friends reconnect, their reunion takes a wild turn as they stumble upon a dangerous international plot—and must save the world.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/aHhHRz6nOpwkqJs5ASeRGAdK2dt.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/jdJsnhHfkIi3J7jwfiCFT4gXNx5.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-05",
+          "first_air_date": "2026-10-05",
+          "vote_average": 7.7,
+          "vote_count": 476,
+          "genre_ids": [
+            28,
+            35,
+            12
+          ],
+          "popularity": 234.439,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1400837,
+          "title": "Other Mommy",
+          "name": "Other Mommy",
+          "original_title": "Other Mommy",
+          "overview": "Young Bela forms a relationship with a sinister entity in her home that looks uncannily like her own mother, drawing her into a terrifying and increasingly dark world.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/fGRNCssTRrhYZxNzykGGCoMsAVq.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/ncm7djsVTHQQMX2HEbEVxMUFchG.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-07",
+          "first_air_date": "2026-10-07",
+          "vote_average": 5.8,
+          "vote_count": 152,
+          "genre_ids": [
+            27
+          ],
+          "popularity": 199.4727,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1255833,
+          "title": "Whalefall",
+          "name": "Whalefall",
+          "original_title": "Whalefall",
+          "overview": "Following the death of his father, Jay Gardiner goes diving off the central Coast of California in search of his remains, but is swallowed by a massive sperm whale. While trapped inside its belly with only one hour of oxygen left, Jay comes to realize that the hard-earned lessons his father imparted may be the key to his escape.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/vjTYUTgh9nO88i6HZ4YPRhiFL05.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/shW2jHkQLZVv4Fko2rJDqTGU0gx.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-14",
+          "first_air_date": "2026-10-14",
+          "vote_average": 6.5,
+          "vote_count": 93,
+          "genre_ids": [
+            53
+          ],
+          "popularity": 192.5295,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1228834,
+          "title": "The Fix",
+          "name": "The Fix",
+          "original_title": "The Fix",
+          "overview": "Disillusioned by the end of the war in Afghanistan, a group of disgraced, war-torn ex-CIA operatives set out to Tehran to take down a life-changing score.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/jlP8XDjZN89GrpM3je5Uf8Grqx8.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/dJTWIecL2vxsCRl5G0lRhPsfrhc.jpg",
+          "media_type": "movie",
+          "release_date": "2026-09-10",
+          "first_air_date": "2026-09-10",
+          "vote_average": 6.5,
+          "vote_count": 73,
+          "genre_ids": [
+            28,
+            53
+          ],
+          "popularity": 177.8345,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1236045,
+          "title": "Animals",
+          "name": "Animals",
+          "original_title": "Animals",
+          "overview": "When the son of an L.A. mayoral candidate is kidnapped, he and his wife have a few hours to come up with the ransom payment. With most of their money spent on his political campaign, they have to get their hands dirty and expose a side of their lives they never intended to see the light of day.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/iISM36voS1E8gX9BM0DVK0kgi3E.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/tzoarEu7TsG959upiELyYPm5kO9.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-09",
+          "first_air_date": "2026-10-09",
+          "vote_average": 7,
+          "vote_count": 558,
+          "genre_ids": [
+            53,
+            18
+          ],
+          "popularity": 166.5319,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1377237,
+          "title": "Runner",
+          "name": "Runner",
+          "original_title": "Runner",
+          "overview": "A former soldier is thrown into a brutal race against time when a critical medical delivery makes him and his unlikely partner the targets of a ruthless cartel. As the mission spirals into a deadly manhunt, every detour, delay, and bullet pushes them closer to failure. With betrayal closing in from every side, they must survive the chase and deliver their cargo to save the life of a little girl.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/vJk2TW1QZAmBiD7oj9ZF9EPTYY1.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/npXZNWjOEYrqdMDPQ11SGBrXqAG.jpg",
+          "media_type": "movie",
+          "release_date": "2026-09-07",
+          "first_air_date": "2026-09-07",
+          "vote_average": 8.3,
+          "vote_count": 698,
+          "genre_ids": [
+            28,
+            35
+          ],
+          "popularity": 147.3325,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1765072,
+          "title": "You Can See Everything",
+          "name": "You Can See Everything",
+          "original_title": "You Can See Everything",
+          "overview": "Thirty-four days before she's sent to prison, notorious Silicon Valley founder Elizabeth Holmes invites a skeptical film crew to document her every move. What begins as an intimate portrait of an enigmatic felon becomes a mind-bending three-year journey into the abyss.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/Ap8QwmKfSjYbWC4XIP8w9pdn72O.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/nhIL3O4W9h5V5JbNQm7yjoDk3So.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-16",
+          "first_air_date": "2026-10-16",
+          "vote_average": 9.1,
+          "vote_count": 30,
+          "genre_ids": [
+            99
+          ],
+          "popularity": 146.3064,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1248832,
+          "title": "Digger",
+          "name": "Digger",
+          "original_title": "Digger",
+          "overview": "The most powerful man in the world embarks on a frantic mission to prove he is humanity's savior before the disaster he's unleashed destroys everything.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/1ATXKrIPJyKNwnJ6lcG088Sa6zi.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/vC5IxhgO6cVmw9O4QgkraRzfHvh.jpg",
+          "media_type": "movie",
+          "release_date": "2026-09-28",
+          "first_air_date": "2026-09-28",
+          "vote_average": 7.5,
+          "vote_count": 450,
+          "genre_ids": [
+            35,
+            18
+          ],
+          "popularity": 144.2905,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1302904,
+          "title": "Practical Magic 2",
+          "name": "Practical Magic 2",
+          "original_title": "Practical Magic 2",
+          "overview": "The Owens sisters must confront the dark curse that threatens to unravel their family once and for all.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/ogwQOLbCfncjvBhFb5l0OmQH8KC.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/oIglj0Jy9duG4LnrRUpH8n001Pk.jpg",
+          "media_type": "movie",
+          "release_date": "2026-09-09",
+          "first_air_date": "2026-09-09",
+          "vote_average": 7.1,
+          "vote_count": 284,
+          "genre_ids": [
+            10749,
+            14,
+            35
+          ],
+          "popularity": 142.1472,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1284186,
+          "title": "Sacrifice",
+          "name": "Sacrifice",
+          "original_title": "Sacrifice",
+          "overview": "During a star-studded charity gala brimming with celebrities, billionaires, and empty speeches, a movie star in the midst of an existential crisis is taken hostage by a radical warrior and her devoted followers. As the night descends into chaos, both an inward journey and an outward adventure ensue, where the line between performance and belief, salvation and sacrifice, begins to blur.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/SGH7mlgfDyGgRCi2At62Ljg3zV.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/oAUf1pvGlafCZVlEuPt1JyONHR1.jpg",
+          "media_type": "movie",
+          "release_date": "2026-04-09",
+          "first_air_date": "2026-04-09",
+          "vote_average": 5.1,
+          "vote_count": 67,
+          "genre_ids": [
+            12,
+            35,
+            28
+          ],
+          "popularity": 140.3962,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1281331,
+          "title": "The Social Reckoning",
+          "name": "The Social Reckoning",
+          "original_title": "The Social Reckoning",
+          "overview": "Frances Haugen, a young Facebook engineer, enlists the help of Jeff Horwitz, a Wall Street Journal reporter, to go on a dangerous journey that ends up blowing the whistle on the social network's most guarded secrets.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/7jK6NuxVg1XuEV7UdNa6KO03IgZ.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/wXTaGcqX3jvdXSKCJAkl5jZyrKp.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-07",
+          "first_air_date": "2026-10-07",
+          "vote_average": 7,
+          "vote_count": 127,
+          "genre_ids": [
+            18,
+            53
+          ],
+          "popularity": 139.0025,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1232569,
+          "title": "Pinocchio: Unstrung",
+          "name": "Pinocchio: Unstrung",
+          "original_title": "Pinocchio: Unstrung",
+          "overview": "Influenced by a sinister Cricket and created by Geppetto, Pinocchio launches a violent crusade to carve himself into a real boy like his brother James, one piece at a time.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/hJNdizFlxOW89edX3Rzr6OliSFI.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/7RsPdXLDNugDIlwXPVeeprNfMx.jpg",
+          "media_type": "movie",
+          "release_date": "2026-07-22",
+          "first_air_date": "2026-07-22",
+          "vote_average": 6.5,
+          "vote_count": 141,
+          "genre_ids": [
+            27,
+            14,
+            9648
+          ],
+          "popularity": 128.4033,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 791523,
+          "title": "Wildwood",
+          "name": "Wildwood",
+          "original_title": "Wildwood",
+          "overview": "Prue and her classmate Curtis are drawn into a magical forest filled with enchanted creatures, loyal allies, and formidable adversaries as they embark on a desperate quest to rescue Prue's abducted baby brother from a murder of crows led by a mysterious woman named Alexandra.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/snFM00mpNAfUzUtkdEW0uDEvXA0.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/sl5NJ1vtyhP9Vr88bB4blULsJYp.jpg",
+          "media_type": "movie",
+          "release_date": "2026-10-19",
+          "first_air_date": "2026-10-19",
+          "vote_average": 8.3,
+          "vote_count": 20,
+          "genre_ids": [
+            16,
+            12,
+            14
+          ],
+          "popularity": 57.8859,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1567937,
+          "title": "V",
+          "name": "V",
+          "original_title": "空枪",
+          "overview": "In the early 1990s, this city of desire, once a land of opportunity, was plagued by rampant crime and a breakdown of order. Man Tsz-keung, a working-class man desperate to change his fate, meets flight attendant Lok Ka-yuen, and the two team up to rob a large sum of money. This success fuels Man Tsz-keung's madness, pushing him into a deeper power struggle with wealthy businessman Chan Fai-yin. Meanwhile, mainland police officer Qi Honggang and Hong Kong police officer Guan Suchen continue their investigation of Wan Ziqiang, leading to a joint operation between the two police forces, setting the stage for a clash between good and evil. This film is fictional.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/rNqQQ3hFknhKpy8OTyGfzk7FY20.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/mm8VecTY7YxWevgS8F2ygqLMAiv.jpg",
+          "media_type": "movie",
+          "release_date": "2026-08-19",
+          "first_air_date": "2026-08-19",
+          "vote_average": 6.8,
+          "vote_count": 8,
+          "genre_ids": [
+            18,
+            80
+          ],
+          "popularity": 4.3024,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1477712,
+          "title": "Ice Cream Man",
+          "name": "Ice Cream Man",
+          "original_title": "Ice Cream Man",
+          "overview": "An idyllic summer town descends into madness when an ice cream man serves kids sweet delights with horrifying results.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/w2dr5aFRtRB1ojcHbCEPlfTXkbf.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/3DV7c9FoogMORFGUFDbTcCtzxOr.jpg",
+          "media_type": "movie",
+          "release_date": "2026-08-03",
+          "first_air_date": "2026-08-03",
+          "vote_average": 4.9,
+          "vote_count": 142,
+          "genre_ids": [
+            27,
+            35,
+            53
+          ],
+          "popularity": 44.8831,
+          "logo_path": null,
+          "adult": false
+        },
+        {
+          "id": 1368337,
+          "title": "The Odyssey",
+          "name": "The Odyssey",
+          "original_title": "The Odyssey",
+          "overview": "Odysseus, the legendary King of Ithaca, embarks on a long and perilous journey home following the Trojan War. Throughout his voyage, he is forced to confront the whims of gods, mythological monsters, and trials that stretch both his cunning and his humanity to the breaking point.",
+          "poster_path": "https://image.tmdb.org/t/p/w500/5rhTDKUhPYvpdQIijFIs5VoWsON.jpg",
+          "backdrop_path": "https://image.tmdb.org/t/p/original/bulFtfy3oBQtCnAMSi7g6DSSds3.jpg",
+          "media_type": "movie",
+          "release_date": "2026-07-15",
+          "first_air_date": "2026-07-15",
+          "vote_average": 8,
+          "vote_count": 4234,
+          "genre_ids": [
+            12,
+            28,
+            14
+          ],
+          "popularity": 423.1889,
+          "logo_path": null,
+          "adult": false
+        }
+      ]
+    },
+    {
+      "id": "airing-this-week",
+      "title": "Airing This Week",
       "items": [
         {
           "id": 335535,
@@ -2036,395 +2423,7 @@
       ]
     },
     {
-      "id": "cuddlecast-originals",
-      "title": "CuddleCast Originals",
-      "items": [
-        {
-          "id": 1003596,
-          "title": "Avengers: Doomsday",
-          "name": "Avengers: Doomsday",
-          "original_title": "Avengers: Doomsday",
-          "overview": "Beloved heroes from three distinct universes are set on a deadly collision course and face an existential threat unlike anything they've ever encountered.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/jzPwsojjFStf5lR5Nm07w2hH56G.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/g3gpP5YDbA85DsA0bt5mgGQIe5q.jpg",
-          "media_type": "movie",
-          "release_date": "2026-12-16",
-          "first_air_date": "2026-12-16",
-          "vote_average": 7.5,
-          "vote_count": 100,
-          "genre_ids": [
-            878,
-            28,
-            12
-          ],
-          "popularity": 764.9682,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1101412,
-          "title": "Fall 2: Deadpoint",
-          "name": "Fall 2: Deadpoint",
-          "original_title": "Fall 2: Deadpoint",
-          "overview": "On a perilous climb across Thailand's Mount Kwan, two climbers become trapped thousands of feet above the ground, where vertigo-inducing heights, sheer exposure, and impossible odds turn every moment into a fight for survival.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/fgSm5ylwiXbIHn8UbUXDjk9RRu4.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/nGau0KBOaRILSK5MqFcuTfv7GMl.jpg",
-          "media_type": "movie",
-          "release_date": "2026-09-01",
-          "first_air_date": "2026-09-01",
-          "vote_average": 7.3,
-          "vote_count": 627,
-          "genre_ids": [
-            53
-          ],
-          "popularity": 272.829,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1148365,
-          "title": "Matchbox the Movie",
-          "name": "Matchbox the Movie",
-          "original_title": "Matchbox the Movie",
-          "overview": "When a group of former childhood friends reconnect, their reunion takes a wild turn as they stumble upon a dangerous international plot—and must save the world.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/aHhHRz6nOpwkqJs5ASeRGAdK2dt.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/jdJsnhHfkIi3J7jwfiCFT4gXNx5.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-05",
-          "first_air_date": "2026-10-05",
-          "vote_average": 7.7,
-          "vote_count": 476,
-          "genre_ids": [
-            28,
-            35,
-            12
-          ],
-          "popularity": 234.439,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1400837,
-          "title": "Other Mommy",
-          "name": "Other Mommy",
-          "original_title": "Other Mommy",
-          "overview": "Young Bela forms a relationship with a sinister entity in her home that looks uncannily like her own mother, drawing her into a terrifying and increasingly dark world.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/fGRNCssTRrhYZxNzykGGCoMsAVq.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/ncm7djsVTHQQMX2HEbEVxMUFchG.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-07",
-          "first_air_date": "2026-10-07",
-          "vote_average": 5.8,
-          "vote_count": 152,
-          "genre_ids": [
-            27
-          ],
-          "popularity": 199.4727,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1255833,
-          "title": "Whalefall",
-          "name": "Whalefall",
-          "original_title": "Whalefall",
-          "overview": "Following the death of his father, Jay Gardiner goes diving off the central Coast of California in search of his remains, but is swallowed by a massive sperm whale. While trapped inside its belly with only one hour of oxygen left, Jay comes to realize that the hard-earned lessons his father imparted may be the key to his escape.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/vjTYUTgh9nO88i6HZ4YPRhiFL05.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/shW2jHkQLZVv4Fko2rJDqTGU0gx.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-14",
-          "first_air_date": "2026-10-14",
-          "vote_average": 6.5,
-          "vote_count": 93,
-          "genre_ids": [
-            53
-          ],
-          "popularity": 192.5295,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1228834,
-          "title": "The Fix",
-          "name": "The Fix",
-          "original_title": "The Fix",
-          "overview": "Disillusioned by the end of the war in Afghanistan, a group of disgraced, war-torn ex-CIA operatives set out to Tehran to take down a life-changing score.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/jlP8XDjZN89GrpM3je5Uf8Grqx8.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/dJTWIecL2vxsCRl5G0lRhPsfrhc.jpg",
-          "media_type": "movie",
-          "release_date": "2026-09-10",
-          "first_air_date": "2026-09-10",
-          "vote_average": 6.5,
-          "vote_count": 73,
-          "genre_ids": [
-            28,
-            53
-          ],
-          "popularity": 177.8345,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1236045,
-          "title": "Animals",
-          "name": "Animals",
-          "original_title": "Animals",
-          "overview": "When the son of an L.A. mayoral candidate is kidnapped, he and his wife have a few hours to come up with the ransom payment. With most of their money spent on his political campaign, they have to get their hands dirty and expose a side of their lives they never intended to see the light of day.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/iISM36voS1E8gX9BM0DVK0kgi3E.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/tzoarEu7TsG959upiELyYPm5kO9.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-09",
-          "first_air_date": "2026-10-09",
-          "vote_average": 7,
-          "vote_count": 558,
-          "genre_ids": [
-            53,
-            18
-          ],
-          "popularity": 166.5319,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1377237,
-          "title": "Runner",
-          "name": "Runner",
-          "original_title": "Runner",
-          "overview": "A former soldier is thrown into a brutal race against time when a critical medical delivery makes him and his unlikely partner the targets of a ruthless cartel. As the mission spirals into a deadly manhunt, every detour, delay, and bullet pushes them closer to failure. With betrayal closing in from every side, they must survive the chase and deliver their cargo to save the life of a little girl.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/vJk2TW1QZAmBiD7oj9ZF9EPTYY1.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/npXZNWjOEYrqdMDPQ11SGBrXqAG.jpg",
-          "media_type": "movie",
-          "release_date": "2026-09-07",
-          "first_air_date": "2026-09-07",
-          "vote_average": 8.3,
-          "vote_count": 698,
-          "genre_ids": [
-            28,
-            35
-          ],
-          "popularity": 147.3325,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1765072,
-          "title": "You Can See Everything",
-          "name": "You Can See Everything",
-          "original_title": "You Can See Everything",
-          "overview": "Thirty-four days before she's sent to prison, notorious Silicon Valley founder Elizabeth Holmes invites a skeptical film crew to document her every move. What begins as an intimate portrait of an enigmatic felon becomes a mind-bending three-year journey into the abyss.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/Ap8QwmKfSjYbWC4XIP8w9pdn72O.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/nhIL3O4W9h5V5JbNQm7yjoDk3So.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-16",
-          "first_air_date": "2026-10-16",
-          "vote_average": 9.1,
-          "vote_count": 30,
-          "genre_ids": [
-            99
-          ],
-          "popularity": 146.3064,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1248832,
-          "title": "Digger",
-          "name": "Digger",
-          "original_title": "Digger",
-          "overview": "The most powerful man in the world embarks on a frantic mission to prove he is humanity's savior before the disaster he's unleashed destroys everything.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/1ATXKrIPJyKNwnJ6lcG088Sa6zi.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/vC5IxhgO6cVmw9O4QgkraRzfHvh.jpg",
-          "media_type": "movie",
-          "release_date": "2026-09-28",
-          "first_air_date": "2026-09-28",
-          "vote_average": 7.5,
-          "vote_count": 450,
-          "genre_ids": [
-            35,
-            18
-          ],
-          "popularity": 144.2905,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1302904,
-          "title": "Practical Magic 2",
-          "name": "Practical Magic 2",
-          "original_title": "Practical Magic 2",
-          "overview": "The Owens sisters must confront the dark curse that threatens to unravel their family once and for all.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/ogwQOLbCfncjvBhFb5l0OmQH8KC.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/oIglj0Jy9duG4LnrRUpH8n001Pk.jpg",
-          "media_type": "movie",
-          "release_date": "2026-09-09",
-          "first_air_date": "2026-09-09",
-          "vote_average": 7.1,
-          "vote_count": 284,
-          "genre_ids": [
-            10749,
-            14,
-            35
-          ],
-          "popularity": 142.1472,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1284186,
-          "title": "Sacrifice",
-          "name": "Sacrifice",
-          "original_title": "Sacrifice",
-          "overview": "During a star-studded charity gala brimming with celebrities, billionaires, and empty speeches, a movie star in the midst of an existential crisis is taken hostage by a radical warrior and her devoted followers. As the night descends into chaos, both an inward journey and an outward adventure ensue, where the line between performance and belief, salvation and sacrifice, begins to blur.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/SGH7mlgfDyGgRCi2At62Ljg3zV.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/oAUf1pvGlafCZVlEuPt1JyONHR1.jpg",
-          "media_type": "movie",
-          "release_date": "2026-04-09",
-          "first_air_date": "2026-04-09",
-          "vote_average": 5.1,
-          "vote_count": 67,
-          "genre_ids": [
-            12,
-            35,
-            28
-          ],
-          "popularity": 140.3962,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1281331,
-          "title": "The Social Reckoning",
-          "name": "The Social Reckoning",
-          "original_title": "The Social Reckoning",
-          "overview": "Frances Haugen, a young Facebook engineer, enlists the help of Jeff Horwitz, a Wall Street Journal reporter, to go on a dangerous journey that ends up blowing the whistle on the social network's most guarded secrets.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/7jK6NuxVg1XuEV7UdNa6KO03IgZ.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/wXTaGcqX3jvdXSKCJAkl5jZyrKp.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-07",
-          "first_air_date": "2026-10-07",
-          "vote_average": 7,
-          "vote_count": 127,
-          "genre_ids": [
-            18,
-            53
-          ],
-          "popularity": 139.0025,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1232569,
-          "title": "Pinocchio: Unstrung",
-          "name": "Pinocchio: Unstrung",
-          "original_title": "Pinocchio: Unstrung",
-          "overview": "Influenced by a sinister Cricket and created by Geppetto, Pinocchio launches a violent crusade to carve himself into a real boy like his brother James, one piece at a time.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/hJNdizFlxOW89edX3Rzr6OliSFI.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/7RsPdXLDNugDIlwXPVeeprNfMx.jpg",
-          "media_type": "movie",
-          "release_date": "2026-07-22",
-          "first_air_date": "2026-07-22",
-          "vote_average": 6.5,
-          "vote_count": 141,
-          "genre_ids": [
-            27,
-            14,
-            9648
-          ],
-          "popularity": 128.4033,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 791523,
-          "title": "Wildwood",
-          "name": "Wildwood",
-          "original_title": "Wildwood",
-          "overview": "Prue and her classmate Curtis are drawn into a magical forest filled with enchanted creatures, loyal allies, and formidable adversaries as they embark on a desperate quest to rescue Prue's abducted baby brother from a murder of crows led by a mysterious woman named Alexandra.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/snFM00mpNAfUzUtkdEW0uDEvXA0.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/sl5NJ1vtyhP9Vr88bB4blULsJYp.jpg",
-          "media_type": "movie",
-          "release_date": "2026-10-19",
-          "first_air_date": "2026-10-19",
-          "vote_average": 8.3,
-          "vote_count": 20,
-          "genre_ids": [
-            16,
-            12,
-            14
-          ],
-          "popularity": 57.8859,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1567937,
-          "title": "V",
-          "name": "V",
-          "original_title": "空枪",
-          "overview": "In the early 1990s, this city of desire, once a land of opportunity, was plagued by rampant crime and a breakdown of order. Man Tsz-keung, a working-class man desperate to change his fate, meets flight attendant Lok Ka-yuen, and the two team up to rob a large sum of money. This success fuels Man Tsz-keung's madness, pushing him into a deeper power struggle with wealthy businessman Chan Fai-yin. Meanwhile, mainland police officer Qi Honggang and Hong Kong police officer Guan Suchen continue their investigation of Wan Ziqiang, leading to a joint operation between the two police forces, setting the stage for a clash between good and evil. This film is fictional.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/rNqQQ3hFknhKpy8OTyGfzk7FY20.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/mm8VecTY7YxWevgS8F2ygqLMAiv.jpg",
-          "media_type": "movie",
-          "release_date": "2026-08-19",
-          "first_air_date": "2026-08-19",
-          "vote_average": 6.8,
-          "vote_count": 8,
-          "genre_ids": [
-            18,
-            80
-          ],
-          "popularity": 4.3024,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1477712,
-          "title": "Ice Cream Man",
-          "name": "Ice Cream Man",
-          "original_title": "Ice Cream Man",
-          "overview": "An idyllic summer town descends into madness when an ice cream man serves kids sweet delights with horrifying results.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/w2dr5aFRtRB1ojcHbCEPlfTXkbf.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/3DV7c9FoogMORFGUFDbTcCtzxOr.jpg",
-          "media_type": "movie",
-          "release_date": "2026-08-03",
-          "first_air_date": "2026-08-03",
-          "vote_average": 4.9,
-          "vote_count": 142,
-          "genre_ids": [
-            27,
-            35,
-            53
-          ],
-          "popularity": 44.8831,
-          "logo_path": null,
-          "adult": false
-        },
-        {
-          "id": 1368337,
-          "title": "The Odyssey",
-          "name": "The Odyssey",
-          "original_title": "The Odyssey",
-          "overview": "Odysseus, the legendary King of Ithaca, embarks on a long and perilous journey home following the Trojan War. Throughout his voyage, he is forced to confront the whims of gods, mythological monsters, and trials that stretch both his cunning and his humanity to the breaking point.",
-          "poster_path": "https://image.tmdb.org/t/p/w500/5rhTDKUhPYvpdQIijFIs5VoWsON.jpg",
-          "backdrop_path": "https://image.tmdb.org/t/p/original/bulFtfy3oBQtCnAMSi7g6DSSds3.jpg",
-          "media_type": "movie",
-          "release_date": "2026-07-15",
-          "first_air_date": "2026-07-15",
-          "vote_average": 8,
-          "vote_count": 4234,
-          "genre_ids": [
-            12,
-            28,
-            14
-          ],
-          "popularity": 423.1889,
-          "logo_path": null,
-          "adult": false
-        }
-      ]
-    },
-    {
-      "id": "action",
+      "id": "action-adventure",
       "title": "Action & Adventure",
       "items": [
         {
@@ -2813,7 +2812,7 @@
       ]
     },
     {
-      "id": "scifi",
+      "id": "scifi-fantasy",
       "title": "Sci-Fi & Fantasy",
       "items": [
         {

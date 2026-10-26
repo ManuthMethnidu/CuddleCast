@@ -5,6 +5,10 @@ import { CarouselRow } from './components/CarouselRow';
 import { DetailModal } from './components/DetailModal';
 import { VideoPlayer } from './components/VideoPlayer';
 import { SearchGrid } from './components/SearchGrid';
+import { DiscoverView } from './components/DiscoverView';
+import { LibraryView } from './components/LibraryView';
+import { CalendarView } from './components/CalendarView';
+import { AddonsView } from './components/AddonsView';
 import { ProfileGate } from './components/ProfileGate';
 import { Footer } from './components/Footer';
 import { BillboardData, CarouselRail, Episode, MediaItem, UserProfile } from './types/schema';
@@ -21,9 +25,11 @@ const MainApp: React.FC = () => {
 
   const [billboardItems, setBillboardItems] = useState<BillboardData[]>([]);
   const [rails, setRails] = useState<CarouselRail[]>([]);
+  const [allMedia, setAllMedia] = useState<MediaItem[]>([]);
+  const [libraryItems, setLibraryItems] = useState<MediaItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'discover' | 'library' | 'calendar' | 'addons'>('all');
 
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [playingItem, setPlayingItem] = useState<{ item: MediaItem; episode?: Episode } | null>(null);
@@ -32,13 +38,27 @@ const MainApp: React.FC = () => {
   // Initial load
   useEffect(() => {
     authStorage.initSync().then(() => {
-      Promise.all([api.getBillboard(), api.getRails()]).then(([b, r]) => {
+      Promise.all([
+        api.getBillboard(),
+        api.getRails(),
+        api.getAllMedia(),
+        api.getWatchlistItems(),
+      ]).then(([b, r, all, lib]) => {
         setBillboardItems(b);
         setRails(r);
+        setAllMedia(all);
+        setLibraryItems(lib);
         setIsLoading(false);
       });
     });
   }, []);
+
+  // Sync Library on tab visit
+  useEffect(() => {
+    if (activeCategory === 'library') {
+      api.getWatchlistItems().then(setLibraryItems);
+    }
+  }, [activeCategory]);
 
   // URL Query Sync for search & title modal
   useEffect(() => {
@@ -71,33 +91,6 @@ const MainApp: React.FC = () => {
       setSearchResults([]);
     }
   }, [searchQuery]);
-
-  // Handle Category Filter
-  useEffect(() => {
-    if (activeCategory === 'watchlist') {
-      api.getWatchlistItems().then(items => {
-        setSearchResults(items);
-      });
-    } else if (activeCategory === 'discover') {
-      api.searchMedia('').then(items => {
-        // Sort by vote average
-        const sorted = [...items].sort((a, b) => b.vote_average - a.vote_average);
-        setSearchResults(sorted);
-      });
-    } else if (activeCategory === 'movie' || activeCategory === 'tv') {
-      api.getRails().then(allRails => {
-        const filtered = allRails
-          .map(rail => ({
-            ...rail,
-            items: rail.items.filter(i => i.media_type === activeCategory),
-          }))
-          .filter(r => r.items.length > 0);
-        setRails(filtered);
-      });
-    } else {
-      api.getRails().then(setRails);
-    }
-  }, [activeCategory]);
 
   const handleOpenDetail = (item: MediaItem) => {
     setSelectedItem(item);
@@ -139,11 +132,9 @@ const MainApp: React.FC = () => {
     );
   }
 
-  const isGridView = searchQuery || activeCategory === 'watchlist' || activeCategory === 'discover';
-
   return (
-    <div className="min-h-screen bg-[#0b0b0d] text-[#f4f4f5] flex flex-col font-sans">
-      {/* Sticky Header Navbar */}
+    <div className="min-h-screen bg-[#0b0b0d] text-[#f4f4f5] flex flex-col font-sans select-none">
+      {/* Sticky Top Navigation Bar */}
       <Navbar
         activeProfile={activeProfile}
         onSwitchProfile={() => setShowProfileGate(true)}
@@ -151,8 +142,8 @@ const MainApp: React.FC = () => {
         onSearchChange={setSearchQuery}
         activeCategory={activeCategory}
         onCategoryChange={cat => {
-          setActiveCategory(cat);
-          if (cat !== 'watchlist' && cat !== 'discover') setSearchQuery('');
+          setActiveCategory(cat as any);
+          if (searchQuery) setSearchQuery('');
         }}
       />
 
@@ -166,24 +157,38 @@ const MainApp: React.FC = () => {
                 style={{ borderColor: accentHex, borderTopColor: 'transparent' }}
               />
               <span className="text-xs font-mono font-bold tracking-widest uppercase text-zinc-400">
-                DX.BI · Loading Cinema Board...
+                DX.BI · Loading Cinema Experience...
               </span>
             </div>
           </div>
-        ) : isGridView ? (
+        ) : searchQuery ? (
           <SearchGrid
             query={searchQuery}
-            category={
-              activeCategory === 'watchlist'
-                ? 'My Library'
-                : activeCategory === 'discover'
-                ? 'Top Discover'
-                : activeCategory
-            }
+            category="Search"
             items={searchResults}
             onSelect={handleOpenDetail}
             onSuggestionClick={sug => setSearchQuery(sug)}
           />
+        ) : activeCategory === 'discover' ? (
+          <DiscoverView
+            items={allMedia}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+          />
+        ) : activeCategory === 'library' ? (
+          <LibraryView
+            items={libraryItems.length > 0 ? libraryItems : allMedia.slice(0, 10)}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+            onNavigateDiscover={() => setActiveCategory('discover')}
+          />
+        ) : activeCategory === 'calendar' ? (
+          <CalendarView
+            items={allMedia}
+            onSelect={handleOpenDetail}
+          />
+        ) : activeCategory === 'addons' ? (
+          <AddonsView />
         ) : (
           <>
             {/* Hero Billboard */}
@@ -195,7 +200,7 @@ const MainApp: React.FC = () => {
               />
             )}
 
-            {/* Carousel Rows Container (overlapping Billboard bottom fade) */}
+            {/* Carousel Rows Container */}
             <div className="relative z-10 pb-16 space-y-4">
               {rails.map(rail => (
                 <CarouselRow
@@ -213,7 +218,7 @@ const MainApp: React.FC = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Title Detail Modal */}
+      {/* Title Detail Page View */}
       {selectedItem && (
         <DetailModal
           item={selectedItem}

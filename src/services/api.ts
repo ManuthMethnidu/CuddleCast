@@ -93,6 +93,10 @@ class ApiService {
     const allItems = capturedData.allItems as MediaItem[];
     return allItems.filter(i => watchlistIds.includes(i.id));
   }
+
+  async getAllMedia(): Promise<MediaItem[]> {
+    return (capturedData.allItems as MediaItem[]) || [];
+  }
 }
 
 export const api = new ApiService();

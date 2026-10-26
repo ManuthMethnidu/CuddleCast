@@ -6,12 +6,12 @@ import {
   User,
   LogOut,
   Sliders,
-  Palette,
-  Check,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import { UserProfile } from '../types/schema';
-import { useAccent, ACCENT_OPTIONS, AccentColor } from '../context/AccentContext';
+import { useAccent } from '../context/AccentContext';
 import { WatchPartyModal } from './WatchPartyModal';
+import { SettingsModal } from './SettingsModal';
 
 interface NavbarProps {
   activeProfile: UserProfile;
@@ -30,12 +30,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeCategory,
   onCategoryChange,
 }) => {
-  const { accent, setAccent, accentHex } = useAccent();
+  const { accentHex } = useAccent();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isWatchPartyOpen, setIsWatchPartyOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -66,9 +66,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navCategories = [
     { id: 'all', label: 'Home' },
     { id: 'discover', label: 'Discover' },
-    { id: 'movie', label: 'Movies' },
-    { id: 'tv', label: 'Series' },
-    { id: 'watchlist', label: 'My Library' },
+    { id: 'library', label: 'Library' },
+    { id: 'calendar', label: 'Calendar' },
+    { id: 'addons', label: 'Addons' },
   ];
 
   return (
@@ -81,29 +81,26 @@ export const Navbar: React.FC<NavbarProps> = ({
         }`}
       >
         <div className="mx-auto flex items-center justify-between max-w-[1560px] px-4 md:px-8 lg:px-12">
-          {/* Left: Brand Wordmark + Desktop Nav Tabs */}
-          <div className="flex items-center gap-8 lg:gap-10">
-            {/* DX.BI / CuddleCast Wordmark */}
+          {/* Left: DX.BI Wordmark + Desktop Nav Tabs */}
+          <div className="flex items-center gap-7 lg:gap-10">
+            {/* DX.BI Wordmark in Bebas Neue */}
             <a
               href="#home"
               onClick={e => {
                 e.preventDefault();
                 onCategoryChange('all');
               }}
-              className="flex items-center gap-2 group transition-transform hover:scale-105 active:scale-95"
+              className="flex items-center transition-transform hover:scale-105 active:scale-95"
             >
               <span
-                className="font-black text-2xl sm:text-3xl tracking-tight leading-none uppercase"
+                className="font-black text-3xl sm:text-4xl tracking-tight leading-none uppercase select-none"
                 style={{
-                  fontFamily: "'Bebas Neue', 'Inter', sans-serif",
+                  fontFamily: "'Bebas Neue', sans-serif",
                   color: accentHex,
-                  textShadow: `0 2px 14px ${accentHex}60`,
+                  textShadow: `0 2px 14px ${accentHex}50`,
                 }}
               >
                 DX.BI
-              </span>
-              <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase -mb-1 hidden sm:inline-block">
-                CuddleCast
               </span>
             </a>
 
@@ -122,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                   >
                     <span>{cat.label}</span>
-                    {/* Active Underline Pill */}
+                    {/* Underline */}
                     {isSelected && (
                       <span
                         className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full transition-transform duration-300"
@@ -132,18 +129,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </button>
                 );
               })}
+
+              {/* Settings Tab */}
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="relative py-1 font-medium transition-colors hover:text-white text-[var(--dx-text-2)]"
+              >
+                Settings
+              </button>
             </nav>
           </div>
 
-          {/* Right: Search, Watch Party, Palette & Profile */}
+          {/* Right: Search, Watch Party, Settings Icon & Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Expandable Search Bar */}
+            {/* Search Bar ("Search or paste link") */}
             <div ref={searchContainerRef} className="relative flex items-center">
               <div
                 className={`relative flex items-center rounded-lg border transition-all duration-300 ${
                   isSearchActive || searchQuery
                     ? 'w-48 sm:w-64 md:w-80 bg-black/90 border-white/50 shadow-lg'
-                    : 'w-36 sm:w-52 bg-white/[0.06] border-white/10 hover:bg-white/[0.09]'
+                    : 'w-36 sm:w-56 bg-white/[0.06] border-white/10 hover:bg-white/[0.09]'
                 }`}
               >
                 <input
@@ -152,7 +157,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   value={searchQuery}
                   onChange={e => onSearchChange(e.target.value)}
                   onFocus={() => setIsSearchActive(true)}
-                  placeholder="Search titles, people, genres..."
+                  placeholder="Search or paste link"
                   className="h-9 w-full bg-transparent pl-3.5 pr-8 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
                 />
 
@@ -178,49 +183,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setIsWatchPartyOpen(true)}
               className="flex h-9 items-center gap-1.5 px-3 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-semibold text-zinc-200 hover:text-white transition-all active:scale-95"
-              title="Watch Party (Encrypted Sync)"
+              title="Watch Party"
             >
               <Users className="h-3.5 w-3.5" style={{ color: accentHex }} />
               <span className="hidden sm:inline">Party</span>
             </button>
 
-            {/* Accent Color Palette Selector Popover */}
-            <div className="relative">
-              <button
-                onClick={() => setIsPaletteOpen(!isPaletteOpen)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-zinc-200 hover:text-white transition-all active:scale-95"
-                title="Theme Accent Colours"
-              >
-                <Palette className="h-4 w-4" style={{ color: accentHex }} />
-              </button>
-
-              {isPaletteOpen && (
-                <div className="absolute right-0 mt-2 w-52 rounded-xl bg-[#18181d] border border-white/10 p-3 shadow-2xl backdrop-blur-xl animate-fadeIn z-50">
-                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-2 px-1">
-                    Accent Colour
-                  </span>
-                  <div className="grid grid-cols-4 gap-2">
-                    {ACCENT_OPTIONS.map(opt => (
-                      <button
-                        key={opt.id}
-                        onClick={() => {
-                          setAccent(opt.id as AccentColor);
-                          setIsPaletteOpen(false);
-                        }}
-                        className="group relative flex h-9 w-9 items-center justify-center rounded-lg border transition-transform hover:scale-110"
-                        style={{
-                          backgroundColor: opt.hex,
-                          borderColor: accent === opt.id ? '#ffffff' : 'transparent',
-                        }}
-                        title={opt.label}
-                      >
-                        {accent === opt.id && <Check className="h-4 w-4 text-white drop-shadow" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Quick Settings Button */}
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-zinc-200 hover:text-white transition-all active:scale-95"
+              title="dx.bi Settings & Accents"
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </button>
 
             {/* Profile Avatar & Menu */}
             <div className="relative">
@@ -241,7 +217,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="absolute right-0 mt-2 w-52 rounded-xl border border-white/10 bg-[#18181d] py-2 text-sm text-white shadow-2xl backdrop-blur-xl animate-fadeIn z-50">
                   <div className="border-b border-white/10 px-4 py-2">
                     <p className="font-bold text-white truncate">{activeProfile.name}</p>
-                    <p className="text-[11px] text-zinc-400">DX.BI Viewer Profile</p>
+                    <p className="text-[11px] text-zinc-400">dx.bi Viewer Profile</p>
                   </div>
 
                   <div className="py-1 text-xs">
@@ -258,11 +234,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <button
                       onClick={() => {
                         setIsProfileMenuOpen(false);
-                        onCategoryChange('watchlist');
+                        onCategoryChange('library');
                       }}
                       className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
                     >
-                      <Sliders className="h-3.5 w-3.5" /> My Library
+                      <Sliders className="h-3.5 w-3.5" /> Library
                     </button>
                   </div>
 
@@ -288,6 +264,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       <WatchPartyModal
         isOpen={isWatchPartyOpen}
         onClose={() => setIsWatchPartyOpen(false)}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </>
   );

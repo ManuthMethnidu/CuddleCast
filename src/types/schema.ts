@@ -13,11 +13,14 @@ export interface MediaItem {
   vote_count: number;
   genre_ids: number[];
   popularity: number;
+  genres?: string[];
   logo_path?: string | null;
   adult: boolean;
   rank?: number;
   streamUrl?: string;
   trailerUrl?: string;
+  progress_seconds?: number;
+  total_seconds?: number;
 }
 
 export interface BillboardData extends MediaItem {

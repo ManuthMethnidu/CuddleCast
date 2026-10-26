@@ -68,7 +68,7 @@ export const CarouselRow: React.FC<CarouselRowProps> = ({
             onClick={() => onSelect(rail.items[0])}
             className="text-xs font-semibold text-zinc-400 hover:text-white transition-colors ml-2"
           >
-            Explore All &gt;
+            See All &gt;
           </button>
         </h2>
 
@@ -121,22 +121,6 @@ export const CarouselRow: React.FC<CarouselRowProps> = ({
               onClick={() => onSelect(item)}
               className="relative flex-none cursor-pointer transition-transform duration-200 hover:scale-[1.03]"
             >
-              {/* Top 10 Today Numbers */}
-              {rail.isTop10 && (
-                <div className="relative flex items-end">
-                  <span
-                    className="select-none text-7xl sm:text-8xl lg:text-9xl font-black leading-none tracking-tighter"
-                    style={{
-                      WebkitTextStroke: `3px ${accentHex}`,
-                      color: '#0b0b0d',
-                      textShadow: `0 0 20px ${accentHex}40`,
-                    }}
-                  >
-                    {index + 1}
-                  </span>
-                </div>
-              )}
-
               {/* Poster Card Container */}
               <div
                 className={`relative overflow-hidden rounded-md bg-[#18181d] border border-white/5 shadow-md ${

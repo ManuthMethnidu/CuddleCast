@@ -133,28 +133,11 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
 
       {/* Billboard Hero Content Placement */}
       <div className="absolute z-[2] left-[var(--dx-gutter,3rem)] bottom-[calc(5vw+3.5rem)] max-w-[min(38rem,45vw)] flex flex-col justify-end items-start gap-3">
-        {/* Kicker */}
-        {currentItem.rank ? (
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
-            <span
-              className="font-normal text-lg tracking-wider"
-              style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
-            >
-              TOP 10
-            </span>
-            <span>IN MOVIES TODAY</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
-            <span
-              className="font-normal text-lg tracking-wider"
-              style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
-            >
-              DX.BI
-            </span>
-            <span>FEATURED SPOTLIGHT</span>
-          </div>
-        )}
+        {/* dx.bi Kicker */}
+        <div className="dx-hero-kicker">
+          <b style={{ color: accentHex }}>DX.BI</b>
+          <span>{currentItem.media_type === 'tv' ? 'Series' : 'Film'}</span>
+        </div>
 
         {/* Title Logo or Typography */}
         <div className="max-w-xl">
