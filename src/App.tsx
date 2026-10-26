@@ -19,6 +19,7 @@ import { LiveTvView } from './components/LiveTvView';
 import { LiveSportsView } from './components/LiveSportsView';
 import { HistoryView } from './components/HistoryView';
 import { RadioPlayer } from './components/RadioPlayer';
+import { RadioAtlasView } from './components/RadioAtlasView';
 import { AIAssistantBot } from './components/AIAssistantBot';
 import { DonateModal } from './components/DonateModal';
 import { DiscordModal } from './components/DiscordModal';
@@ -146,8 +147,6 @@ const MainApp: React.FC = () => {
       setIsDonateOpen(true);
     } else if (view === 'discord') {
       setIsDiscordOpen(true);
-    } else if (view === 'radio') {
-      setIsRadioOpen(true);
     } else if (view === 'home') {
       setActiveCategory('all');
       if (searchQuery) setSearchQuery('');
@@ -262,6 +261,8 @@ const MainApp: React.FC = () => {
               });
             }}
           />
+        ) : activeCategory === 'radio' ? (
+          <RadioAtlasView onBack={() => setActiveCategory('all')} />
         ) : activeCategory === 'history' ? (
           <HistoryView
             items={allMedia}
@@ -341,11 +342,13 @@ const MainApp: React.FC = () => {
       />
 
       {/* Floating AI Assistant Bot Widget (Cyan robot circle from user screenshot) */}
-      <AIAssistantBot
-        items={allMedia}
-        onSelect={handleOpenDetail}
-        onPlay={handlePlay}
-      />
+      {activeCategory !== 'radio' && !playingItem && (
+        <AIAssistantBot
+          items={allMedia}
+          onSelect={handleOpenDetail}
+          onPlay={handlePlay}
+        />
+      )}
 
       {/* Crypto Donate Modal */}
       <DonateModal
