@@ -12,6 +12,7 @@ import {
   Film,
   Calendar,
   Blocks,
+  Menu,
 } from 'lucide-react';
 import { UserProfile } from '../types/schema';
 import { useAccent } from '../context/AccentContext';
@@ -25,6 +26,7 @@ interface NavbarProps {
   onSearchChange: (query: string) => void;
   activeCategory: string;
   onCategoryChange: (category: string) => void;
+  onToggleSidebar?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -34,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSearchChange,
   activeCategory,
   onCategoryChange,
+  onToggleSidebar,
 }) => {
   const { accentHex } = useAccent();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -95,14 +98,25 @@ export const Navbar: React.FC<NavbarProps> = ({
         }`}
       >
         <div className="mx-auto flex items-center justify-between max-w-[1560px] px-3.5 sm:px-8 lg:px-12">
-          {/* Left: DX.BI Wordmark + Desktop Nav Tabs */}
-          <div className="flex items-center gap-5 sm:gap-7 lg:gap-10">
+          {/* Left: Menu Trigger + DX.BI Wordmark + Desktop Nav Tabs */}
+          <div className="flex items-center gap-3 sm:gap-6 lg:gap-8">
+            {onToggleSidebar && (
+              <button
+                onClick={onToggleSidebar}
+                className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-white transition-all active:scale-95"
+                title="Vidbox Menu (All Channels, Anime, Manga, 4K, Sports, Radio)"
+                aria-label="Open Navigation Menu"
+              >
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
+              </button>
+            )}
+
             {/* DX.BI Wordmark in Bebas Neue */}
             <a
               href="#home"
               onClick={e => {
                 e.preventDefault();
-                onCategoryChange('all');
+                onCategoryChange('home');
               }}
               className="flex items-center transition-transform hover:scale-105 active:scale-95"
             >

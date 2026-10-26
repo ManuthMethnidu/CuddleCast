@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
+import { VidboxSidebar, NavViewId } from './components/VidboxSidebar';
 import { HeroBillboard } from './components/HeroBillboard';
 import { CarouselRow } from './components/CarouselRow';
 import { DetailModal } from './components/DetailModal';
@@ -9,6 +10,18 @@ import { DiscoverView } from './components/DiscoverView';
 import { LibraryView } from './components/LibraryView';
 import { CalendarView } from './components/CalendarView';
 import { AddonsView } from './components/AddonsView';
+import { AnimeView } from './components/AnimeView';
+import { MangaView } from './components/MangaView';
+import { CollectionView } from './components/CollectionView';
+import { FourKView } from './components/FourKView';
+import { DramaView } from './components/DramaView';
+import { LiveTvView } from './components/LiveTvView';
+import { LiveSportsView } from './components/LiveSportsView';
+import { HistoryView } from './components/HistoryView';
+import { RadioPlayer } from './components/RadioPlayer';
+import { AIAssistantBot } from './components/AIAssistantBot';
+import { DonateModal } from './components/DonateModal';
+import { DiscordModal } from './components/DiscordModal';
 import { ProfileGate } from './components/ProfileGate';
 import { Footer } from './components/Footer';
 import { BillboardData, CarouselRail, Episode, MediaItem, UserProfile } from './types/schema';
@@ -29,7 +42,13 @@ const MainApp: React.FC = () => {
   const [libraryItems, setLibraryItems] = useState<MediaItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
-  const [activeCategory, setActiveCategory] = useState<'all' | 'discover' | 'library' | 'calendar' | 'addons'>('all');
+  
+  // Navigation State
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDonateOpen, setIsDonateOpen] = useState(false);
+  const [isDiscordOpen, setIsDiscordOpen] = useState(false);
+  const [isRadioOpen, setIsRadioOpen] = useState(false);
 
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [playingItem, setPlayingItem] = useState<{ item: MediaItem; episode?: Episode } | null>(null);
@@ -55,7 +74,7 @@ const MainApp: React.FC = () => {
 
   // Sync Library on tab visit
   useEffect(() => {
-    if (activeCategory === 'library') {
+    if (activeCategory === 'library' || activeCategory === 'watchlist' || activeCategory === 'continue-watch') {
       api.getWatchlistItems().then(setLibraryItems);
     }
   }, [activeCategory]);
@@ -121,6 +140,23 @@ const MainApp: React.FC = () => {
     });
   };
 
+  // Sidebar selection handler
+  const handleSelectNavView = (view: NavViewId) => {
+    if (view === 'donate') {
+      setIsDonateOpen(true);
+    } else if (view === 'discord') {
+      setIsDiscordOpen(true);
+    } else if (view === 'radio') {
+      setIsRadioOpen(true);
+    } else if (view === 'home') {
+      setActiveCategory('all');
+      if (searchQuery) setSearchQuery('');
+    } else {
+      setActiveCategory(view);
+      if (searchQuery) setSearchQuery('');
+    }
+  };
+
   if (showProfileGate || !activeProfile) {
     return (
       <ProfileGate
@@ -142,9 +178,18 @@ const MainApp: React.FC = () => {
         onSearchChange={setSearchQuery}
         activeCategory={activeCategory}
         onCategoryChange={cat => {
-          setActiveCategory(cat as any);
+          setActiveCategory(cat);
           if (searchQuery) setSearchQuery('');
         }}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
+
+      {/* Vidbox Left Sidebar Drawer with all 16 items */}
+      <VidboxSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        activeView={activeCategory as NavViewId}
+        onSelectView={handleSelectNavView}
       />
 
       {/* Main Content Area */}
@@ -169,18 +214,92 @@ const MainApp: React.FC = () => {
             onSelect={handleOpenDetail}
             onSuggestionClick={sug => setSearchQuery(sug)}
           />
-        ) : activeCategory === 'discover' ? (
-          <DiscoverView
+        ) : activeCategory === 'anime' ? (
+          <AnimeView
             items={allMedia}
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
           />
-        ) : activeCategory === 'library' ? (
+        ) : activeCategory === 'manga' ? (
+          <MangaView />
+        ) : activeCategory === 'collection' ? (
+          <CollectionView
+            items={allMedia}
+            onSelect={handleOpenDetail}
+          />
+        ) : activeCategory === '4k' ? (
+          <FourKView
+            items={allMedia}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+          />
+        ) : activeCategory === 'drama' ? (
+          <DramaView
+            items={allMedia}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+          />
+        ) : activeCategory === 'live-tv' ? (
+          <LiveTvView />
+        ) : activeCategory === 'live-sports' ? (
+          <LiveSportsView
+            onPlayStream={(url, title) => {
+              handlePlay({
+                id: Math.floor(Math.random() * 900000) + 100000,
+                title,
+                name: title,
+                overview: 'Live match broadcast',
+                poster_path: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80',
+                backdrop_path: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1280&q=80',
+                media_type: 'tv',
+                release_date: '2026-10-26',
+                vote_average: 9.0,
+                vote_count: 500,
+                genre_ids: [10770],
+                popularity: 300,
+                adult: false,
+                streamUrl: url,
+              });
+            }}
+          />
+        ) : activeCategory === 'history' ? (
+          <HistoryView
+            items={allMedia}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+            onNavigateHome={() => setActiveCategory('all')}
+          />
+        ) : activeCategory === 'continue-watch' ? (
+          <LibraryView
+            items={libraryItems.length > 0 ? libraryItems : allMedia.slice(0, 8)}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+            onNavigateDiscover={() => setActiveCategory('discover')}
+          />
+        ) : activeCategory === 'watchlist' || activeCategory === 'library' ? (
           <LibraryView
             items={libraryItems.length > 0 ? libraryItems : allMedia.slice(0, 10)}
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
             onNavigateDiscover={() => setActiveCategory('discover')}
+          />
+        ) : activeCategory === 'movies' ? (
+          <DiscoverView
+            items={allMedia.filter(i => i.media_type === 'movie')}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+          />
+        ) : activeCategory === 'series' ? (
+          <DiscoverView
+            items={allMedia.filter(i => i.media_type === 'tv')}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+          />
+        ) : activeCategory === 'discover' ? (
+          <DiscoverView
+            items={allMedia}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
           />
         ) : activeCategory === 'calendar' ? (
           <CalendarView
@@ -214,6 +333,31 @@ const MainApp: React.FC = () => {
           </>
         )}
       </main>
+
+      {/* Persistent Floating Radio Player */}
+      <RadioPlayer
+        isVisible={isRadioOpen}
+        onClose={() => setIsRadioOpen(false)}
+      />
+
+      {/* Floating AI Assistant Bot Widget (Cyan robot circle from user screenshot) */}
+      <AIAssistantBot
+        items={allMedia}
+        onSelect={handleOpenDetail}
+        onPlay={handlePlay}
+      />
+
+      {/* Crypto Donate Modal */}
+      <DonateModal
+        isOpen={isDonateOpen}
+        onClose={() => setIsDonateOpen(false)}
+      />
+
+      {/* Discord Community Modal */}
+      <DiscordModal
+        isOpen={isDiscordOpen}
+        onClose={() => setIsDiscordOpen(false)}
+      />
 
       {/* Footer */}
       <Footer />
