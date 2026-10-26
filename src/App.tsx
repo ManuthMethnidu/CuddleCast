@@ -342,7 +342,7 @@ const MainApp: React.FC = () => {
       />
 
       {/* Floating AI Assistant Bot Widget (Cyan robot circle from user screenshot) */}
-      {activeCategory !== 'radio' && !playingItem && (
+      {activeCategory !== 'radio' && activeCategory !== 'live-tv' && activeCategory !== 'live-sports' && !playingItem && (
         <AIAssistantBot
           items={allMedia}
           onSelect={handleOpenDetail}
