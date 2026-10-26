@@ -5,6 +5,7 @@ import Hls from 'hls.js';
 import { MediaItem } from '../types/schema';
 import { authStorage } from '../services/supabase';
 import { DEFAULT_STREAM } from '../services/api';
+import { useAccent } from '../context/AccentContext';
 
 interface HoverCardPortalProps {
   item: MediaItem;
@@ -21,6 +22,7 @@ export const HoverCardPortal: React.FC<HoverCardPortalProps> = ({
   onPlay,
   onMoreInfo,
 }) => {
+  const { accentHex } = useAccent();
   const [inWatchlist, setInWatchlist] = useState(() => authStorage.isInWatchlist(item.id));
   const [isLiked, setIsLiked] = useState(() => authStorage.isLiked(item.id));
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
@@ -28,7 +30,7 @@ export const HoverCardPortal: React.FC<HoverCardPortalProps> = ({
   const hlsRef = useRef<Hls | null>(null);
 
   // Position calculations with screen boundary clamping
-  const cardWidth = 330;
+  const cardWidth = 340;
   const padding = 16;
 
   let left = rect.left + rect.width / 2 - cardWidth / 2;
@@ -39,7 +41,7 @@ export const HoverCardPortal: React.FC<HoverCardPortalProps> = ({
     left = window.innerWidth - cardWidth - padding;
   }
 
-  // Auto-play mini trailer preview in hover portal
+  // Mini preview playback
   useEffect(() => {
     const video = videoRef.current;
     const streamUrl = item.trailerUrl || item.streamUrl || DEFAULT_STREAM;
@@ -88,96 +90,125 @@ export const HoverCardPortal: React.FC<HoverCardPortalProps> = ({
         left: `${left}px`,
         width: `${cardWidth}px`,
       }}
-      className="z-[900] overflow-hidden rounded-xl bg-[#0c1322] shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_25px_rgba(37,99,235,0.25)] border border-sky-500/30 transition-all duration-300 transform scale-100 animate-fadeIn"
+      className="z-[900] group/preview animate-fadeIn select-none"
     >
-      {/* Video or Image Preview Header */}
-      <div className="relative h-44 w-full overflow-hidden bg-slate-950">
-        <img
-          src={item.backdrop_path || item.poster_path}
-          alt={item.title || item.name}
-          className={`h-full w-full object-cover transition-opacity duration-500 ${
-            isVideoLoaded ? 'opacity-0' : 'opacity-100'
-          }`}
-        />
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          loop
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
-            isVideoLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0c1322] via-transparent to-transparent" />
-      </div>
+      {/* DX.BI Artwork Aura Glow */}
+      <div
+        className="dx-preview-aura"
+        style={{
+          backgroundImage: `url(${item.backdrop_path || item.poster_path})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
 
-      {/* Floating Card Controls & Metadata Body */}
-      <div className="p-4">
-        {/* Action Buttons Row */}
-        <div className="flex items-center justify-between">
+      {/* Main Inner Card Container */}
+      <div className="relative overflow-hidden rounded-lg bg-[#181818] shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-white/10">
+        {/* Media / Video Header */}
+        <div
+          onClick={() => onPlay(item)}
+          className="relative aspect-video w-full overflow-hidden bg-[#222226] cursor-pointer"
+        >
+          <img
+            src={item.backdrop_path || item.poster_path}
+            alt={item.title || item.name}
+            className={`h-full w-full object-cover transition-opacity duration-500 ${
+              isVideoLoaded ? 'opacity-0' : 'opacity-100'
+            }`}
+            style={{ animation: 'dx-preview-zoom 6s ease-out both' }}
+          />
+
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            loop
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+              isVideoLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+
+          <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-transparent pointer-events-none" />
+
+          {/* Title on Media bottom */}
+          <div className="absolute bottom-2.5 left-3 right-3 z-10">
+            <h4 className="font-extrabold text-base text-white truncate drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              {item.title || item.name}
+            </h4>
+          </div>
+        </div>
+
+        {/* Action Controls & Details Body */}
+        <div className="p-3.5 space-y-3">
+          {/* Action Buttons Row */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => onPlay(item)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-950 shadow-[0_2px_10px_rgba(255,255,255,0.3)] transition-transform hover:scale-110 hover:bg-sky-100 active:scale-95"
+              className="dx-round is-primary"
               title="Play"
             >
-              <Play className="h-4 w-4 fill-slate-950" />
+              <Play className="h-4 w-4 fill-black text-black ml-0.5" />
             </button>
 
             <button
               onClick={toggleWatchlist}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-600 bg-slate-900/80 text-white transition-all hover:border-sky-400 hover:text-sky-300 hover:scale-110 shadow"
-              title={inWatchlist ? 'Remove from My List' : 'Add to My List'}
+              className="dx-round"
+              title={inWatchlist ? 'Remove from Library' : 'Add to Library'}
             >
-              {inWatchlist ? <Check className="h-4 w-4 text-sky-400" /> : <Plus className="h-4 w-4" />}
+              {inWatchlist ? (
+                <Check className="h-4 w-4" style={{ color: accentHex }} />
+              ) : (
+                <Plus className="h-4 w-4 text-white" />
+              )}
             </button>
 
             <button
               onClick={toggleLike}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-600 bg-slate-900/80 text-white transition-all hover:border-sky-400 hover:text-sky-300 hover:scale-110 shadow"
+              className="dx-round"
               title={isLiked ? 'Liked' : 'Like'}
             >
-              <ThumbsUp className={`h-4 w-4 ${isLiked ? 'fill-sky-400 text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.7)]' : ''}`} />
+              <ThumbsUp
+                className="h-4 w-4"
+                style={{
+                  color: isLiked ? accentHex : '#fff',
+                  fill: isLiked ? accentHex : 'none',
+                }}
+              />
+            </button>
+
+            <button
+              onClick={() => onMoreInfo(item)}
+              className="dx-round ml-auto"
+              title="Details & Episodes"
+            >
+              <ChevronDown className="h-4 w-4 text-white" />
             </button>
           </div>
 
-          <button
-            onClick={() => onMoreInfo(item)}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-600 bg-slate-900/80 text-white transition-all hover:border-sky-400 hover:text-sky-300 hover:scale-110 shadow"
-            title="Episode & Info"
-          >
-            <ChevronDown className="h-5 w-5" />
-          </button>
-        </div>
+          {/* Metadata Row */}
+          <div className="flex items-center gap-2 text-xs font-semibold">
+            <span className="dx-match font-bold text-emerald-400">
+              {Math.round(item.vote_average * 10)}% Match
+            </span>
+            <span className="dx-imdb">
+              <i>IMDb</i>
+              <span>{item.vote_average.toFixed(1)}</span>
+            </span>
+            <span className="dx-pill">TV-MA</span>
+            <span className="dx-pill">HD</span>
+            <span className="text-zinc-400 font-normal">
+              {item.media_type === 'tv' ? 'Series' : '2h 14m'}
+            </span>
+          </div>
 
-        {/* Title */}
-        <h4 className="mt-3 font-bold text-white text-base truncate">
-          {item.title || item.name}
-        </h4>
-
-        {/* Match Percentage & Badges */}
-        <div className="mt-2 flex items-center gap-2 text-xs font-semibold">
-          <span className="text-sky-400 font-bold drop-shadow-[0_0_6px_rgba(56,189,248,0.5)]">
-            {Math.round(item.vote_average * 10)}% Match
-          </span>
-          <span className="rounded border border-slate-700 bg-slate-900/60 px-1.5 text-[10px] text-slate-300">
-            TV-MA
-          </span>
-          <span className="text-slate-400">
-            {item.media_type === 'tv' ? 'Series' : '2h 14m'}
-          </span>
-          <span className="rounded border border-sky-500/40 bg-sky-950/40 px-1 text-[10px] font-bold text-sky-300">
-            HD
-          </span>
-        </div>
-
-        {/* Genres Pill List */}
-        <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400">
-          <span>Action</span>
-          <span className="text-slate-600">•</span>
-          <span>Sci-Fi</span>
-          <span className="text-slate-600">•</span>
-          <span>Drama</span>
+          {/* Genre Breadcrumbs */}
+          <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+            <span>Action</span>
+            <span className="dx-sep" />
+            <span>Thriller</span>
+            <span className="dx-sep" />
+            <span>Mystery</span>
+          </div>
         </div>
       </div>
     </div>,

@@ -10,8 +10,10 @@ import { Footer } from './components/Footer';
 import { BillboardData, CarouselRail, Episode, MediaItem, UserProfile } from './types/schema';
 import { api } from './services/api';
 import { authStorage } from './services/supabase';
+import { AccentProvider, useAccent } from './context/AccentContext';
 
-export const App: React.FC = () => {
+const MainApp: React.FC = () => {
+  const { accentHex } = useAccent();
   const [activeProfile, setActiveProfile] = useState<UserProfile | null>(() => {
     return authStorage.getActiveProfile();
   });
@@ -76,15 +78,21 @@ export const App: React.FC = () => {
       api.getWatchlistItems().then(items => {
         setSearchResults(items);
       });
+    } else if (activeCategory === 'discover') {
+      api.searchMedia('').then(items => {
+        // Sort by vote average
+        const sorted = [...items].sort((a, b) => b.vote_average - a.vote_average);
+        setSearchResults(sorted);
+      });
     } else if (activeCategory === 'movie' || activeCategory === 'tv') {
-      api.searchMedia('').then(() => {
-        api.getRails().then(allRails => {
-          const filtered = allRails.map(rail => ({
+      api.getRails().then(allRails => {
+        const filtered = allRails
+          .map(rail => ({
             ...rail,
             items: rail.items.filter(i => i.media_type === activeCategory),
-          })).filter(r => r.items.length > 0);
-          setRails(filtered);
-        });
+          }))
+          .filter(r => r.items.length > 0);
+        setRails(filtered);
       });
     } else {
       api.getRails().then(setRails);
@@ -131,8 +139,10 @@ export const App: React.FC = () => {
     );
   }
 
+  const isGridView = searchQuery || activeCategory === 'watchlist' || activeCategory === 'discover';
+
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#0b0b0d] text-[#f4f4f5] flex flex-col font-sans">
       {/* Sticky Header Navbar */}
       <Navbar
         activeProfile={activeProfile}
@@ -142,25 +152,34 @@ export const App: React.FC = () => {
         activeCategory={activeCategory}
         onCategoryChange={cat => {
           setActiveCategory(cat);
-          if (cat !== 'watchlist') setSearchQuery('');
+          if (cat !== 'watchlist' && cat !== 'discover') setSearchQuery('');
         }}
       />
 
       {/* Main Content Area */}
       <main className="flex-1">
         {isLoading ? (
-          <div className="flex h-screen items-center justify-center bg-[#070b14]">
+          <div className="flex h-screen items-center justify-center bg-[#0b0b0d]">
             <div className="flex flex-col items-center gap-4">
-              <div className="h-12 w-12 rounded-full border-4 border-sky-400 border-t-transparent animate-spin shadow-[0_0_20px_rgba(56,189,248,0.5)]" />
-              <span className="text-sm font-semibold tracking-wider uppercase text-sky-300">
-                Loading CuddleCast...
+              <div
+                className="h-12 w-12 rounded-full border-4 border-t-transparent animate-spin shadow-lg"
+                style={{ borderColor: accentHex, borderTopColor: 'transparent' }}
+              />
+              <span className="text-xs font-mono font-bold tracking-widest uppercase text-zinc-400">
+                DX.BI · Loading Cinema Board...
               </span>
             </div>
           </div>
-        ) : searchQuery || activeCategory === 'watchlist' ? (
+        ) : isGridView ? (
           <SearchGrid
             query={searchQuery}
-            category={activeCategory === 'watchlist' ? 'My Watchlist' : activeCategory}
+            category={
+              activeCategory === 'watchlist'
+                ? 'My Library'
+                : activeCategory === 'discover'
+                ? 'Top Discover'
+                : activeCategory
+            }
             items={searchResults}
             onSelect={handleOpenDetail}
             onSuggestionClick={sug => setSearchQuery(sug)}
@@ -176,8 +195,8 @@ export const App: React.FC = () => {
               />
             )}
 
-            {/* Carousel Rows Container */}
-            <div className="-mt-16 sm:-mt-20 md:-mt-24 lg:-mt-28 relative z-20 pb-16 space-y-4">
+            {/* Carousel Rows Container (overlapping Billboard bottom fade) */}
+            <div className="relative z-10 pb-16 space-y-4">
               {rails.map(rail => (
                 <CarouselRow
                   key={rail.id}
@@ -214,5 +233,13 @@ export const App: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <AccentProvider>
+      <MainApp />
+    </AccentProvider>
   );
 };

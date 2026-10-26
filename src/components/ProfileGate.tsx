@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Plus, Check, Edit2 } from 'lucide-react';
 import { UserProfile } from '../types/schema';
 import { authStorage } from '../services/supabase';
-import { CuddleCastLogo } from './CuddleCastLogo';
+import { useAccent } from '../context/AccentContext';
 
 interface ProfileGateProps {
   onSelectProfile: (profile: UserProfile) => void;
 }
 
 export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => {
+  const { accentHex } = useAccent();
   const [profiles, setProfiles] = useState<UserProfile[]>(() => authStorage.getProfiles());
   const [isManaging, setIsManaging] = useState(false);
   const [editingProfile, setEditingProfile] = useState<UserProfile | null>(null);
@@ -36,7 +37,7 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
   const handleAddProfile = () => {
     const newProfile: UserProfile = {
       id: `prof-${Date.now()}`,
-      name: `Cuddle User ${profiles.length + 1}`,
+      name: `User ${profiles.length + 1}`,
       avatar_url: `https://images.unsplash.com/photo-${1534528741775 + profiles.length * 100}?auto=format&fit=crop&w=200&q=80`,
       is_kids: false,
     };
@@ -45,16 +46,21 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#070b14] px-4 text-white animate-fadeIn overflow-hidden">
-      {/* Ambient background glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(37,99,235,0.15)_0%,_transparent_70%)] pointer-events-none" />
-
-      <div className="relative z-10 text-center max-w-2xl">
-        <div className="mb-8 flex justify-center">
-          <CuddleCastLogo size="lg" showTagline />
+    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#0b0b0d] px-4 text-white animate-fadeIn select-none">
+      <div className="relative z-10 text-center max-w-xl">
+        <div className="mb-6 flex flex-col items-center">
+          <span
+            className="font-black text-4xl sm:text-5xl uppercase tracking-wider"
+            style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
+          >
+            DX.BI
+          </span>
+          <span className="text-xs uppercase font-bold tracking-widest text-zinc-500">
+            CuddleCast
+          </span>
         </div>
 
-        <h1 className="text-3xl font-medium sm:text-5xl tracking-tight text-slate-100">
+        <h1 className="text-3xl font-medium sm:text-5xl text-zinc-100">
           {isManaging ? 'Manage Profiles:' : "Who's watching?"}
         </h1>
 
@@ -65,19 +71,22 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
               onClick={() => handleSelect(profile)}
               className="group flex flex-col items-center cursor-pointer transition-transform duration-200 hover:scale-105"
             >
-              <div className="relative h-24 w-24 overflow-hidden rounded-2xl border-2 border-transparent group-hover:border-sky-400 group-hover:shadow-[0_0_25px_rgba(56,189,248,0.5)] transition-all sm:h-36 sm:w-36 bg-slate-900">
+              <div
+                className="relative h-24 w-24 sm:h-36 sm:w-36 overflow-hidden rounded-md border-2 border-transparent transition-all group-hover:border-white"
+                style={{ borderColor: isManaging ? accentHex : undefined }}
+              >
                 <img
                   src={profile.avatar_url}
                   alt={profile.name}
                   className="h-full w-full object-cover"
                 />
                 {isManaging && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-xs">
-                    <Edit2 className="h-8 w-8 text-sky-400" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                    <Edit2 className="h-8 w-8 text-white" />
                   </div>
                 )}
               </div>
-              <span className="mt-3 text-sm text-slate-400 group-hover:text-sky-300 font-medium sm:text-base transition-colors">
+              <span className="mt-3 text-sm text-zinc-400 group-hover:text-white sm:text-base font-medium">
                 {profile.name}
               </span>
             </div>
@@ -88,10 +97,10 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
               onClick={handleAddProfile}
               className="group flex flex-col items-center cursor-pointer transition-transform duration-200 hover:scale-105"
             >
-              <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/60 group-hover:border-sky-400 group-hover:bg-slate-800/80 group-hover:shadow-[0_0_20px_rgba(56,189,248,0.3)] transition-all sm:h-36 sm:w-36">
-                <Plus className="h-10 w-10 text-slate-500 group-hover:text-sky-400 transition-colors" />
+              <div className="flex h-24 w-24 sm:h-36 sm:w-36 items-center justify-center rounded-md border-2 border-dashed border-zinc-700 bg-black/40 group-hover:border-white group-hover:bg-[#18181d] transition-all">
+                <Plus className="h-10 w-10 text-zinc-500 group-hover:text-white" />
               </div>
-              <span className="mt-3 text-sm text-slate-400 group-hover:text-sky-300 font-medium sm:text-base transition-colors">
+              <span className="mt-3 text-sm text-zinc-400 group-hover:text-white sm:text-base font-medium">
                 Add Profile
               </span>
             </div>
@@ -101,7 +110,7 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
         <div className="mt-14">
           <button
             onClick={() => setIsManaging(!isManaging)}
-            className="rounded-xl border border-slate-600 bg-slate-900/40 px-8 py-2.5 text-sm font-semibold tracking-wider text-slate-300 uppercase transition-all hover:border-sky-400 hover:text-sky-300 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)]"
+            className="rounded border border-zinc-600 px-7 py-2.5 text-xs font-bold tracking-widest text-zinc-400 uppercase transition-all hover:border-white hover:text-white"
           >
             {isManaging ? 'Done' : 'Manage Profiles'}
           </button>
@@ -109,23 +118,23 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
       </div>
 
       {editingProfile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
           <form
             onSubmit={handleSaveEdit}
-            className="w-full max-w-md rounded-2xl bg-[#0c1322] p-6 border border-sky-500/30 shadow-2xl"
+            className="w-full max-w-md rounded-2xl bg-[#18181d] p-6 border border-white/10 shadow-2xl"
           >
             <h3 className="text-xl font-bold text-white">Edit Profile</h3>
             <div className="mt-5 flex items-center gap-4">
               <img
                 src={editingProfile.avatar_url}
                 alt="avatar"
-                className="h-16 w-16 rounded-xl object-cover border border-sky-400/40"
+                className="h-16 w-16 rounded-md object-cover border border-white/20"
               />
               <input
                 type="text"
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
-                className="w-full rounded-xl bg-slate-900 px-4 py-2.5 text-white border border-slate-700 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-500/30 transition-all"
+                className="w-full rounded-lg bg-[#0b0b0d] px-4 py-2.5 text-white border border-white/10 focus:outline-none focus:border-white/40"
                 placeholder="Profile Name"
               />
             </div>
@@ -133,13 +142,13 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
               <button
                 type="button"
                 onClick={() => setEditingProfile(null)}
-                className="rounded-xl px-4 py-2 text-sm text-slate-400 hover:text-white"
+                className="rounded-lg px-4 py-2 text-sm text-zinc-400 hover:text-white"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-400 px-6 py-2 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-95"
+                className="flex items-center gap-2 rounded-lg bg-white px-5 py-2 text-sm font-bold text-black hover:bg-zinc-200"
               >
                 <Check className="h-4 w-4" /> Save
               </button>

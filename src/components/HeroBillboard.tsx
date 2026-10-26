@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Info, Volume2, VolumeX, RotateCcw, Star, Calendar, Sparkles } from 'lucide-react';
+import { Play, Info, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import Hls from 'hls.js';
 import { BillboardData } from '../types/schema';
+import { useAccent } from '../context/AccentContext';
 
 interface HeroBillboardProps {
   items: BillboardData[];
@@ -14,6 +15,7 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
   onPlay,
   onMoreInfo,
 }) => {
+  const { accentHex } = useAccent();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -25,16 +27,16 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
 
   const currentItem = items[currentIndex] || items[0];
 
-  // Auto-advance billboard slide if user hasn't started playing video
+  // Auto-advance billboard slide if video is not actively running
   useEffect(() => {
     if (isVideoPlaying) return;
     const interval = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % items.length);
-    }, 8500);
+    }, 9000);
     return () => clearInterval(interval);
   }, [items.length, isVideoPlaying]);
 
-  // Traced trailer autoplay preview delay (1200ms)
+  // Trailer autoplay preview delay (1200ms)
   useEffect(() => {
     setIsVideoPlaying(false);
     setVideoEnded(false);
@@ -99,15 +101,17 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
   if (!currentItem) return null;
 
   return (
-    <div className="relative h-[82vh] min-h-[580px] w-full overflow-hidden bg-[#070b14] lg:h-[90vh]">
-      {/* Background Poster Image */}
-      <img
-        src={currentItem.backdrop_path || currentItem.poster_path}
-        alt={currentItem.title || currentItem.name}
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+    <div className="relative w-full h-[min(84vh,58vw)] min-h-[30rem] -mb-[5vw] overflow-hidden bg-[#0b0b0d] isolate select-none">
+      {/* Background Poster Image with Ken Burns Zoom */}
+      <div
+        key={`backdrop-${currentIndex}`}
+        className={`absolute inset-0 bg-cover bg-[center_20%] transition-opacity duration-1000 ${
           isVideoPlaying && !videoEnded ? 'opacity-0' : 'opacity-100'
         }`}
-        style={{ objectPosition: 'center 20%' }}
+        style={{
+          backgroundImage: `url(${currentItem.backdrop_path || currentItem.poster_path})`,
+          animation: 'dx-kenburns 16s linear both',
+        }}
       />
 
       {/* Video Trailer Preview Container */}
@@ -124,113 +128,138 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({
         }`}
       />
 
-      {/* Multi-stop Midnight Cinema Protection Gradients */}
-      <div className="absolute inset-0 billboard-vignette pointer-events-none" />
-      <div className="absolute inset-0 billboard-left-protection pointer-events-none" />
+      {/* Multi-directional DXBI Cinema Shade Vignette */}
+      <div className="absolute inset-0 dx-hero-shade pointer-events-none z-[1]" />
 
       {/* Billboard Hero Content Placement */}
-      <div className="absolute bottom-[16%] left-0 right-0 z-20 text-white sm:bottom-[18%] lg:bottom-[22%]">
-        <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
-          {/* Logo or Stylized Typography Title */}
-          <div className="mb-4 max-w-2xl">
-            {currentItem.logo_path ? (
-              <img
-                src={currentItem.logo_path}
-                alt={currentItem.title || currentItem.name}
-                className="max-h-[100px] sm:max-h-[125px] w-auto object-contain drop-shadow-[0_4px_25px_rgba(0,0,0,0.9)]"
-              />
-            ) : (
-              <h1 className="text-3xl font-black tracking-tight sm:text-5xl lg:text-6xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)] bg-gradient-to-r from-white via-slate-100 to-sky-200 bg-clip-text text-transparent">
-                {currentItem.title || currentItem.name}
-              </h1>
-            )}
-          </div>
-
-          {/* Badges & Meta Info */}
-          <div className="mb-3.5 flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs sm:text-sm font-medium text-slate-300">
-            {currentItem.rank && (
-              <span className="flex items-center gap-1 rounded-md bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 px-2.5 py-0.5 text-xs font-black text-white uppercase tracking-wider shadow-[0_0_15px_rgba(37,99,235,0.6)]">
-                <Sparkles className="h-3 w-3" /> TOP 10 TODAY
-              </span>
-            )}
-            <span className="rounded-md border border-slate-700 bg-slate-900/60 px-2 py-0.5 text-xs uppercase text-slate-200">
-              {currentItem.media_type}
-            </span>
-            <span className="flex items-center gap-1 text-amber-400 font-semibold bg-slate-900/60 px-2 py-0.5 rounded-md border border-slate-700">
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span>{currentItem.vote_average.toFixed(1)}</span>
-            </span>
-            <span className="flex items-center gap-1 text-slate-300 bg-slate-900/60 px-2 py-0.5 rounded-md border border-slate-700">
-              <Calendar className="h-3.5 w-3.5 text-sky-400" />
-              <span>{currentItem.release_date.split('-')[0]}</span>
-            </span>
-            <span className="rounded-md border border-sky-500/40 bg-sky-950/40 px-2 py-0.5 text-[11px] font-bold text-sky-300">
-              4K ULTRA HD
-            </span>
-          </div>
-
-          {/* Synopsis */}
-          <p className="line-clamp-3 max-w-xl text-sm text-slate-200 sm:text-base lg:text-lg leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-            {currentItem.overview}
-          </p>
-
-          {/* Action Buttons */}
-          <div className="mt-6 flex items-center gap-4">
-            <button
-              onClick={() => onPlay(currentItem)}
-              className="flex items-center justify-center gap-2.5 rounded-xl bg-white px-8 py-3 text-base font-bold text-slate-950 shadow-[0_4px_25px_rgba(255,255,255,0.3)] transition-all hover:scale-105 hover:bg-sky-100 hover:shadow-[0_4px_30px_rgba(56,189,248,0.5)] active:scale-95"
+      <div className="absolute z-[2] left-[var(--dx-gutter,3rem)] bottom-[calc(5vw+3.5rem)] max-w-[min(38rem,45vw)] flex flex-col justify-end items-start gap-3">
+        {/* Kicker */}
+        {currentItem.rank ? (
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+            <span
+              className="font-normal text-lg tracking-wider"
+              style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
             >
-              <Play className="h-5 w-5 fill-slate-950" /> Play
-            </button>
-
-            <button
-              onClick={() => onMoreInfo(currentItem)}
-              className="flex items-center justify-center gap-2.5 rounded-xl border border-sky-400/30 bg-slate-900/70 px-7 py-3 text-base font-semibold text-white backdrop-blur-md transition-all hover:scale-105 hover:bg-blue-900/40 hover:border-sky-400 active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
-            >
-              <Info className="h-5 w-5 text-sky-400" /> More Info
-            </button>
+              TOP 10
+            </span>
+            <span>IN MOVIES TODAY</span>
           </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+            <span
+              className="font-normal text-lg tracking-wider"
+              style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
+            >
+              DX.BI
+            </span>
+            <span>FEATURED SPOTLIGHT</span>
+          </div>
+        )}
+
+        {/* Title Logo or Typography */}
+        <div className="max-w-xl">
+          {currentItem.logo_path ? (
+            <img
+              src={currentItem.logo_path}
+              alt={currentItem.title || currentItem.name}
+              className="max-h-24 sm:max-h-28 w-auto object-contain drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)]"
+            />
+          ) : (
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] leading-[1.05]">
+              {currentItem.title || currentItem.name}
+            </h1>
+          )}
+        </div>
+
+        {/* Metadata Row */}
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs sm:text-sm font-medium text-zinc-300">
+          <span className="dx-match font-bold text-emerald-400">
+            {Math.round(currentItem.vote_average * 10)}% Match
+          </span>
+          <span className="dx-imdb">
+            <i>IMDb</i>
+            <span>{currentItem.vote_average.toFixed(1)}</span>
+          </span>
+          <span>{currentItem.release_date.split('-')[0]}</span>
+          <span className="dx-pill">4K UHD</span>
+          <span className="dx-pill">HDR</span>
+          <span className="dx-pill">5.1 AUDIO</span>
+          <span className="dx-pill">TV-MA</span>
+        </div>
+
+        {/* Synopsis */}
+        <p className="line-clamp-3 text-sm sm:text-base text-zinc-200 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] max-w-lg">
+          {currentItem.overview}
+        </p>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            onClick={() => onPlay(currentItem)}
+            className="flex items-center justify-center gap-2.5 h-12 px-7 rounded-lg bg-white text-black font-bold text-base transition-all hover:bg-white/85 active:scale-95 shadow-lg"
+          >
+            <Play className="h-5 w-5 fill-black" />
+            <span>Play</span>
+          </button>
+
+          <button
+            onClick={() => onMoreInfo(currentItem)}
+            className="flex items-center justify-center gap-2.5 h-12 px-6 rounded-lg bg-[rgba(109,109,118,0.55)] hover:bg-[rgba(109,109,118,0.4)] text-white font-semibold text-base backdrop-blur-md transition-all active:scale-95"
+          >
+            <Info className="h-5 w-5 stroke-white" />
+            <span>More Info</span>
+          </button>
         </div>
       </div>
 
-      {/* Right Edge Controls: Audio Toggle, Replay & Age Rating Badge */}
-      <div className="absolute bottom-[20%] right-4 z-30 flex items-center gap-3 sm:right-8">
+      {/* Right Edge: Sound Toggle & Maturity Badge */}
+      <div className="absolute z-[3] right-[var(--dx-gutter,3rem)] bottom-[calc(5vw+3.5rem)] flex items-center gap-3">
         {videoEnded ? (
           <button
             onClick={handleReplay}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-400/40 bg-slate-900/70 text-white backdrop-blur-md transition-all hover:scale-110 hover:border-sky-400 hover:text-sky-300 shadow-lg"
-            title="Replay Preview"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/50 text-white backdrop-blur-md transition-transform hover:scale-110"
+            title="Replay"
           >
             <RotateCcw className="h-5 w-5" />
           </button>
         ) : isVideoPlaying ? (
           <button
             onClick={toggleMute}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-400/40 bg-slate-900/70 text-white backdrop-blur-md transition-all hover:scale-110 hover:border-sky-400 hover:text-sky-300 shadow-lg"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/50 text-white backdrop-blur-md transition-transform hover:scale-110"
             title={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
           </button>
         ) : null}
 
-        <div className="flex items-center border-l-2 border-sky-400 bg-slate-950/70 px-3.5 py-1 text-xs font-bold text-sky-200 backdrop-blur-md rounded-r-md">
+        <div className="flex items-center border-l-2 border-white bg-black/40 px-3.5 py-1 text-xs font-bold text-zinc-200 backdrop-blur-md">
           TV-MA
         </div>
       </div>
 
-      {/* Carousel Dots Pagination Indicator */}
-      <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center gap-2">
+      {/* Progress Dots Bar Indicator */}
+      <div className="absolute z-[3] right-[var(--dx-gutter,3rem)] bottom-[calc(5vw+1.5rem)] flex items-center gap-1.5">
         {items.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              idx === currentIndex
-                ? 'w-8 bg-gradient-to-r from-sky-400 to-blue-500 shadow-[0_0_12px_rgba(56,189,248,0.8)]'
-                : 'w-2.5 bg-slate-600/60 hover:bg-slate-400'
+            className={`relative h-[3px] rounded-full overflow-hidden transition-all duration-300 ${
+              idx === currentIndex ? 'w-12 bg-white/30' : 'w-6 bg-white/20 hover:bg-white/40'
             }`}
-            aria-label={`Slide ${idx + 1}`}
-          />
+          >
+            {idx === currentIndex && !isVideoPlaying && (
+              <span
+                className="absolute inset-0 bg-white"
+                style={{
+                  transformOrigin: 'left',
+                  animation: 'dx-progress 9s linear both',
+                }}
+              />
+            )}
+            {idx === currentIndex && isVideoPlaying && (
+              <span className="absolute inset-0 bg-white" />
+            )}
+          </button>
         ))}
       </div>
     </div>

@@ -10,14 +10,17 @@ import {
   Maximize,
   Minimize,
   ArrowLeft,
-  Settings,
   FastForward,
-  Sparkles,
+  Sliders,
+  Users,
 } from 'lucide-react';
 import Hls from 'hls.js';
 import { Episode, MediaItem } from '../types/schema';
 import { authStorage } from '../services/supabase';
 import { DEFAULT_STREAM } from '../services/api';
+import { useAccent } from '../context/AccentContext';
+import { PictureSoundPanel } from './PictureSoundPanel';
+import { WatchPartyModal } from './WatchPartyModal';
 
 interface VideoPlayerProps {
   item: MediaItem;
@@ -32,6 +35,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onClose,
   onNextEpisode,
 }) => {
+  const { accentHex } = useAccent();
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -46,6 +50,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [showControls, setShowControls] = useState(true);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [showPanel, setShowPanel] = useState(false);
+  const [showParty, setShowParty] = useState(false);
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverPosition, setHoverPosition] = useState<number>(0);
 
@@ -58,7 +64,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const video = videoRef.current;
     if (!video) return;
 
-    // Check saved progress
     const saved = authStorage.getProgress(item.id);
     if (saved && saved.progress_seconds > 0) {
       video.currentTime = saved.progress_seconds;
@@ -92,7 +97,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, [streamUrl, item.id]);
 
-  // Periodic progress saving (every 5 seconds)
+  // Periodic progress saving
   useEffect(() => {
     const interval = setInterval(() => {
       if (videoRef.current && isPlaying) {
@@ -106,12 +111,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => clearInterval(interval);
   }, [item.id, isPlaying]);
 
-  // Auto-hide controls on user inactivity (traced 3000ms delay)
+  // Auto-hide controls
   const resetInactivityTimer = () => {
     setShowControls(true);
     if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
     inactivityTimerRef.current = window.setTimeout(() => {
-      if (isPlaying) {
+      if (isPlaying && !showPanel && !showParty) {
         setShowControls(false);
         setShowSpeedMenu(false);
       }
@@ -122,7 +127,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     resetInactivityTimer();
   };
 
-  // Keyboard shortcuts (Space, Arrow keys, F, M, Esc)
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const video = videoRef.current;
@@ -160,6 +165,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           e.preventDefault();
           toggleFullscreen();
           break;
+        case 'KeyD':
+          e.preventDefault();
+          setShowPanel(prev => !prev);
+          break;
         case 'Escape':
           if (!document.fullscreenElement) {
             onClose();
@@ -171,7 +180,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, volume, onClose]);
+  }, [isPlaying, volume, onClose, showPanel]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -198,7 +207,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setCurrentTime(video.currentTime);
     setDuration(video.duration || 0);
 
-    // Buffer tracking
     if (video.buffered.length > 0) {
       setBufferedTime(video.buffered.end(video.buffered.length - 1));
     }
@@ -287,50 +295,73 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
       {/* Top Header Bar */}
       <div
-        className={`absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-6 bg-gradient-to-b from-[#070b14]/95 via-[#070b14]/60 to-transparent transition-opacity duration-300 ${
+        className={`absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-6 bg-gradient-to-b from-black/80 via-black/40 to-transparent transition-opacity duration-300 ${
           showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
         <button
           onClick={onClose}
-          className="flex items-center gap-3 text-white transition-transform hover:scale-105 hover:text-sky-300"
+          className="flex items-center gap-3.5 text-white transition-transform hover:scale-105"
         >
-          <ArrowLeft className="h-7 w-7" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/50 backdrop-blur-md border border-white/10 hover:bg-white/20">
+            <ArrowLeft className="h-6 w-6" />
+          </div>
           <div className="text-left">
-            <h3 className="text-lg font-bold">{item.title || item.name}</h3>
+            <h3 className="text-base sm:text-lg font-bold">{item.title || item.name}</h3>
             {episode && (
-              <p className="text-xs text-sky-300/80">
+              <p className="text-xs text-zinc-400">
                 S{episode.season_number}:E{episode.episode_number} - {episode.title}
               </p>
             )}
           </div>
         </button>
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-sky-300/80 bg-slate-900/60 px-3 py-1.5 rounded-full border border-sky-500/20">
-          <Sparkles className="h-3.5 w-3.5 text-sky-400" />
-          <span>CuddleCast Cinema Mode</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowParty(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 border border-white/10 text-xs font-semibold text-white hover:bg-white/10 backdrop-blur-md"
+          >
+            <Users className="h-3.5 w-3.5" style={{ color: accentHex }} />
+            <span>Party</span>
+          </button>
         </div>
       </div>
 
-      {/* Next Episode Floating Popup Card (Final 20s) */}
+      {/* Floating Next Episode Card */}
       {isNearEnd && onNextEpisode && (
-        <div className="absolute bottom-28 right-8 z-30 flex items-center gap-4 rounded-xl bg-[#0c1322]/95 p-4 border border-sky-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_20px_rgba(37,99,235,0.3)] backdrop-blur-md animate-fadeIn">
+        <div className="absolute bottom-28 right-8 z-30 flex items-center gap-4 rounded-xl bg-[#131317]/95 p-4 border border-white/15 shadow-2xl backdrop-blur-md animate-fadeIn">
           <div>
-            <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">Up Next</span>
-            <p className="text-sm font-semibold text-white">Next Episode starting soon</p>
+            <span className="text-[11px] font-bold uppercase tracking-wider block" style={{ color: accentHex }}>
+              Up Next
+            </span>
+            <p className="text-sm font-semibold text-white">Next episode begins in {Math.ceil(remainingSeconds)}s</p>
           </div>
           <button
             onClick={onNextEpisode}
-            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-400 px-4 py-2 text-sm font-bold text-white shadow-lg hover:brightness-110 active:scale-95"
+            className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-zinc-200 transition-all active:scale-95 shadow"
           >
-            <FastForward className="h-4 w-4" /> Play Now
+            <FastForward className="h-4 w-4 fill-black" />
+            <span>Play Now</span>
           </button>
         </div>
       )}
 
+      {/* Picture & Sound Panel */}
+      <PictureSoundPanel
+        isOpen={showPanel}
+        onClose={() => setShowPanel(false)}
+        currentTime={currentTime}
+      />
+
+      {/* Watch Party Modal */}
+      <WatchPartyModal
+        isOpen={showParty}
+        onClose={() => setShowParty(false)}
+      />
+
       {/* Bottom Controls Bar */}
       <div
-        className={`absolute bottom-0 left-0 right-0 z-20 flex flex-col p-6 bg-gradient-to-t from-[#070b14]/95 via-[#070b14]/70 to-transparent transition-opacity duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 z-20 flex flex-col p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 ${
           showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -338,20 +369,23 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <div
           onMouseMove={handleScrubberHover}
           onMouseLeave={() => setHoverTime(null)}
-          className="relative mb-4 flex items-center cursor-pointer group"
+          className="relative mb-3 flex items-center cursor-pointer group"
         >
           {/* Buffered Background Bar */}
-          <div className="absolute h-1 w-full rounded bg-slate-800/80 group-hover:h-2 transition-all">
+          <div className="absolute h-1 w-full rounded-full bg-white/20 group-hover:h-2 transition-all">
             <div
-              className="h-full rounded bg-slate-600"
+              className="h-full rounded-full bg-white/40"
               style={{ width: `${(bufferedTime / (duration || 1)) * 100}%` }}
             />
           </div>
 
-          {/* Played Progress Bar (Electric Blue to Cyan Gradient) */}
+          {/* Played Bar */}
           <div
-            className="absolute h-1 rounded bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 shadow-[0_0_12px_rgba(56,189,248,0.8)] group-hover:h-2 transition-all pointer-events-none"
-            style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
+            className="absolute h-1 rounded-full group-hover:h-2 transition-all pointer-events-none shadow"
+            style={{
+              width: `${(currentTime / (duration || 1)) * 100}%`,
+              background: accentHex,
+            }}
           />
 
           {/* Scrubber Input */}
@@ -364,53 +398,53 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             className="relative z-10 h-2 w-full opacity-0 cursor-pointer"
           />
 
-          {/* Hover Timecode Tooltip */}
+          {/* Hover Time Tooltip */}
           {hoverTime !== null && (
             <div
               style={{ left: `${hoverPosition}%` }}
-              className="absolute -top-8 -translate-x-1/2 rounded-md bg-slate-900/95 px-2.5 py-0.5 text-xs font-mono text-sky-200 shadow-lg pointer-events-none border border-sky-500/40"
+              className="absolute -top-8 -translate-x-1/2 rounded bg-black/90 px-2 py-0.5 text-xs font-mono text-white shadow pointer-events-none border border-white/20"
             >
               {formatTime(hoverTime)}
             </div>
           )}
         </div>
 
-        {/* Controls Row */}
+        {/* Buttons Row */}
         <div className="flex items-center justify-between text-white">
           <div className="flex items-center gap-4">
             <button
               onClick={togglePlay}
-              className="transition-transform hover:scale-110 active:scale-95 text-white hover:text-sky-300"
+              className="transition-transform hover:scale-110 active:scale-95"
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? <Pause className="h-7 w-7" /> : <Play className="h-7 w-7 fill-white" />}
+              {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 fill-white" />}
             </button>
 
             <button
               onClick={() => seekBy(-10)}
-              className="transition-transform hover:scale-110 active:scale-95 hover:text-sky-300"
+              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white"
               title="Seek back 10s"
             >
-              <RotateCcw className="h-6 w-6" />
+              <RotateCcw className="h-5 w-5" />
             </button>
 
             <button
               onClick={() => seekBy(10)}
-              className="transition-transform hover:scale-110 active:scale-95 hover:text-sky-300"
+              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white"
               title="Seek forward 10s"
             >
-              <RotateCw className="h-6 w-6" />
+              <RotateCw className="h-5 w-5" />
             </button>
 
             {/* Volume Control */}
             <div className="flex items-center gap-2 group">
-              <button onClick={toggleMute} className="transition-transform hover:scale-110 hover:text-sky-300">
+              <button onClick={toggleMute} className="transition-transform hover:scale-110 text-zinc-300 hover:text-white">
                 {isMuted || volume === 0 ? (
-                  <VolumeX className="h-6 w-6" />
+                  <VolumeX className="h-5 w-5" />
                 ) : volume < 0.5 ? (
-                  <Volume1 className="h-6 w-6" />
+                  <Volume1 className="h-5 w-5" />
                 ) : (
-                  <Volume2 className="h-6 w-6" />
+                  <Volume2 className="h-5 w-5" />
                 )}
               </button>
               <input
@@ -420,35 +454,46 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 step={0.05}
                 value={isMuted ? 0 : volume}
                 onChange={e => handleVolumeChange(Number(e.target.value))}
-                className="h-1 w-0 group-hover:w-20 transition-all duration-300 accent-sky-400 bg-slate-700 rounded cursor-pointer"
+                className="h-1 w-0 group-hover:w-20 transition-all duration-300 bg-white/30 rounded cursor-pointer"
+                style={{ accentColor: accentHex }}
               />
             </div>
 
-            <span className="text-xs text-slate-300 font-mono ml-2">
+            <span className="text-xs text-zinc-300 font-mono ml-2">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
+            {/* Picture & Sound Panel Button */}
+            <button
+              onClick={() => setShowPanel(!showPanel)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-zinc-300 hover:text-white transition-colors"
+              title="Picture & Sound (Black bars, dialogue boost, subtitle sync) [D]"
+              style={{ color: showPanel ? accentHex : undefined }}
+            >
+              <Sliders className="h-5 w-5" />
+            </button>
+
             {/* Speed Selector */}
             <div className="relative">
               <button
                 onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                className="flex items-center gap-1 text-sm font-semibold hover:text-sky-300 transition-colors"
+                className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded hover:bg-white/10 text-zinc-300 hover:text-white"
               >
-                <Settings className="h-5 w-5" />
                 <span>{playbackSpeed}x</span>
               </button>
 
               {showSpeedMenu && (
-                <div className="absolute bottom-9 right-0 w-28 rounded-lg bg-[#0c1322] border border-sky-500/30 py-1 shadow-2xl backdrop-blur-md">
+                <div className="absolute bottom-9 right-0 w-28 rounded-lg bg-[#18181d] border border-white/10 py-1 shadow-2xl">
                   {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map(s => (
                     <button
                       key={s}
                       onClick={() => changeSpeed(s)}
-                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-blue-900/40 ${
-                        playbackSpeed === s ? 'text-sky-400 font-bold' : 'text-slate-300'
+                      className={`w-full px-3 py-1.5 text-left text-xs hover:bg-white/10 ${
+                        playbackSpeed === s ? 'font-bold' : 'text-zinc-300'
                       }`}
+                      style={{ color: playbackSpeed === s ? accentHex : undefined }}
                     >
                       {s}x
                     </button>
@@ -460,10 +505,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             {/* Fullscreen Toggle */}
             <button
               onClick={toggleFullscreen}
-              className="transition-transform hover:scale-110 active:scale-95 hover:text-sky-300"
+              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white"
               aria-label="Toggle Fullscreen"
             >
-              {isFullscreen ? <Minimize className="h-6 w-6" /> : <Maximize className="h-6 w-6" />}
+              {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
             </button>
           </div>
         </div>
