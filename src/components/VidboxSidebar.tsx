@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import { useUser, useClerk } from '@clerk/react';
+import { UserProfile } from '../types/schema';
 
 export type NavViewId =
   | 'home'
@@ -47,6 +48,8 @@ interface VidboxSidebarProps {
   onClose: () => void;
   activeView: NavViewId;
   onSelectView: (view: NavViewId) => void;
+  activeProfile?: UserProfile | null;
+  onSwitchProfile?: () => void;
 }
 
 export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
@@ -54,6 +57,8 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
   onClose,
   activeView,
   onSelectView,
+  activeProfile,
+  onSwitchProfile,
 }) => {
   const { accentHex } = useAccent();
   const { isSignedIn, user } = useUser();
@@ -117,6 +122,42 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
             <X className="h-4 w-4" />
           </button>
         </div>
+
+        {/* Active Viewer Profile Card */}
+        {activeProfile && (
+          <div className="px-3 pt-3 pb-1 border-b border-white/10 bg-white/[0.02]">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={activeProfile.avatar_url}
+                    alt={activeProfile.name}
+                    className="h-8 w-8 rounded-lg object-cover border border-white/20"
+                  />
+                  {activeProfile.is_kids && (
+                    <span className="absolute -top-1 -right-1 px-1 py-0.2 rounded bg-amber-500 text-black font-black text-[7px] uppercase">
+                      Kids
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-white truncate">{activeProfile.name}</p>
+                  <p className="text-[10px] text-zinc-400">Viewer Profile</p>
+                </div>
+              </div>
+
+              {onSwitchProfile && (
+                <button
+                  onClick={onSwitchProfile}
+                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-[10px] font-semibold text-zinc-300 hover:text-white transition-colors border border-white/10"
+                  title="Switch Viewer Profile"
+                >
+                  Switch
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Navigation Items List (M3 Navigation Drawer items) */}
         <div className="flex-1 overflow-y-auto no-scrollbar py-3 px-3 space-y-1">

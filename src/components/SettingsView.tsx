@@ -13,21 +13,32 @@ import {
   LogIn,
   RotateCcw,
   Sparkles,
+  Users,
+  Edit2,
+  Plus,
+  Baby,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import { useSettingsStore, PerformanceMode } from '../store/settingsStore';
 import { STREAM_PROVIDERS } from '../services/providers';
 import { authStorage } from '../services/storage';
 import { useUser, useClerk } from '@clerk/react';
+import { UserProfile } from '../types/schema';
 
 interface SettingsViewProps {
   onBack?: () => void;
   onNavigateLogin?: () => void;
+  activeProfile?: UserProfile | null;
+  onSwitchProfile?: (initialManaging?: boolean) => void;
+  onSelectProfile?: (profile: UserProfile) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   onBack,
   onNavigateLogin,
+  activeProfile,
+  onSwitchProfile,
+  onSelectProfile,
 }) => {
   const { accentHex } = useAccent();
   const settings = useSettingsStore();
@@ -511,6 +522,123 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </section>
 
         {/* ========================================================
+            4B. VIEWER PROFILES & FAMILY ACCOUNTS
+           ======================================================== */}
+        <section className="space-y-4 border-t border-white/10 pt-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 border border-white/10"
+                style={{ color: accentHex }}
+              >
+                <Users className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white tracking-tight">
+                  Viewer Profiles
+                </h2>
+                <p className="text-xs text-zinc-400">
+                  Switch active viewing profile, manage kids protection, and customize avatars
+                </p>
+              </div>
+            </div>
+
+            {onSwitchProfile && (
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <button
+                  onClick={() => onSwitchProfile(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white transition-all border border-white/10"
+                >
+                  <Edit2 className="h-3.5 w-3.5" />
+                  <span>Manage Profiles</span>
+                </button>
+                <button
+                  onClick={() => onSwitchProfile(false)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white shadow-sm transition-all hover:brightness-110 active:scale-95"
+                  style={{ background: accentHex }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Profile</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+            {authStorage.getProfiles().map((p) => {
+              const isActive = activeProfile
+                ? p.id === activeProfile.id
+                : p.id === authStorage.getActiveProfile().id;
+              return (
+                <div
+                  key={p.id}
+                  className={`p-4 rounded-2xl border transition-all ${
+                    isActive
+                      ? 'bg-white/10 border-white/30 shadow-lg ring-1 ring-white/20'
+                      : 'bg-[#18181d] border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative flex-shrink-0">
+                      <img
+                        src={p.avatar_url}
+                        alt={p.name}
+                        className="h-12 w-12 rounded-xl object-cover border border-white/20 shadow-md"
+                      />
+                      {p.is_kids && (
+                        <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded bg-amber-500 text-black font-black text-[8px] uppercase shadow">
+                          Kids
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-bold text-white truncate">{p.name}</p>
+                        {p.is_kids && (
+                          <Baby className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-[11px] text-zinc-400 mt-0.5">
+                        {p.is_kids ? 'Restricted Kids Library' : 'Full Catalog Access'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between">
+                    {isActive ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400">
+                        <Check className="h-3.5 w-3.5" /> Currently Active
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          authStorage.setActiveProfile(p);
+                          if (onSelectProfile) onSelectProfile(p);
+                          showNotification(`Switched to profile: ${p.name}`);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors"
+                      >
+                        Switch to Profile
+                      </button>
+                    )}
+
+                    {onSwitchProfile && (
+                      <button
+                        onClick={() => onSwitchProfile(true)}
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+                        title="Edit Profile"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ========================================================
             5. ACCOUNT & CLERK AUTHENTICATION
            ======================================================== */}
         <section className="space-y-4 border-t border-white/10 pt-8">
@@ -563,7 +691,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     }}
                     className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-white/10 hover:bg-white/15 transition-all border border-white/10"
                   >
-                    Manage Profile
+                    Manage Clerk Account
                   </button>
 
                   <button

@@ -3,10 +3,7 @@ import {
   Search,
   Users,
   X,
-  User,
-  LogOut,
   LogIn,
-  Sliders,
   Settings as SettingsIcon,
   Home,
   Compass,
@@ -16,8 +13,12 @@ import {
   Tv,
   Tv2,
   Radio,
+  ChevronDown,
+  Plus,
+  Edit2,
 } from 'lucide-react';
 import { UserProfile } from '../types/schema';
+import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
 import { Show, UserButton } from '@clerk/react';
 import { WatchPartyModal } from './WatchPartyModal';
@@ -25,7 +26,8 @@ import { EchoraLogo } from './EchoraLogo';
 
 interface NavbarProps {
   activeProfile: UserProfile;
-  onSwitchProfile: () => void;
+  onSwitchProfile: (initialManaging?: boolean) => void;
+  onSelectProfile?: (profile: UserProfile) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   activeCategory: string;
@@ -36,6 +38,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   activeProfile,
   onSwitchProfile,
+  onSelectProfile,
   searchQuery,
   onSearchChange,
   activeCategory,
@@ -50,6 +53,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    if (isProfileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileMenuOpen]);
 
   useEffect(() => {
     let ticking = false;
@@ -246,105 +262,173 @@ export const Navbar: React.FC<NavbarProps> = ({
               />
             </button>
 
-            {/* Clerk User Button or Local Profile Menu */}
-            {Boolean(
-              import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
-              import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-            ) ? (
-              <div className="flex items-center">
-                <Show when="signed-in">
+            {/* Clerk Authentication Controls */}
+            <div className="flex items-center">
+              <Show when="signed-in">
+                <div className="mr-1 sm:mr-2 flex items-center">
                   <UserButton />
-                </Show>
-                <Show when="signed-out">
-                  <button
-                    onClick={() => onCategoryChange('login')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition-all hover:brightness-110 active:scale-95 shadow-md"
-                    style={{ background: accentHex }}
-                  >
-                    <LogIn className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Sign In</span>
-                  </button>
-                </Show>
-              </div>
-            ) : (
-              <div className="relative">
+                </div>
+              </Show>
+              <Show when="signed-out">
                 <button
-                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="group flex items-center gap-1 rounded-lg p-0.5 transition-transform hover:scale-105 active:scale-95"
-                  title={activeProfile.name}
+                  onClick={() => onCategoryChange('login')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition-all hover:brightness-110 active:scale-95 shadow-md mr-1 sm:mr-2"
+                  style={{ background: accentHex }}
                 >
+                  <LogIn className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Sign In</span>
+                </button>
+              </Show>
+            </div>
+
+            {/* Viewer Profile Switcher Button & Dropdown Menu */}
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="group flex items-center gap-1.5 rounded-xl p-1 bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:border-white/20 active:scale-95"
+                title={`Watching as ${activeProfile.name}`}
+              >
+                <div className="relative">
                   <img
                     src={activeProfile.avatar_url}
                     alt={activeProfile.name}
-                    className="h-7 w-7 sm:h-8 sm:w-8 rounded-md object-cover border border-white/20 shadow"
+                    className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg object-cover border border-white/20 shadow"
                   />
-                </button>
-
-                {/* Profile Dropdown */}
-                {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-52 rounded-xl border border-white/10 bg-[#3A4750] py-2 text-sm text-white shadow-2xl backdrop-blur-xl animate-fadeIn z-50">
-                    <div className="border-b border-white/10 px-4 py-2">
-                      <p className="font-bold text-white truncate">{activeProfile.name}</p>
-                      <p className="text-[11px] text-zinc-300">Echora Viewer Profile</p>
+                  {activeProfile.is_kids && (
+                    <div className="absolute -top-1 -right-1 px-1 py-0.2 rounded bg-amber-500 text-black font-black text-[7px] uppercase shadow">
+                      Kids
                     </div>
+                  )}
+                </div>
+                <span className="hidden md:inline text-xs font-semibold text-zinc-200 max-w-[85px] truncate">
+                  {activeProfile.name}
+                </span>
+                <ChevronDown
+                  className="h-3.5 w-3.5 text-zinc-400 group-hover:text-white transition-transform duration-200"
+                  style={{ transform: isProfileMenuOpen ? 'rotate(180deg)' : 'none' }}
+                />
+              </button>
 
-                    <div className="py-1 text-xs">
-                      <button
-                        onClick={() => {
-                          setIsProfileMenuOpen(false);
-                          onCategoryChange('login');
-                        }}
-                        className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
-                      >
-                        <LogIn className="h-3.5 w-3.5 text-[#2185D5]" /> Sign In / Account
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setIsProfileMenuOpen(false);
-                          onSwitchProfile();
-                        }}
-                        className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
-                      >
-                        <User className="h-3.5 w-3.5" /> Manage Profiles
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setIsProfileMenuOpen(false);
-                          onCategoryChange('library');
-                        }}
-                        className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
-                      >
-                        <Sliders className="h-3.5 w-3.5" /> Library
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setIsProfileMenuOpen(false);
-                          setIsWatchPartyOpen(true);
-                        }}
-                        className="flex sm:hidden w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
-                      >
-                        <Users className="h-3.5 w-3.5" /> Watch Party
-                      </button>
-                    </div>
-
-                    <div className="border-t border-white/10 pt-1 text-xs">
-                      <button
-                        onClick={() => {
-                          setIsProfileMenuOpen(false);
-                          onSwitchProfile();
-                        }}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-rose-400 hover:bg-rose-950/30"
-                      >
-                        <LogOut className="h-3.5 w-3.5" /> Sign Out
-                      </button>
+              {/* Profile Dropdown */}
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-white/10 bg-[#303841] p-3 text-sm text-white shadow-2xl backdrop-blur-2xl animate-fadeIn z-50 space-y-3">
+                  {/* Current Active Profile Card */}
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    <img
+                      src={activeProfile.avatar_url}
+                      alt={activeProfile.name}
+                      className="h-10 w-10 rounded-xl object-cover border border-white/20"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-bold text-white text-xs truncate">{activeProfile.name}</p>
+                        {activeProfile.is_kids && (
+                          <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black text-[8px] uppercase">
+                            Kids
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-zinc-400 flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        Active Viewer
+                      </p>
                     </div>
                   </div>
-                )}
-              </div>
-            )}
+
+                  {/* Switch to Other Profiles */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-2">
+                      Switch Profile
+                    </p>
+                    <div className="space-y-1">
+                      {authStorage.getProfiles().map((p) => {
+                        const isActive = p.id === activeProfile.id;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => {
+                              authStorage.setActiveProfile(p);
+                              if (onSelectProfile) onSelectProfile(p);
+                              setIsProfileMenuOpen(false);
+                            }}
+                            className={`flex items-center justify-between w-full p-2 rounded-xl text-xs transition-colors ${
+                              isActive
+                                ? 'bg-white/15 text-white font-bold'
+                                : 'hover:bg-white/5 text-zinc-300 hover:text-white'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <img
+                                src={p.avatar_url}
+                                alt={p.name}
+                                className="h-6 w-6 rounded-md object-cover border border-white/20 flex-shrink-0"
+                              />
+                              <span className="truncate">{p.name}</span>
+                              {p.is_kids && (
+                                <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[8px] font-black uppercase">
+                                  Kids
+                                </span>
+                              )}
+                            </div>
+                            {isActive && (
+                              <span className="text-[10px] text-emerald-400 font-semibold">Active</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Profile Management Controls */}
+                  <div className="pt-2 border-t border-white/10 grid grid-cols-2 gap-1.5 text-xs">
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onSwitchProfile(true);
+                      }}
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 hover:text-white transition-colors border border-white/5 text-[11px] font-medium"
+                    >
+                      <Edit2 className="h-3 w-3" />
+                      <span>Manage</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onSwitchProfile(false);
+                      }}
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 hover:text-white transition-colors border border-white/5 text-[11px] font-medium"
+                    >
+                      <Plus className="h-3 w-3" />
+                      <span>Add New</span>
+                    </button>
+                  </div>
+
+                  {/* Quick System Links */}
+                  <div className="pt-2 border-t border-white/10 space-y-0.5 text-xs">
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onCategoryChange('settings');
+                      }}
+                      className="flex w-full items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-white/5 text-zinc-300 hover:text-white"
+                    >
+                      <SettingsIcon className="h-3.5 w-3.5" />
+                      <span>System Settings</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onCategoryChange('login');
+                      }}
+                      className="flex w-full items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-white/5 text-[#2185D5] hover:text-[#2185D5]/90 font-medium"
+                    >
+                      <LogIn className="h-3.5 w-3.5" />
+                      <span>Clerk Account Portal</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>

@@ -30,6 +30,7 @@ import { LoginView } from './components/LoginView';
 import { Episode, MediaItem, UserProfile } from './types/schema';
 import { api } from './services/api';
 import { authStorage } from './services/storage';
+import { useUser } from '@clerk/react';
 import { AccentProvider, useAccent } from './context/AccentContext';
 import { usePlayerStore } from './store/playerStore';
 import { useSettingsStore } from './store/settingsStore';
@@ -58,6 +59,16 @@ const MainApp: React.FC = () => {
     return authStorage.getActiveProfile();
   });
   const [showProfileGate, setShowProfileGate] = useState(false);
+  const [isManagingProfiles, setIsManagingProfiles] = useState(false);
+
+  // Sync Clerk profile when logged in if current profile is default
+  const { user, isLoaded } = useUser();
+  useEffect(() => {
+    if (isLoaded && user && activeProfile && activeProfile.id === 'prof-1' && activeProfile.name === 'Echora Member') {
+      const updated = authStorage.syncClerkProfile(user.fullName || user.username, user.imageUrl);
+      setActiveProfile(updated);
+    }
+  }, [isLoaded, user, activeProfile]);
 
   // Zustand Player State
   const {
@@ -250,7 +261,17 @@ const MainApp: React.FC = () => {
         onSelectProfile={(profile) => {
           setActiveProfile(profile);
           setShowProfileGate(false);
+          setIsManagingProfiles(false);
         }}
+        onClose={
+          activeProfile
+            ? () => {
+                setShowProfileGate(false);
+                setIsManagingProfiles(false);
+              }
+            : undefined
+        }
+        initialManaging={isManagingProfiles}
       />
     );
   }
@@ -260,7 +281,13 @@ const MainApp: React.FC = () => {
       {/* Sticky Top Navigation Bar */}
       <Navbar
         activeProfile={activeProfile}
-        onSwitchProfile={() => setShowProfileGate(true)}
+        onSwitchProfile={(managing) => {
+          setIsManagingProfiles(Boolean(managing));
+          setShowProfileGate(true);
+        }}
+        onSelectProfile={(profile) => {
+          setActiveProfile(profile);
+        }}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         activeCategory={activeCategory}
@@ -277,6 +304,12 @@ const MainApp: React.FC = () => {
         onClose={() => setIsSidebarOpen(false)}
         activeView={activeCategory as NavViewId}
         onSelectView={handleSelectNavView}
+        activeProfile={activeProfile}
+        onSwitchProfile={() => {
+          setIsSidebarOpen(false);
+          setIsManagingProfiles(false);
+          setShowProfileGate(true);
+        }}
       />
 
       {/* Main Content Area */}
@@ -400,6 +433,14 @@ const MainApp: React.FC = () => {
           <SettingsView
             onBack={() => navigate('/')}
             onNavigateLogin={() => navigate('/login')}
+            activeProfile={activeProfile}
+            onSwitchProfile={(managing) => {
+              setIsManagingProfiles(Boolean(managing));
+              setShowProfileGate(true);
+            }}
+            onSelectProfile={(profile) => {
+              setActiveProfile(profile);
+            }}
           />
         ) : (
           <>

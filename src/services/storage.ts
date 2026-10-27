@@ -16,23 +16,66 @@ const LEGACY_STORAGE_KEYS = {
   LIKES: 'cuddlecast_likes',
 };
 
+export const AVATAR_PRESETS = [
+  {
+    id: 'av-1',
+    label: 'Cyan Hero',
+    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'av-2',
+    label: 'Cinema Director',
+    url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'av-3',
+    label: 'Kids & Family',
+    url: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'av-4',
+    label: 'Cyberpunk Neon',
+    url: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'av-5',
+    label: 'Anime & Fantasy',
+    url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'av-6',
+    label: 'Space Explorer',
+    url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'av-7',
+    label: 'Classic Noir',
+    url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    id: 'av-8',
+    label: 'Popcorn Cinephile',
+    url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
+  },
+];
+
 const DEFAULT_PROFILES: UserProfile[] = [
   {
     id: 'prof-1',
     name: 'Echora Member',
-    avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+    avatar_url: AVATAR_PRESETS[0].url,
     is_kids: false,
   },
   {
     id: 'prof-2',
     name: 'Guest Watcher',
-    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+    avatar_url: AVATAR_PRESETS[1].url,
     is_kids: false,
   },
   {
     id: 'prof-3',
     name: 'Kids Club',
-    avatar_url: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=200&q=80',
+    avatar_url: AVATAR_PRESETS[2].url,
     is_kids: true,
   },
 ];
@@ -80,6 +123,31 @@ class StorageService {
 
   setActiveProfile(profile: UserProfile): void {
     localStorage.setItem(STORAGE_KEYS.ACTIVE_PROFILE, JSON.stringify(profile));
+  }
+
+  deleteProfile(id: string): UserProfile[] {
+    const profiles = this.getProfiles().filter((p) => p.id !== id);
+    if (profiles.length === 0) return this.getProfiles(); // Protect against deleting the only profile
+    localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(profiles));
+
+    // If active profile was deleted, switch to the first remaining profile
+    const active = this.getActiveProfile();
+    if (active.id === id) {
+      this.setActiveProfile(profiles[0]);
+    }
+    return profiles;
+  }
+
+  syncClerkProfile(name?: string | null, avatarUrl?: string | null): UserProfile {
+    const active = this.getActiveProfile();
+    const updated: UserProfile = {
+      ...active,
+      name: name?.trim() || active.name,
+      avatar_url: avatarUrl || active.avatar_url,
+    };
+    this.saveProfile(updated);
+    this.setActiveProfile(updated);
+    return updated;
   }
 
   getWatchlist(): number[] {
