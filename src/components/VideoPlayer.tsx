@@ -15,6 +15,8 @@ import {
   Users,
   PictureInPicture,
   RefreshCw,
+  Server,
+  ChevronDown,
 } from 'lucide-react';
 import Hls from 'hls.js';
 import { Episode, MediaItem } from '../types/schema';
@@ -24,6 +26,7 @@ import { useAccent } from '../context/AccentContext';
 import { usePlayerStore } from '../store/playerStore';
 import { PictureSoundPanel } from './PictureSoundPanel';
 import { WatchPartyModal } from './WatchPartyModal';
+import { STREAM_PROVIDERS, VIDFAST_SERVERS } from '../services/providers';
 
 interface VideoPlayerProps {
   item: MediaItem;
@@ -73,6 +76,77 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const streamUrl = episode?.streamUrl || item.streamUrl || DEFAULT_STREAM;
 
+  // Multi-Provider Streaming Engine State
+  const isDirectHlsStream = !!(
+    (episode?.streamUrl && episode.streamUrl.includes('.m3u8')) ||
+    (item.streamUrl && item.streamUrl.includes('.m3u8')) ||
+    item.overview === 'Live match broadcast' ||
+    item.overview === 'Live IPTV stream'
+  );
+  const [selectedProviderId, setSelectedProviderId] = useState<string>(
+    isDirectHlsStream ? 'hls' : 'vidfast'
+  );
+  const [selectedServerId, setSelectedServerId] = useState<string>('Alpha');
+  const [showServerMenu, setShowServerMenu] = useState(false);
+
+  const activeProvider = STREAM_PROVIDERS.find((p) => p.id === selectedProviderId);
+
+  const embedUrl = React.useMemo(() => {
+    if (!activeProvider || selectedProviderId === 'hls') return '';
+    const isTv = item.media_type === 'tv' || !!episode;
+    if (isTv) {
+      return activeProvider.getTvUrl(
+        item.id,
+        episode?.season_number || 1,
+        episode?.episode_number || 1,
+        {
+          server: selectedServerId,
+          themeHex: accentHex,
+          startAt: currentTime > 0 ? currentTime : undefined,
+        }
+      );
+    } else {
+      return activeProvider.getMovieUrl(item.id, {
+        server: selectedServerId,
+        themeHex: accentHex,
+        startAt: currentTime > 0 ? currentTime : undefined,
+      });
+    }
+  }, [activeProvider, selectedProviderId, selectedServerId, item, episode, accentHex, currentTime]);
+
+  // Listen to PostMessage events from embedded players (VidFast, etc.)
+  useEffect(() => {
+    const handlePostMessage = (event: MessageEvent) => {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (!data) return;
+
+        if (data.type === 'timeupdate' || data.event === 'timeupdate') {
+          const payload = data.data || data;
+          if (typeof payload.currentTime === 'number') {
+            setCurrentTime(payload.currentTime);
+            setStoreTime(payload.currentTime);
+          }
+          if (typeof payload.duration === 'number' && payload.duration > 0) {
+            setDuration(payload.duration);
+            setStoreDuration(payload.duration);
+          }
+        } else if (data.type === 'play' || data.event === 'play') {
+          setIsPlaying(true);
+          setStorePlaying(true);
+        } else if (data.type === 'pause' || data.event === 'pause') {
+          setIsPlaying(false);
+          setStorePlaying(false);
+        }
+      } catch {
+        // ignore non-json messages
+      }
+    };
+
+    window.addEventListener('message', handlePostMessage);
+    return () => window.removeEventListener('message', handlePostMessage);
+  }, [setStoreTime, setStoreDuration, setStorePlaying]);
+
   // Manual retry handler
   const handleRetryPlayback = () => {
     setHasPlaybackError(false);
@@ -110,6 +184,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // Initialize HLS with lifecycle event listeners
   useEffect(() => {
+    if (selectedProviderId !== 'hls') {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      return;
+    }
+
     const video = videoRef.current;
     if (!video) return;
 
@@ -185,7 +267,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         hlsRef.current = null;
       }
     };
-  }, [streamUrl, item.id, retryCount]);
+  }, [streamUrl, item.id, retryCount, selectedProviderId]);
 
   // Periodic progress saving
   useEffect(() => {
@@ -386,7 +468,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const isNearEnd = duration > 60 && remainingSeconds > 0 && remainingSeconds <= 20;
 
   const handleContainerClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('button, input, select, [role="button"]')) return;
+    if ((e.target as HTMLElement).closest('button, input, select, [role="button"], iframe')) return;
     setShowControls(prev => !prev);
   };
 
@@ -399,12 +481,22 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         showControls ? 'cursor-default' : 'cursor-none'
       }`}
     >
-      <video
-        ref={videoRef}
-        onTimeUpdate={handleTimeUpdate}
-        className="h-full w-full object-contain"
-        playsInline
-      />
+      {selectedProviderId === 'hls' ? (
+        <video
+          ref={videoRef}
+          onTimeUpdate={handleTimeUpdate}
+          className="h-full w-full object-contain"
+          playsInline
+        />
+      ) : (
+        <iframe
+          src={embedUrl}
+          className="h-full w-full border-0"
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+          allowFullScreen
+          title={item.title || item.name}
+        />
+      )}
 
       {/* Top Header Bar */}
       <div
@@ -420,7 +512,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div className="text-left">
-            <h3 className="text-sm sm:text-lg font-bold truncate max-w-[200px] sm:max-w-md">{item.title || item.name}</h3>
+            <h3 className="text-sm sm:lg font-bold truncate max-w-[200px] sm:max-w-md">{item.title || item.name}</h3>
             {episode && (
               <p className="text-[11px] sm:text-xs text-zinc-400">
                 S{episode.season_number}:E{episode.episode_number} - {episode.title}
@@ -430,6 +522,127 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </button>
 
         <div className="flex items-center gap-2">
+          {/* Provider / Server Selector Button */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowServerMenu(!showServerMenu);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 border border-white/15 text-xs font-semibold text-white hover:bg-white/15 backdrop-blur-md transition-all shadow-lg"
+              style={{ borderColor: showServerMenu ? accentHex : undefined }}
+            >
+              <Server className="h-3.5 w-3.5" style={{ color: accentHex }} />
+              <span className="max-w-[130px] truncate">
+                {selectedProviderId === 'vidfast'
+                  ? `VidFast (${selectedServerId})`
+                  : activeProvider?.name || 'Direct Stream'}
+              </span>
+              <ChevronDown className="h-3 w-3 text-zinc-400" />
+            </button>
+
+            {/* Server Dropdown Menu */}
+            {showServerMenu && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-10 right-0 w-64 max-h-80 overflow-y-auto rounded-xl bg-[#141419]/95 border border-white/15 py-2 shadow-2xl backdrop-blur-xl z-50 divide-y divide-white/5 scrollbar-thin scrollbar-thumb-white/20"
+              >
+                {/* VidFast Cloud Scrapers Group */}
+                <div className="p-2">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400 px-2 py-1 flex items-center justify-between">
+                    <span>VidFast Cloud Scrapers</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">
+                      18 Servers
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 mt-1">
+                    {VIDFAST_SERVERS.map((srv) => (
+                      <button
+                        key={srv.id}
+                        onClick={() => {
+                          setSelectedProviderId('vidfast');
+                          setSelectedServerId(srv.id);
+                          setShowServerMenu(false);
+                        }}
+                        className={`px-2 py-1.5 rounded-lg text-left text-xs transition-colors flex flex-col ${
+                          selectedProviderId === 'vidfast' && selectedServerId === srv.id
+                            ? 'bg-white/15 font-bold text-white'
+                            : 'text-zinc-300 hover:bg-white/5 hover:text-white'
+                        }`}
+                      >
+                        <span
+                          style={{
+                            color:
+                              selectedProviderId === 'vidfast' && selectedServerId === srv.id
+                                ? accentHex
+                                : undefined,
+                          }}
+                        >
+                          {srv.name}
+                        </span>
+                        <span className="text-[9px] text-zinc-400 truncate">{srv.tag}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Alternate Cloud Providers */}
+                <div className="p-2">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400 px-2 py-1">
+                    Backup Cloud Providers
+                  </div>
+                  {STREAM_PROVIDERS.filter((p) => p.id !== 'vidfast').map((prov) => (
+                    <button
+                      key={prov.id}
+                      onClick={() => {
+                        setSelectedProviderId(prov.id);
+                        setShowServerMenu(false);
+                      }}
+                      className={`w-full px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors flex items-center justify-between mt-1 ${
+                        selectedProviderId === prov.id
+                          ? 'bg-white/15 font-bold text-white'
+                          : 'text-zinc-300 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        style={{
+                          color: selectedProviderId === prov.id ? accentHex : undefined,
+                        }}
+                      >
+                        {prov.name}
+                      </span>
+                      <span className="text-[10px] text-zinc-400">
+                        {prov.description.slice(0, 22)}...
+                      </span>
+                    </button>
+                  ))}
+
+                  {/* Direct HLS Stream */}
+                  <button
+                    onClick={() => {
+                      setSelectedProviderId('hls');
+                      setShowServerMenu(false);
+                    }}
+                    className={`w-full px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors flex items-center justify-between mt-1 ${
+                      selectedProviderId === 'hls'
+                        ? 'bg-white/15 font-bold text-white'
+                        : 'text-zinc-300 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <span
+                      style={{
+                        color: selectedProviderId === 'hls' ? accentHex : undefined,
+                      }}
+                    >
+                      Direct Stream (HLS)
+                    </span>
+                    <span className="text-[10px] text-zinc-400">Native Video / IPTV</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => setShowParty(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 border border-white/10 text-xs font-semibold text-white hover:bg-white/10 backdrop-blur-md"
