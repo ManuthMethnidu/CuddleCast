@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { VidboxSidebar, NavViewId } from './components/VidboxSidebar';
 import { HeroBillboard } from './components/HeroBillboard';
 import { CarouselRow } from './components/CarouselRow';
+import { MangaRail } from './components/MangaRail';
 import { DetailModal } from './components/DetailModal';
 import { VideoPlayer } from './components/VideoPlayer';
 import { SearchGrid } from './components/SearchGrid';
@@ -357,14 +358,17 @@ const MainApp: React.FC = () => {
 
             {/* Carousel Rows Container */}
             <div className="relative z-10 pb-16 space-y-4">
-              {rails.map((rail) => (
-                <CarouselRow
-                  key={rail.id}
-                  rail={rail}
-                  onSelect={handleOpenDetail}
-                  onPlay={handlePlay}
-                />
+              {rails.map((rail, index) => (
+                <React.Fragment key={rail.id}>
+                  <CarouselRow
+                    rail={rail}
+                    onSelect={handleOpenDetail}
+                    onPlay={handlePlay}
+                  />
+                  {index === 0 && <MangaRail />}
+                </React.Fragment>
               ))}
+              {rails.length === 0 && <MangaRail />}
             </div>
           </>
         )}

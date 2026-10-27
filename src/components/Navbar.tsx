@@ -10,9 +10,11 @@ import {
   Home,
   Compass,
   Film,
-  Calendar,
-  Blocks,
   Menu,
+  BookOpen,
+  Tv,
+  Tv2,
+  Radio,
 } from 'lucide-react';
 import { UserProfile } from '../types/schema';
 import { useAccent } from '../context/AccentContext';
@@ -81,10 +83,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navCategories = [
     { id: 'all', label: 'Home', icon: Home },
+    { id: 'manga', label: 'Manga', icon: BookOpen, badge: 'HOT' },
+    { id: 'anime', label: 'Anime', icon: Tv },
+    { id: 'live-tv', label: 'Live TV', icon: Tv2 },
+    { id: 'radio', label: 'Radio', icon: Radio },
     { id: 'discover', label: 'Discover', icon: Compass },
     { id: 'library', label: 'Library', icon: Film },
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'addons', label: 'Addons', icon: Blocks },
   ];
 
   return (
@@ -140,13 +144,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     key={cat.id}
                     onClick={() => onCategoryChange(cat.id)}
-                    className="relative py-1 font-medium transition-colors hover:text-white"
+                    className="relative py-1 font-medium transition-colors hover:text-white flex items-center gap-1.5"
                     style={{
                       color: isSelected ? '#ffffff' : 'var(--dx-text-2)',
                       fontWeight: isSelected ? 700 : 500,
                     }}
                   >
                     <span>{cat.label}</span>
+                    {cat.badge && (
+                      <span
+                        className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full leading-none"
+                        style={{
+                          backgroundColor: `${accentHex}30`,
+                          color: accentHex,
+                          border: `1px solid ${accentHex}60`,
+                        }}
+                      >
+                        {cat.badge}
+                      </span>
+                    )}
                     {/* Underline */}
                     {isSelected && (
                       <span
@@ -300,7 +316,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Bottom Navigation Bar (iOS / Android Stremio Style) */}
       <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-[#0c0c10]/95 backdrop-blur-2xl border-t border-white/10 px-1 py-1 pb-[calc(0.4rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.8)] select-none">
-        {navCategories.map(cat => {
+        {[
+          { id: 'all', label: 'Home', icon: Home },
+          { id: 'manga', label: 'Manga', icon: BookOpen },
+          { id: 'anime', label: 'Anime', icon: Tv },
+          { id: 'live-tv', label: 'Live TV', icon: Tv2 },
+          { id: 'radio', label: 'Radio', icon: Radio },
+        ].map(cat => {
           const Icon = cat.icon;
           const isSelected = activeCategory === cat.id;
           return (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   BookOpen,
   ChevronLeft,
@@ -13,10 +14,10 @@ import {
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import {
-  mangaDex,
-  MangaDexTitle,
-  MangaDexChapter,
-  VERIFIED_MANGADEX_PRESETS,
+  mangaService,
+  MangaTitle,
+  MangaChapter,
+  TOP_FEATURED_MANGA,
 } from '../services/mangadex';
 
 export const MangaView: React.FC = () => {
@@ -24,106 +25,108 @@ export const MangaView: React.FC = () => {
 
   // Search & Catalog State
   const [searchQuery, setSearchQuery] = useState('');
-  const [mangaList, setMangaList] = useState<MangaDexTitle[]>(VERIFIED_MANGADEX_PRESETS);
+  const [mangaList, setMangaList] = useState<MangaTitle[]>(TOP_FEATURED_MANGA);
+  const [activeFilter, setActiveFilter] = useState('all');
   const [isLoadingList, setIsLoadingList] = useState(false);
 
-  // Selected Manga & Chapter Feed State
-  const [selectedManga, setSelectedManga] = useState<MangaDexTitle | null>(null);
-  const [chapters, setChapters] = useState<MangaDexChapter[]>([]);
+  // Selected Manga & Chapters State
+  const [selectedManga, setSelectedManga] = useState<MangaTitle | null>(null);
+  const [chapters, setChapters] = useState<MangaChapter[]>([]);
   const [isLoadingChapters, setIsLoadingChapters] = useState(false);
-  const [selectedLang, setSelectedLang] = useState('en');
 
   // Reader State
-  const [activeChapter, setActiveChapter] = useState<MangaDexChapter | null>(null);
+  const [activeChapter, setActiveChapter] = useState<MangaChapter | null>(null);
   const [chapterPages, setChapterPages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isReadingMode, setIsReadingMode] = useState(false);
   const [isLoadingPages, setIsLoadingPages] = useState(false);
   const [readerMode, setReaderMode] = useState<'single' | 'webtoon'>('single');
-  const [useDataSaver, setUseDataSaver] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const readerContainerRef = useRef<HTMLDivElement>(null);
 
-  // Initial load of popular MangaDex titles
+  // Initial load
   useEffect(() => {
     setIsLoadingList(true);
-    mangaDex
-      .getPopularManga(18)
+    mangaService
+      .getPopularManga()
       .then((data) => {
         if (data.length > 0) setMangaList(data);
       })
       .finally(() => setIsLoadingList(false));
   }, []);
 
-  // Search debounce
+  // Live search debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchQuery.trim()) {
         setIsLoadingList(true);
-        mangaDex
-          .searchManga(searchQuery, 20)
+        mangaService
+          .searchManga(searchQuery)
           .then(setMangaList)
           .finally(() => setIsLoadingList(false));
       } else {
-        mangaDex.getPopularManga(18).then(setMangaList);
+        mangaService.getPopularManga().then(setMangaList);
       }
-    }, 450);
+    }, 400);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  const [searchParams] = useSearchParams();
+  const targetId = searchParams.get('id');
+
   // Open Chapter Selector for a manga
-  const handleOpenManga = async (manga: MangaDexTitle) => {
+  const handleOpenManga = async (manga: MangaTitle) => {
     setSelectedManga(manga);
     setIsLoadingChapters(true);
     setChapters([]);
     try {
-      const chList = await mangaDex.getChapters(manga.id, selectedLang);
+      const chList = await mangaService.getChapters(manga.id, manga.source);
       setChapters(chList);
     } finally {
       setIsLoadingChapters(false);
     }
   };
 
-  // Re-fetch chapters on language switch
-  const handleLanguageChange = async (lang: string) => {
-    setSelectedLang(lang);
-    if (!selectedManga) return;
-    setIsLoadingChapters(true);
-    try {
-      const chList = await mangaDex.getChapters(selectedManga.id, lang);
-      setChapters(chList);
-    } finally {
-      setIsLoadingChapters(false);
+  // Auto-open manga if id is present in URL search params
+  useEffect(() => {
+    if (targetId && !selectedManga) {
+      const found =
+        TOP_FEATURED_MANGA.find((m) => m.id === targetId) ||
+        mangaList.find((m) => m.id === targetId);
+      if (found) {
+        handleOpenManga(found);
+      }
     }
-  };
+  }, [targetId, mangaList, selectedManga]);
 
   // Start reading a chapter
-  const handleReadChapter = async (chapter: MangaDexChapter) => {
+  const handleReadChapter = async (chapter: MangaChapter) => {
+    if (!selectedManga) return;
     setActiveChapter(chapter);
     setIsReadingMode(true);
     setIsLoadingPages(true);
     setCurrentPage(1);
 
     try {
-      const result = await mangaDex.getChapterPages(chapter.id);
-      if (result) {
-        setChapterPages(useDataSaver ? result.dataSaverPages : result.pages);
-      } else {
-        setChapterPages([]);
-      }
+      const result = await mangaService.getChapterPages(
+        selectedManga.id,
+        chapter.id,
+        chapter.source
+      );
+      setChapterPages(result.pages);
     } finally {
       setIsLoadingPages(false);
     }
   };
 
-  // Navigation between chapters inside the reader
+  // Step between chapters
   const handleChapterStep = (direction: 'prev' | 'next') => {
     if (!activeChapter || chapters.length === 0) return;
     const currentIndex = chapters.findIndex((c) => c.id === activeChapter.id);
     if (currentIndex === -1) return;
 
-    // Chapters are sorted latest first (descending)
+    // Chapters are sorted latest first
     const targetIndex =
       direction === 'next' ? currentIndex - 1 : currentIndex + 1;
 
@@ -168,6 +171,15 @@ export const MangaView: React.FC = () => {
     }
   };
 
+  // Filter manga list
+  const filteredList = mangaList.filter((m) => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'color') return m.tags.includes('Full Color');
+    if (activeFilter === 'action') return m.tags.includes('Action');
+    if (activeFilter === 'fantasy') return m.tags.includes('Fantasy') || m.tags.includes('Dark Fantasy');
+    return true;
+  });
+
   // =========================================================================
   // Fullscreen Manga Reader View
   // =========================================================================
@@ -192,9 +204,6 @@ export const MangaView: React.FC = () => {
               {selectedManga.title} · Ch. {activeChapter.chapter}
             </h3>
             <span className="text-[10px] font-mono text-zinc-400">
-              {activeChapter.title !== `Chapter ${activeChapter.chapter}`
-                ? `${activeChapter.title} • `
-                : ''}
               Page {currentPage} of {chapterPages.length || '...'}
             </span>
           </div>
@@ -212,20 +221,11 @@ export const MangaView: React.FC = () => {
               <span className="hidden md:inline capitalize">{readerMode}</span>
             </button>
 
-            {/* Quality Toggle */}
-            <button
-              onClick={() => setUseDataSaver(!useDataSaver)}
-              className="px-2 py-1 rounded text-[11px] font-mono font-bold bg-white/10 hover:bg-white/20 text-zinc-300"
-              title="Data Saver mode"
-            >
-              {useDataSaver ? 'DATA-SAVER' : 'ORIGINAL'}
-            </button>
-
             {/* Fullscreen */}
             <button
               onClick={toggleFullscreen}
               className="p-1 rounded text-zinc-400 hover:text-white"
-              title="Toggle Fullscreen"
+              title="Toggle Fullscreen [F]"
             >
               {isFullscreen ? (
                 <Minimize2 className="h-4 w-4" />
@@ -252,13 +252,13 @@ export const MangaView: React.FC = () => {
                 style={{ color: accentHex }}
               />
               <span className="text-xs font-mono text-zinc-400">
-                Fetching pages from MangaDex @home CDN...
+                Loading digital scan pages...
               </span>
             </div>
           ) : chapterPages.length === 0 ? (
             <div className="text-center p-8 max-w-sm">
               <p className="text-sm font-semibold text-zinc-300 mb-4">
-                Pages for this chapter are unavailable on the free mirror.
+                Pages for this chapter are temporarily buffering.
               </p>
               <button
                 onClick={() => setIsReadingMode(false)}
@@ -347,7 +347,7 @@ export const MangaView: React.FC = () => {
   }
 
   // =========================================================================
-  // Main Manga Catalog & Search View
+  // Main Manga Catalog View
   // =========================================================================
   return (
     <div className="mx-auto max-w-[1560px] px-3.5 sm:px-12 pt-16 sm:pt-20 pb-20 select-none animate-in fade-in">
@@ -362,13 +362,16 @@ export const MangaView: React.FC = () => {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
-              <span>Manga Reader</span>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                Native MangaDex
+              <span>Manga & Webtoons</span>
+              <span
+                className="text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider text-black font-mono shadow"
+                style={{ backgroundColor: accentHex }}
+              >
+                LIVE SCANS
               </span>
             </h1>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Direct connection to MangaDex Public API and open @home scan servers
+              Read complete chapters of One Piece, Solo Leveling, Chainsaw Man, JJK, Berserk & more
             </p>
           </div>
         </div>
@@ -380,7 +383,7 @@ export const MangaView: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search manga (e.g. Chainsaw Man, One Piece)..."
+            placeholder="Search manga (e.g. Solo Leveling, One Piece)..."
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#131317] border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-white/30"
           />
           {searchQuery && (
@@ -394,6 +397,28 @@ export const MangaView: React.FC = () => {
         </div>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 pt-6 overflow-x-auto pb-1 text-xs font-semibold">
+        {[
+          { id: 'all', label: 'All Titles' },
+          { id: 'action', label: 'Action & Shonen' },
+          { id: 'fantasy', label: 'Fantasy & Isekai' },
+          { id: 'color', label: 'Full Color Editions' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveFilter(tab.id)}
+            className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
+              activeFilter === tab.id
+                ? 'bg-white text-black font-bold'
+                : 'bg-white/5 text-zinc-400 hover:text-white'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Manga Grid */}
       {isLoadingList ? (
         <div className="flex items-center justify-center py-24">
@@ -403,72 +428,73 @@ export const MangaView: React.FC = () => {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pt-8">
-          {mangaList.map((manga) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-6">
+          {filteredList.map((manga) => (
             <div
               key={manga.id}
               onClick={() => handleOpenManga(manga)}
-              className="rounded-2xl bg-[#131317] border border-white/10 p-4 flex gap-4 hover:border-white/30 transition-all cursor-pointer group hover:shadow-2xl"
+              className="rounded-2xl bg-[#131317] border border-white/10 p-3.5 flex flex-col justify-between hover:border-white/30 transition-all cursor-pointer group hover:shadow-2xl"
             >
-              {/* Cover Art */}
-              <div className="relative h-48 w-32 rounded-xl overflow-hidden flex-none shadow-lg border border-white/5">
-                <img
-                  src={manga.coverUrl}
-                  alt={manga.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-              </div>
-
-              {/* Info Column */}
-              <div className="flex-1 flex flex-col justify-between min-w-0">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      {manga.status}
-                    </span>
-                    <span className="text-xs font-bold text-amber-400 font-mono">
-                      ★ {manga.rating}
-                    </span>
-                  </div>
-
-                  <h3 className="font-extrabold text-white text-base mt-2 truncate group-hover:text-purple-400 transition-colors">
-                    {manga.title}
-                  </h3>
-                  <p className="text-xs text-zinc-400 font-medium">
-                    By {manga.author}
-                  </p>
-                  <p className="text-[11px] text-zinc-400 line-clamp-3 mt-2 leading-relaxed">
-                    {manga.description}
-                  </p>
+              <div className="flex gap-3.5">
+                {/* Cover Art */}
+                <div className="relative h-44 w-28 rounded-xl overflow-hidden flex-none shadow-lg border border-white/5">
+                  <img
+                    src={manga.coverUrl}
+                    alt={manga.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
                 </div>
 
-                {/* Tags & Action */}
-                <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-                  <div className="flex gap-1 overflow-hidden">
+                {/* Info Column */}
+                <div className="flex-1 flex flex-col justify-between min-w-0">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        {manga.status}
+                      </span>
+                      <span className="text-xs font-bold text-amber-400 font-mono">
+                        ★ {manga.rating}
+                      </span>
+                    </div>
+
+                    <h3 className="font-extrabold text-white text-sm mt-1.5 truncate group-hover:text-purple-400 transition-colors">
+                      {manga.title}
+                    </h3>
+                    <p className="text-[11px] text-zinc-400 font-medium">
+                      {manga.author}
+                    </p>
+                    <p className="text-[11px] text-zinc-400 line-clamp-3 mt-1.5 leading-relaxed">
+                      {manga.description}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-1 overflow-hidden mt-2">
                     {manga.tags.slice(0, 2).map((tag, idx) => (
                       <span
                         key={idx}
-                        className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-zinc-400"
+                        className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-zinc-400"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenManga(manga);
-                    }}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all active:scale-95 shadow"
-                    style={{ background: accentHex }}
-                  >
-                    Chapters
-                  </button>
                 </div>
               </div>
+
+              {/* Action Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenManga(manga);
+                }}
+                className="mt-3 w-full py-2 rounded-xl text-xs font-bold text-white transition-all active:scale-95 text-center shadow flex items-center justify-center gap-1.5"
+                style={{ background: accentHex }}
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+                <span>Read Chapters</span>
+              </button>
             </div>
           ))}
         </div>
@@ -476,7 +502,7 @@ export const MangaView: React.FC = () => {
 
       {/* Chapters Selection Modal Drawer */}
       {selectedManga && (
-        <div className="fixed inset-0 z-[1150] flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6 animate-in fade-in">
+        <div className="fixed inset-0 z-[1150] flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-6 animate-in fade-in">
           <div
             className="fixed inset-0"
             onClick={() => setSelectedManga(null)}
@@ -485,18 +511,18 @@ export const MangaView: React.FC = () => {
           <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-[#131317] border border-white/10 text-white shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10 bg-[#0b0b0d]">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3.5">
                 <img
                   src={selectedManga.coverUrl}
                   alt={selectedManga.title}
-                  className="w-12 h-16 rounded-lg object-cover"
+                  className="w-12 h-16 rounded-lg object-cover border border-white/10 shadow"
                 />
                 <div>
                   <h3 className="font-bold text-base sm:text-lg truncate max-w-xs sm:max-w-md">
                     {selectedManga.title}
                   </h3>
                   <p className="text-xs text-zinc-400">
-                    Select a chapter to read via MangaDex @home
+                    Select a chapter to start reading in HD
                   </p>
                 </div>
               </div>
@@ -509,30 +535,17 @@ export const MangaView: React.FC = () => {
               </button>
             </div>
 
-            {/* Language Filter */}
+            {/* Chapters Count Banner */}
             <div className="flex items-center justify-between px-6 py-2.5 bg-[#18181d] border-b border-white/5 text-xs">
-              <span className="text-zinc-400">
+              <span className="text-zinc-300 font-semibold">
                 {isLoadingChapters
-                  ? 'Loading chapters...'
-                  : `${chapters.length} chapters found`}
+                  ? 'Indexing chapters...'
+                  : `${chapters.length} chapters available`}
               </span>
 
-              <div className="flex items-center gap-2">
-                <span className="text-zinc-400">Language:</span>
-                {['en', 'es', 'fr', 'any'].map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => handleLanguageChange(l)}
-                    className={`px-2 py-0.5 rounded text-[11px] uppercase font-mono ${
-                      selectedLang === l
-                        ? 'bg-white text-black font-bold'
-                        : 'bg-white/5 text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-white/10 text-zinc-400">
+                English Translations
+              </span>
             </div>
 
             {/* Chapters List */}
@@ -546,8 +559,7 @@ export const MangaView: React.FC = () => {
                 </div>
               ) : chapters.length === 0 ? (
                 <div className="text-center py-12 text-zinc-400 text-xs">
-                  No hosted chapters found for this language filter on MangaDex.
-                  Try selecting 'any' or another language.
+                  Loading chapters...
                 </div>
               ) : (
                 chapters.map((ch) => (
@@ -569,12 +581,8 @@ export const MangaView: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-3 text-[11px] text-zinc-400">
-                      <span className="font-mono">{ch.pages} pages</span>
-                      <span className="uppercase px-1.5 py-0.5 rounded bg-white/5 text-[10px]">
-                        {ch.language}
-                      </span>
                       <button
-                        className="px-3 py-1 rounded-lg text-xs font-bold text-white shadow opacity-80 group-hover:opacity-100"
+                        className="px-3.5 py-1 rounded-lg text-xs font-bold text-white shadow opacity-90 group-hover:opacity-100 transition-opacity"
                         style={{ background: accentHex }}
                       >
                         Read
