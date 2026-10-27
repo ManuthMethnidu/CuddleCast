@@ -96,7 +96,7 @@ export const HoverCardPortal: React.FC<HoverCardPortalProps> = ({
       }}
       className="z-[900] group/preview animate-fadeIn select-none"
     >
-      {/* DX.BI Artwork Aura Glow */}
+      {/* Echora Artwork Aura Glow */}
       <div
         className="dx-preview-aura"
         style={{

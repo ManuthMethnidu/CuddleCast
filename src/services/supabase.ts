@@ -49,13 +49,21 @@ export const supabase: SupabaseClient | null = isLiveSupabase
       },
       global: {
         headers: {
-          'x-application-name': 'cuddlecast-streaming-client',
+          'x-application-name': 'echora-streaming-client',
         },
       },
     })
   : null;
 
 const STORAGE_KEYS = {
+  PROFILES: 'echora_profiles',
+  ACTIVE_PROFILE: 'echora_active_profile',
+  WATCHLIST: 'echora_watchlist',
+  PROGRESS: 'echora_progress',
+  LIKES: 'echora_likes',
+};
+
+const LEGACY_STORAGE_KEYS = {
   PROFILES: 'cuddlecast_profiles',
   ACTIVE_PROFILE: 'cuddlecast_active_profile',
   WATCHLIST: 'cuddlecast_watchlist',
@@ -66,7 +74,7 @@ const STORAGE_KEYS = {
 const DEFAULT_PROFILES: UserProfile[] = [
   {
     id: 'prof-1',
-    name: 'CuddleCast Member',
+    name: 'Echora Member',
     avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
     is_kids: false,
   },
@@ -140,7 +148,7 @@ class StorageService {
   }
 
   getProfiles(): UserProfile[] {
-    const raw = localStorage.getItem(STORAGE_KEYS.PROFILES);
+    const raw = localStorage.getItem(STORAGE_KEYS.PROFILES) || localStorage.getItem(LEGACY_STORAGE_KEYS.PROFILES);
     if (!raw) {
       localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(DEFAULT_PROFILES));
       return DEFAULT_PROFILES;
@@ -173,7 +181,7 @@ class StorageService {
   }
 
   getActiveProfile(): UserProfile {
-    const raw = localStorage.getItem(STORAGE_KEYS.ACTIVE_PROFILE);
+    const raw = localStorage.getItem(STORAGE_KEYS.ACTIVE_PROFILE) || localStorage.getItem(LEGACY_STORAGE_KEYS.ACTIVE_PROFILE);
     if (raw) {
       try {
         return JSON.parse(raw);
@@ -193,7 +201,7 @@ class StorageService {
   }
 
   getWatchlist(): number[] {
-    const raw = localStorage.getItem(STORAGE_KEYS.WATCHLIST);
+    const raw = localStorage.getItem(STORAGE_KEYS.WATCHLIST) || localStorage.getItem(LEGACY_STORAGE_KEYS.WATCHLIST);
     if (!raw) return [96677, 1400940];
     try {
       return JSON.parse(raw);
@@ -237,7 +245,7 @@ class StorageService {
   }
 
   getLikes(): number[] {
-    const raw = localStorage.getItem(STORAGE_KEYS.LIKES);
+    const raw = localStorage.getItem(STORAGE_KEYS.LIKES) || localStorage.getItem(LEGACY_STORAGE_KEYS.LIKES);
     if (!raw) return [];
     try {
       return JSON.parse(raw);
@@ -280,7 +288,7 @@ class StorageService {
   }
 
   getProgressList(): UserWatchProgress[] {
-    const raw = localStorage.getItem(STORAGE_KEYS.PROGRESS);
+    const raw = localStorage.getItem(STORAGE_KEYS.PROGRESS) || localStorage.getItem(LEGACY_STORAGE_KEYS.PROGRESS);
     if (!raw) return [];
     try {
       return JSON.parse(raw);

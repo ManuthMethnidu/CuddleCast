@@ -171,11 +171,11 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
       <div className="absolute inset-0 dx-hero-shade pointer-events-none z-[1]" />
 
       {/* Billboard Hero Content Placement */}
-      <div className="absolute z-[2] left-4 sm:left-[var(--dx-gutter,3rem)] right-4 sm:right-auto bottom-6 sm:bottom-[calc(5vw+3.5rem)] max-w-full sm:max-w-[min(38rem,45vw)] flex flex-col justify-end items-start gap-2.5 sm:gap-3">
-        {/* dx.bi Kicker */}
-        <div className="dx-hero-kicker">
-          <b style={{ color: accentHex }}>DX.BI</b>
-          <span>{currentItem.media_type === 'tv' ? 'Series' : 'Film'}</span>
+      <div className="absolute z-[2] left-4 sm:left-[var(--dx-gutter,3rem)] right-4 sm:right-auto bottom-6 sm:bottom-[calc(4vw+2.5rem)] max-w-full sm:max-w-[min(38rem,45vw)] flex flex-col justify-end items-start gap-2 sm:gap-3">
+        {/* Echora Kicker */}
+        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-black uppercase tracking-widest text-zinc-300 select-none">
+          <b style={{ color: accentHex }}>ECHORA</b>
+          <span className="text-zinc-400 font-semibold">{currentItem.media_type === 'tv' ? 'Series' : 'Film'}</span>
         </div>
 
         {/* Title Logo or Typography */}

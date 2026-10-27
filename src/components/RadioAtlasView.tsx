@@ -797,7 +797,7 @@ export const RadioAtlasView: React.FC<RadioAtlasViewProps> = ({ onBack }) => {
           <button
             onClick={onBack}
             className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors flex-none"
-            title="Return to CuddleCast"
+            title="Return to Echora"
           >
             <X className="h-4 w-4" />
           </button>

@@ -115,7 +115,7 @@ export const PictureSoundPanel: React.FC<PictureSoundPanelProps> = ({
 
             <div className="rounded-lg bg-white/5 p-3 text-[11px] text-zinc-400">
               <span className="font-semibold text-zinc-200">Picture Enhancement: </span>
-              AI hardware sharpening is active (DX.BI Ultra Pipeline).
+              AI hardware sharpening is active (Echora Ultra Pipeline).
             </div>
           </div>
         )}

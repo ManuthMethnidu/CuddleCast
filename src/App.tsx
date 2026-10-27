@@ -238,7 +238,7 @@ const MainApp: React.FC = () => {
                 style={{ borderColor: accentHex, borderTopColor: 'transparent' }}
               />
               <span className="text-xs font-mono font-bold tracking-widest uppercase text-zinc-400">
-                CuddleCast · Loading Cinema Experience...
+                Echora · Loading Cinema Experience...
               </span>
             </div>
           </div>

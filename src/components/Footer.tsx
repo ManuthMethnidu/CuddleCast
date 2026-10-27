@@ -14,14 +14,14 @@ export const Footer: React.FC = () => {
                 className="font-black text-2xl uppercase tracking-wider"
                 style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
               >
-                DX.BI
+                ECHORA
               </span>
               <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
-                CuddleCast
+                Cinema
               </span>
             </div>
             <p className="leading-relaxed text-zinc-400">
-              A cinematic, Netflix-inspired interface for movies, series, and streaming. Built with React 18, TypeScript, Tailwind CSS, HLS.js, and Supabase.
+              A high-performance cinematic streaming platform with multi-provider failover, live TV, manga reader, and watch parties. Built with React 19, TypeScript, Tailwind CSS, TanStack Query, and Zustand.
             </p>
           </div>
 
@@ -35,7 +35,7 @@ export const Footer: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-2.5">
-              <span className="font-semibold text-zinc-200">DX.BI Features</span>
+              <span className="font-semibold text-zinc-200">Echora Features</span>
               <a href="#billboard" className="hover:text-white transition-colors">Rotating Billboard</a>
               <a href="#hover" className="hover:text-white transition-colors">Hover Preview Cards</a>
               <a href="#party" className="hover:text-white transition-colors">Encrypted Watch Party</a>
@@ -45,13 +45,13 @@ export const Footer: React.FC = () => {
             <div className="flex flex-col gap-2.5">
               <span className="font-semibold text-zinc-200">Connect</span>
               <a href="https://github.com/ManuthMethnidu/CuddleCast" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub Repository</a>
-              <span className="text-zinc-600">v2.15 Clean-Room 1:1 Edition</span>
+              <span className="text-zinc-600">v2.15 Echora Edition</span>
             </div>
           </div>
         </div>
 
         <div className="mt-12 border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between text-zinc-600">
-          <p>© {new Date().getFullYear()} CuddleCast · DX.BI 1:1 Clean-Room Reconstruction.</p>
+          <p>© {new Date().getFullYear()} Echora · Next-Gen Cinema & Multi-Provider Streaming Platform.</p>
           <p className="mt-2 sm:mt-0 text-zinc-500">
             Evidence-backed REA inspection from notdxbi/dxbi-stremio.
           </p>

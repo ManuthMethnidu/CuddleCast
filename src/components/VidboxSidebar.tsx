@@ -89,7 +89,7 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
               className="font-black text-2xl uppercase tracking-wider"
               style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
             >
-              DX.BI
+              ECHORA
             </span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 border border-white/10 px-1.5 py-0.5 rounded">
               v2.15
@@ -160,7 +160,7 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
 
         {/* Sidebar Footer */}
         <div className="p-3.5 border-t border-white/10 bg-[#09090c] text-xs text-zinc-400 flex items-center justify-between">
-          <span className="text-[11px]">CuddleCast · Vidbox Engine</span>
+          <span className="text-[11px]">Echora · Streaming Engine</span>
           <span className="text-[10px] font-mono text-zinc-500">100% Ad-Free</span>
         </div>
       </aside>

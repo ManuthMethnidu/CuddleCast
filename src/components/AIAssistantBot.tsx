@@ -24,7 +24,7 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: 'bot',
-      text: "Hey! I'm CuddleCast AI. Looking for something to stream? Tell me what mood you're in, or pick a recommendation prompt below!",
+      text: "Hey! I'm Echora AI. Looking for something to stream? Tell me what mood you're in, or pick a recommendation prompt below!",
     },
   ]);
 
@@ -86,7 +86,7 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
           <button
             onClick={() => setIsOpen(true)}
             className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-[#00A3FF] hover:bg-[#0091e6] text-white shadow-[0_8px_25px_rgba(0,163,255,0.45)] transition-all hover:scale-110 active:scale-95 border-2 border-white/20"
-            title="CuddleCast AI Stream Assistant"
+            title="Echora AI Stream Assistant"
           >
             <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
           </button>
@@ -103,7 +103,7 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
                 </div>
                 <div>
                   <h4 className="font-bold text-xs flex items-center gap-1.5">
-                    <span>CuddleCast AI</span>
+                    <span>Echora AI</span>
                     <Sparkles className="h-3 w-3 text-amber-400" />
                   </h4>
                   <p className="text-[10px] text-zinc-400">Smart Stream Concierge</p>
@@ -221,7 +221,7 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Ask CuddleCast AI for a recommendation..."
+                placeholder="Ask Echora AI for a recommendation..."
                 className="flex-1 rounded-xl bg-[#18181d] border border-white/10 px-3 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#00A3FF]"
               />
               <button

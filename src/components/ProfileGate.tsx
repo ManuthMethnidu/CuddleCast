@@ -53,10 +53,10 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
             className="font-black text-4xl sm:text-5xl uppercase tracking-wider"
             style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
           >
-            DX.BI
+            ECHORA
           </span>
           <span className="text-xs uppercase font-bold tracking-widest text-zinc-500">
-            CuddleCast
+            Next-Gen Cinema
           </span>
         </div>
 

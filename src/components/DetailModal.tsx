@@ -197,7 +197,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
             className="text-2xl sm:text-3xl font-black uppercase tracking-tight"
             style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
           >
-            DX.BI
+            ECHORA
           </span>
         </div>
       </header>

@@ -785,7 +785,7 @@ export const LiveTvView: React.FC = () => {
   // Load custom user channels from localStorage
   const [customChannels, setCustomChannels] = useState<TvChannel[]>(() => {
     try {
-      const stored = localStorage.getItem('cuddlecast_custom_tv_channels');
+      const stored = localStorage.getItem('echora_custom_tv_channels') || localStorage.getItem('cuddlecast_custom_tv_channels');
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -819,7 +819,7 @@ export const LiveTvView: React.FC = () => {
   // Favorites saved in localStorage
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
-      const stored = localStorage.getItem('cuddlecast_tv_favorites');
+      const stored = localStorage.getItem('echora_tv_favorites') || localStorage.getItem('cuddlecast_tv_favorites');
       return stored
         ? JSON.parse(stored)
         : ['yt-sky-news', 'bloomberg', 'yt-abc-news', 'yt-playlist-skynews', 'naruto'];
@@ -839,7 +839,7 @@ export const LiveTvView: React.FC = () => {
       const updated = prev.includes(channelId)
         ? prev.filter(id => id !== channelId)
         : [...prev, channelId];
-      localStorage.setItem('cuddlecast_tv_favorites', JSON.stringify(updated));
+      localStorage.setItem('echora_tv_favorites', JSON.stringify(updated));
       return updated;
     });
   };
@@ -908,7 +908,7 @@ export const LiveTvView: React.FC = () => {
 
     const updated = [newChan, ...customChannels];
     setCustomChannels(updated);
-    localStorage.setItem('cuddlecast_custom_tv_channels', JSON.stringify(updated));
+    localStorage.setItem('echora_custom_tv_channels', JSON.stringify(updated));
 
     // Reset form and select new channel
     setInputYtUrl('');
@@ -922,7 +922,7 @@ export const LiveTvView: React.FC = () => {
     e.stopPropagation();
     const updated = customChannels.filter(c => c.id !== channelId);
     setCustomChannels(updated);
-    localStorage.setItem('cuddlecast_custom_tv_channels', JSON.stringify(updated));
+    localStorage.setItem('echora_custom_tv_channels', JSON.stringify(updated));
     if (selectedChannel.id === channelId) {
       switchChannel(REAL_TV_CHANNELS[0]);
     }

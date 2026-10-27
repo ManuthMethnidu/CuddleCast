@@ -10,7 +10,7 @@ export interface AccentOption {
 }
 
 export const ACCENT_OPTIONS: AccentOption[] = [
-  { id: 'red', label: 'Cinema Red (DX.BI Default)', hex: '#e50914', glow: 'rgba(229, 9, 20, 0.5)' },
+  { id: 'red', label: 'Cinema Red (Echora Default)', hex: '#e50914', glow: 'rgba(229, 9, 20, 0.5)' },
   { id: 'blue', label: 'Electric Blue', hex: '#2f80ff', glow: 'rgba(47, 128, 255, 0.5)' },
   { id: 'crimson', label: 'Crimson', hex: '#d81f3c', glow: 'rgba(216, 31, 60, 0.5)' },
   { id: 'purple', label: 'Violet', hex: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.5)' },

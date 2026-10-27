@@ -1,5 +1,5 @@
 /**
- * CuddleCast Stream Security & Edge Signing Layer
+ * Echora Stream Security & Edge Signing Layer
  *
  * Provides tokenized HMAC-SHA256 URL signing for direct .m3u8 manifests and video segments.
  * Prevents hotlinking, stream theft, and unauthorized CDN leeching.
@@ -27,7 +27,7 @@ export class StreamSecurityService {
   constructor() {
     this.secret =
       (import.meta.env?.VITE_STREAM_SIGNING_SECRET as string) ||
-      'cuddlecast_edge_secret_key_2026';
+      'echora_edge_secret_key_2026';
   }
 
   /**

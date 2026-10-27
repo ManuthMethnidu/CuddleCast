@@ -1,5 +1,5 @@
 /**
- * Multi-Provider Streaming Engine for CuddleCast
+ * Multi-Provider Streaming Engine for Echora
  *
  * Integrates VidFast (18 scraper clusters + 6 EU proxies), VidSrc, AutoEmbed,
  * and MultiEmbed for 100% video playback coverage on movies and TV series.
