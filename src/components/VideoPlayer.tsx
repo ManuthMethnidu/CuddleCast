@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import Hls from 'hls.js';
 import { Episode, MediaItem } from '../types/schema';
-import { authStorage } from '../services/supabase';
+import { authStorage } from '../services/storage';
 import { DEFAULT_STREAM } from '../services/api';
 import { useAccent } from '../context/AccentContext';
 import { usePlayerStore } from '../store/playerStore';

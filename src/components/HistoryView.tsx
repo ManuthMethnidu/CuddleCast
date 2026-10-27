@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { History, Play, Trash2 } from 'lucide-react';
 import { MediaItem } from '../types/schema';
-import { authStorage } from '../services/supabase';
+import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
 
 interface HistoryViewProps {

@@ -28,7 +28,7 @@ import { Footer } from './components/Footer';
 import { LoginView } from './components/LoginView';
 import { Episode, MediaItem, UserProfile } from './types/schema';
 import { api } from './services/api';
-import { authStorage } from './services/supabase';
+import { authStorage } from './services/storage';
 import { AccentProvider, useAccent } from './context/AccentContext';
 import { usePlayerStore } from './store/playerStore';
 import {

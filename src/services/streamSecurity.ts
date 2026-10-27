@@ -4,7 +4,7 @@
  * Provides tokenized HMAC-SHA256 URL signing for direct .m3u8 manifests and video segments.
  * Prevents hotlinking, stream theft, and unauthorized CDN leeching.
  *
- * Configurable with Supabase Edge Functions or Cloudflare Workers.
+ * Configurable with Vercel Edge Functions or Cloudflare Workers.
  */
 
 export interface SignedStreamConfig {

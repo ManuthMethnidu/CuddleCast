@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { MediaItem } from '../types/schema';
 import { Play, Trash2, ArrowUpDown } from 'lucide-react';
-import { authStorage } from '../services/supabase';
+import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
 
 interface LibraryViewProps {

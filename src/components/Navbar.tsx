@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { UserProfile } from '../types/schema';
 import { useAccent } from '../context/AccentContext';
+import { Show, UserButton } from '@clerk/react';
 import { WatchPartyModal } from './WatchPartyModal';
 import { SettingsModal } from './SettingsModal';
 import { EchoraLogo } from './EchoraLogo';
@@ -232,84 +233,102 @@ export const Navbar: React.FC<NavbarProps> = ({
               <SettingsIcon className="h-4 w-4" />
             </button>
 
-            {/* Profile Avatar & Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="group flex items-center gap-1 rounded-lg p-0.5 transition-transform hover:scale-105 active:scale-95"
-                title={activeProfile.name}
-              >
-                <img
-                  src={activeProfile.avatar_url}
-                  alt={activeProfile.name}
-                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-md object-cover border border-white/20 shadow"
-                />
-              </button>
+            {/* Clerk User Button or Local Profile Menu */}
+            {import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ? (
+              <div className="flex items-center">
+                <Show when="signed-in">
+                  <UserButton />
+                </Show>
+                <Show when="signed-out">
+                  <button
+                    onClick={() => onCategoryChange('login')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition-all hover:brightness-110 active:scale-95 shadow-md"
+                    style={{ background: accentHex }}
+                  >
+                    <LogIn className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Sign In</span>
+                  </button>
+                </Show>
+              </div>
+            ) : (
+              <div className="relative">
+                <button
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className="group flex items-center gap-1 rounded-lg p-0.5 transition-transform hover:scale-105 active:scale-95"
+                  title={activeProfile.name}
+                >
+                  <img
+                    src={activeProfile.avatar_url}
+                    alt={activeProfile.name}
+                    className="h-7 w-7 sm:h-8 sm:w-8 rounded-md object-cover border border-white/20 shadow"
+                  />
+                </button>
 
-              {/* Profile Dropdown */}
-              {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-52 rounded-xl border border-white/10 bg-[#3A4750] py-2 text-sm text-white shadow-2xl backdrop-blur-xl animate-fadeIn z-50">
-                  <div className="border-b border-white/10 px-4 py-2">
-                    <p className="font-bold text-white truncate">{activeProfile.name}</p>
-                    <p className="text-[11px] text-zinc-300">Echora Viewer Profile</p>
+                {/* Profile Dropdown */}
+                {isProfileMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-52 rounded-xl border border-white/10 bg-[#3A4750] py-2 text-sm text-white shadow-2xl backdrop-blur-xl animate-fadeIn z-50">
+                    <div className="border-b border-white/10 px-4 py-2">
+                      <p className="font-bold text-white truncate">{activeProfile.name}</p>
+                      <p className="text-[11px] text-zinc-300">Echora Viewer Profile</p>
+                    </div>
+
+                    <div className="py-1 text-xs">
+                      <button
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          onCategoryChange('login');
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
+                      >
+                        <LogIn className="h-3.5 w-3.5 text-[#2185D5]" /> Sign In / Account
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          onSwitchProfile();
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
+                      >
+                        <User className="h-3.5 w-3.5" /> Manage Profiles
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          onCategoryChange('library');
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
+                      >
+                        <Sliders className="h-3.5 w-3.5" /> Library
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          setIsWatchPartyOpen(true);
+                        }}
+                        className="flex sm:hidden w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
+                      >
+                        <Users className="h-3.5 w-3.5" /> Watch Party
+                      </button>
+                    </div>
+
+                    <div className="border-t border-white/10 pt-1 text-xs">
+                      <button
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          onSwitchProfile();
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-rose-400 hover:bg-rose-950/30"
+                      >
+                        <LogOut className="h-3.5 w-3.5" /> Sign Out
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="py-1 text-xs">
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        onCategoryChange('login');
-                      }}
-                      className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
-                    >
-                      <LogIn className="h-3.5 w-3.5 text-[#2185D5]" /> Sign In / Account
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        onSwitchProfile();
-                      }}
-                      className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
-                    >
-                      <User className="h-3.5 w-3.5" /> Manage Profiles
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        onCategoryChange('library');
-                      }}
-                      className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
-                    >
-                      <Sliders className="h-3.5 w-3.5" /> Library
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        setIsWatchPartyOpen(true);
-                      }}
-                      className="flex sm:hidden w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
-                    >
-                      <Users className="h-3.5 w-3.5" /> Watch Party
-                    </button>
-                  </div>
-
-                  <div className="border-t border-white/10 pt-1 text-xs">
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        onSwitchProfile();
-                      }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-rose-400 hover:bg-rose-950/30"
-                    >
-                      <LogOut className="h-3.5 w-3.5" /> Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>

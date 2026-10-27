@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { MediaItem, Episode, CastMember } from '../types/schema';
 import { api } from '../services/api';
-import { authStorage } from '../services/supabase';
+import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
 import { WatchPartyModal } from './WatchPartyModal';
 

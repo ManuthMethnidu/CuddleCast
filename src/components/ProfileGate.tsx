@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Check, Edit2 } from 'lucide-react';
 import { UserProfile } from '../types/schema';
-import { authStorage } from '../services/supabase';
+import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
 
 interface ProfileGateProps {

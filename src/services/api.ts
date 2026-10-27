@@ -1,6 +1,6 @@
 import capturedData from '../mocks/capturedPayloads.json';
 import { BillboardData, CarouselRail, CastMember, Episode, MediaItem } from '../types/schema';
-import { authStorage } from './supabase';
+import { authStorage } from './storage';
 
 const DATA_MODE = (import.meta.env?.VITE_DATA_MODE as string) || 'auto';
 
