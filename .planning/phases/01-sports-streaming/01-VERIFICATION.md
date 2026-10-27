@@ -12,24 +12,24 @@ covered_files:
   - .planning/phases/01-sports-streaming/01-03-SUMMARY.md
   - .planning/phases/01-sports-streaming/01-04-PLAN.md
   - .planning/phases/01-sports-streaming/01-04-SUMMARY.md
-  - src/types/sports.ts
-  - src/services/openf1.ts
-  - src/services/jolpica.ts
-  - src/services/circuitSimulator.ts
-  - src/services/streamFailover.ts
-  - src/components/sports/SandboxedEmbedPlayer.tsx
-  - src/components/sports/TheaterStreamPlayer.tsx
-  - src/components/sports/ChannelSelectorBar.tsx
-  - src/components/sports/TelemetryHud.tsx
-  - src/components/sports/LiveTimingLeaderboard.tsx
-  - src/components/sports/CircuitVectorCard.tsx
-  - src/components/sports/MultiviewCommandCenter.tsx
-  - src/services/timezoneCountdown.ts
-  - src/services/notifications.ts
-  - src/components/sports/SessionScheduleCard.tsx
-  - src/components/sports/GlobalSportsGrid.tsx
   - src/components/LiveSportsView.tsx
-covered_digest: "v2:sha256:1b51b0849dd5bdb5c51b36b4d0913f6dc97e97e08fcf28ddcabd2a027d98ca9b"
+  - src/components/sports/ChannelSelectorBar.tsx
+  - src/components/sports/CircuitVectorCard.tsx
+  - src/components/sports/GlobalSportsGrid.tsx
+  - src/components/sports/LiveTimingLeaderboard.tsx
+  - src/components/sports/MultiviewCommandCenter.tsx
+  - src/components/sports/SandboxedEmbedPlayer.tsx
+  - src/components/sports/SessionScheduleCard.tsx
+  - src/components/sports/TelemetryHud.tsx
+  - src/components/sports/TheaterStreamPlayer.tsx
+  - src/services/circuitSimulator.ts
+  - src/services/jolpica.ts
+  - src/services/notifications.ts
+  - src/services/openf1.ts
+  - src/services/streamFailover.ts
+  - src/services/timezoneCountdown.ts
+  - src/types/sports.ts
+covered_digest: "v2:sha256:d8e12a3d2a66232307c808bdf7730fc88fa229488d65447dae86d9a77f1a1127"
 behavior_unverified: 0
 ---
 
