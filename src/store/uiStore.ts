@@ -31,7 +31,6 @@ export interface UIState {
   // Modals & Panels
   isWatchPartyOpen: boolean;
   isSettingsOpen: boolean;
-  isPictureSoundPanelOpen: boolean;
 
   // Actions
   toggleSidebar: () => void;
@@ -42,7 +41,6 @@ export interface UIState {
   setSearchOpen: (isOpen: boolean) => void;
   setWatchPartyOpen: (isOpen: boolean) => void;
   setSettingsOpen: (isOpen: boolean) => void;
-  setPictureSoundPanelOpen: (isOpen: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -53,7 +51,6 @@ export const useUIStore = create<UIState>((set) => ({
   isSearchOpen: false,
   isWatchPartyOpen: false,
   isSettingsOpen: false,
-  isPictureSoundPanelOpen: false,
 
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
@@ -63,6 +60,4 @@ export const useUIStore = create<UIState>((set) => ({
   setSearchOpen: (isSearchOpen) => set({ isSearchOpen }),
   setWatchPartyOpen: (isWatchPartyOpen) => set({ isWatchPartyOpen }),
   setSettingsOpen: (isSettingsOpen) => set({ isSettingsOpen }),
-  setPictureSoundPanelOpen: (isPictureSoundPanelOpen) =>
-    set({ isPictureSoundPanelOpen }),
 }));
