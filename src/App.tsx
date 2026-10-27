@@ -12,6 +12,7 @@ import { DiscoverView } from './components/DiscoverView';
 import { LibraryView } from './components/LibraryView';
 import { CalendarView } from './components/CalendarView';
 import { AddonsView } from './components/AddonsView';
+import { SettingsView } from './components/SettingsView';
 import { AnimeView } from './components/AnimeView';
 import { MangaView } from './components/MangaView';
 import { CollectionView } from './components/CollectionView';
@@ -31,6 +32,7 @@ import { api } from './services/api';
 import { authStorage } from './services/storage';
 import { AccentProvider, useAccent } from './context/AccentContext';
 import { usePlayerStore } from './store/playerStore';
+import { useSettingsStore } from './store/settingsStore';
 import {
   useBillboardQuery,
   useRailsQuery,
@@ -44,6 +46,12 @@ const MainApp: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Apply performance mode attribute to root element
+  const { performanceMode } = useSettingsStore();
+  useEffect(() => {
+    document.documentElement.setAttribute('data-performance', performanceMode);
+  }, [performanceMode]);
 
   // Profile management
   const [activeProfile, setActiveProfile] = useState<UserProfile | null>(() => {
@@ -388,6 +396,11 @@ const MainApp: React.FC = () => {
           <CalendarView items={allMedia} onSelect={handleOpenDetail} />
         ) : activeCategory === 'addons' ? (
           <AddonsView />
+        ) : activeCategory === 'settings' ? (
+          <SettingsView
+            onBack={() => navigate('/')}
+            onNavigateLogin={() => navigate('/login')}
+          />
         ) : (
           <>
             {/* Hero Billboard */}

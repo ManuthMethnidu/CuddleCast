@@ -17,6 +17,8 @@ import {
   X,
   LogIn,
   LogOut,
+  Sliders,
+  Blocks,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import { useUser, useClerk } from '@clerk/react';
@@ -36,6 +38,8 @@ export type NavViewId =
   | 'continue-watch'
   | 'history'
   | 'watchlist'
+  | 'settings'
+  | 'addons'
   | 'login';
 
 interface VidboxSidebarProps {
@@ -70,6 +74,8 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
     { id: 'continue-watch' as const, label: 'Continue Watch', icon: Clock },
     { id: 'history' as const, label: 'History', icon: History },
     { id: 'watchlist' as const, label: 'Watchlist', icon: Bookmark },
+    { id: 'settings' as const, label: 'Settings', icon: Sliders },
+    { id: 'addons' as const, label: 'Addons', icon: Blocks },
   ];
 
   return (

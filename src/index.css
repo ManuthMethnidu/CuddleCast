@@ -482,3 +482,58 @@ body {
 .dx-round.is-primary:hover {
   background: rgba(255, 255, 255, 0.85);
 }
+
+/* =====================================================================
+   ECHORA SYSTEM PERFORMANCE MODES (Low / Medium / High)
+   ===================================================================== */
+
+/* 1. LOW PERFORMANCE MODE (Absolute Extreme Performance / Potato Mode)
+   Strips down all GPU/CPU intensive layer blurs, box-shadows, animations & transforms */
+html[data-performance="low"] *,
+html[data-performance="low"] *::before,
+html[data-performance="low"] *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  transition-duration: 0.001ms !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+}
+
+html[data-performance="low"] [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: #262e36 !important;
+}
+
+html[data-performance="low"] .animate-fadeIn,
+html[data-performance="low"] .animate-pulse,
+html[data-performance="low"] .animate-spin {
+  animation: none !important;
+}
+
+html[data-performance="low"] .hover\:scale-\[1\.04\]:hover,
+html[data-performance="low"] .hover\:scale-105:hover,
+html[data-performance="low"] .hover\:scale-110:hover,
+html[data-performance="low"] .active\:scale-95:active,
+html[data-performance="low"] .active\:scale-98:active,
+html[data-performance="low"] .group-hover\:scale-105,
+html[data-performance="low"] .group-hover\/card\:shadow-xl {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 2. MEDIUM PERFORMANCE MODE (Balanced / Battery Saver)
+   Optimized transitions with lightweight blurs */
+html[data-performance="medium"] .backdrop-blur-3xl,
+html[data-performance="medium"] .backdrop-blur-2xl,
+html[data-performance="medium"] .backdrop-blur-xl {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+html[data-performance="medium"] * {
+  animation-duration: 150ms !important;
+}
+

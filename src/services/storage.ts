@@ -181,6 +181,16 @@ class StorageService {
     const list = this.getProgressList();
     return list.find((p) => p.media_id === mediaId) || null;
   }
+
+  clearWatchlist(): void {
+    localStorage.removeItem(STORAGE_KEYS.WATCHLIST);
+    localStorage.removeItem(LEGACY_STORAGE_KEYS.WATCHLIST);
+  }
+
+  clearProgress(): void {
+    localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+    localStorage.removeItem(LEGACY_STORAGE_KEYS.PROGRESS);
+  }
 }
 
 export const authStorage = new StorageService();

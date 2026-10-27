@@ -21,7 +21,6 @@ import { UserProfile } from '../types/schema';
 import { useAccent } from '../context/AccentContext';
 import { Show, UserButton } from '@clerk/react';
 import { WatchPartyModal } from './WatchPartyModal';
-import { SettingsModal } from './SettingsModal';
 import { EchoraLogo } from './EchoraLogo';
 
 interface NavbarProps {
@@ -48,7 +47,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isWatchPartyOpen, setIsWatchPartyOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -170,10 +168,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {/* Settings Tab */}
               <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="relative py-1 font-medium transition-colors hover:text-white text-[var(--dx-text-2)]"
+                onClick={() => onCategoryChange('settings')}
+                className={`relative py-1 font-medium transition-colors hover:text-white ${
+                  activeCategory === 'settings' ? 'text-white font-bold' : 'text-[var(--dx-text-2)]'
+                }`}
               >
-                Settings
+                <span>Settings</span>
+                {activeCategory === 'settings' && (
+                  <span
+                    className="absolute -bottom-1 left-0 right-0 h-[2px] rounded-full"
+                    style={{ background: accentHex }}
+                  />
+                )}
               </button>
             </nav>
           </div>
@@ -226,11 +232,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* M3 Icon Button: Quick Settings */}
             <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-zinc-200 hover:text-white transition-all active:scale-95"
-              title="Echora Settings & Themes"
+              onClick={() => onCategoryChange('settings')}
+              className={`hidden sm:flex h-9 w-9 items-center justify-center rounded-full border transition-all active:scale-95 ${
+                activeCategory === 'settings'
+                  ? 'bg-white/20 border-white text-white'
+                  : 'bg-white/[0.08] hover:bg-white/[0.14] border-white/10 text-zinc-200 hover:text-white'
+              }`}
+              title="System Settings & Performance"
             >
-              <SettingsIcon className="h-4 w-4" />
+              <SettingsIcon
+                className="h-4 w-4"
+                style={{ color: activeCategory === 'settings' ? accentHex : undefined }}
+              />
             </button>
 
             {/* Clerk User Button or Local Profile Menu */}
@@ -373,13 +386,27 @@ export const Navbar: React.FC<NavbarProps> = ({
         })}
 
         <button
-          onClick={() => setIsSettingsOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 group text-zinc-400 hover:text-white"
+          onClick={() => onCategoryChange('settings')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 group ${
+            activeCategory === 'settings' ? 'text-white' : 'text-zinc-400 hover:text-white'
+          }`}
         >
-          <div className="h-8 w-14 rounded-full flex items-center justify-center transition-all">
-            <SettingsIcon className="h-5 w-5" />
+          <div
+            className={`h-8 w-14 rounded-full flex items-center justify-center transition-all ${
+              activeCategory === 'settings' ? 'bg-white/15' : ''
+            }`}
+          >
+            <SettingsIcon
+              className="h-5 w-5"
+              style={{ color: activeCategory === 'settings' ? accentHex : undefined }}
+            />
           </div>
-          <span className="text-[10px] mt-0.5 tracking-tight font-medium text-zinc-400">Settings</span>
+          <span
+            className="text-[10px] mt-0.5 tracking-tight font-medium"
+            style={{ color: activeCategory === 'settings' ? '#FFFFFF' : 'var(--dx-text-3)' }}
+          >
+            Settings
+          </span>
         </button>
       </nav>
 
@@ -387,12 +414,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       <WatchPartyModal
         isOpen={isWatchPartyOpen}
         onClose={() => setIsWatchPartyOpen(false)}
-      />
-
-      {/* Settings Modal */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
       />
     </>
   );

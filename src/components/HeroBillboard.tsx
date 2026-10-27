@@ -3,6 +3,7 @@ import { Play, Info, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import Hls from 'hls.js';
 import { BillboardData } from '../types/schema';
 import { useAccent } from '../context/AccentContext';
+import { useSettingsStore } from '../store/settingsStore';
 
 interface HeroBillboardProps {
   items: BillboardData[];
@@ -16,6 +17,7 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
   onMoreInfo,
 }) => {
   const { accentHex } = useAccent();
+  const { performanceMode, billboard: isBillboardTrailerEnabled } = useSettingsStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -61,14 +63,14 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
     return () => clearInterval(interval);
   }, [items.length, isVideoPlaying, isVisible]);
 
-  // Trailer autoplay preview delay (1500ms) with visibility gating
+  // Trailer autoplay preview delay (1500ms) with visibility gating (Disabled in low performance mode)
   useEffect(() => {
     setIsVideoPlaying(false);
     setVideoEnded(false);
 
     if (timerRef.current) clearTimeout(timerRef.current);
 
-    if (!isVisible) {
+    if (!isVisible || performanceMode === 'low' || !isBillboardTrailerEnabled) {
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
@@ -148,7 +150,7 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
         }`}
         style={{
           backgroundImage: `url(${currentItem.backdrop_path || currentItem.poster_path})`,
-          animation: 'dx-kenburns 16s linear both',
+          animation: performanceMode === 'low' ? 'none' : 'dx-kenburns 16s linear both',
           animationPlayState: isVisible ? 'running' : 'paused',
         }}
       />

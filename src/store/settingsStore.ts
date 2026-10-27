@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { AccentColor } from '../context/AccentContext';
+
+export type PerformanceMode = 'low' | 'medium' | 'high';
 
 export interface UserSettingsState {
-  // Appearance & Theme
-  accent: AccentColor;
-  ambientLighting: boolean;
+  // System Performance Mode (low = potato/max performance, medium = balanced, high = cinematic)
+  performanceMode: PerformanceMode;
 
   // Browsing Experience
   billboard: boolean;
@@ -23,8 +23,7 @@ export interface UserSettingsState {
   preferredSubtitleLanguage: string;
 
   // Actions
-  setAccent: (accent: AccentColor) => void;
-  setAmbientLighting: (enabled: boolean) => void;
+  setPerformanceMode: (mode: PerformanceMode) => void;
   setBillboard: (enabled: boolean) => void;
   setRatings: (enabled: boolean) => void;
   setWideContinue: (enabled: boolean) => void;
@@ -40,8 +39,7 @@ export interface UserSettingsState {
 }
 
 const DEFAULT_SETTINGS = {
-  accent: 'blue' as AccentColor,
-  ambientLighting: true,
+  performanceMode: 'high' as PerformanceMode,
   billboard: true,
   ratings: true,
   wideContinue: true,
@@ -60,8 +58,12 @@ export const useSettingsStore = create<UserSettingsState>()(
     (set) => ({
       ...DEFAULT_SETTINGS,
 
-      setAccent: (accent) => set({ accent }),
-      setAmbientLighting: (ambientLighting) => set({ ambientLighting }),
+      setPerformanceMode: (performanceMode) => {
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('data-performance', performanceMode);
+        }
+        set({ performanceMode });
+      },
       setBillboard: (billboard) => set({ billboard }),
       setRatings: (ratings) => set({ ratings }),
       setWideContinue: (wideContinue) => set({ wideContinue }),
@@ -75,10 +77,15 @@ export const useSettingsStore = create<UserSettingsState>()(
         set({ preferredAudioLanguage }),
       setPreferredSubtitleLanguage: (preferredSubtitleLanguage) =>
         set({ preferredSubtitleLanguage }),
-      resetToDefaults: () => set(DEFAULT_SETTINGS),
+      resetToDefaults: () => {
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('data-performance', DEFAULT_SETTINGS.performanceMode);
+        }
+        set(DEFAULT_SETTINGS);
+      },
     }),
     {
-      name: 'echora_persistent_settings',
+      name: 'echora_persistent_settings_v2',
       storage: createJSONStorage(() => localStorage),
     }
   )
