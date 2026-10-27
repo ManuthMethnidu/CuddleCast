@@ -48,7 +48,7 @@ const DEFAULT_SETTINGS = {
   skipIntro: true,
   soundBoost: false,
   defaultQuality: 'auto' as const,
-  defaultProvider: 'vidfast',
+  defaultProvider: 'vidlink',
   preferredAudioLanguage: 'en',
   preferredSubtitleLanguage: 'en',
 };

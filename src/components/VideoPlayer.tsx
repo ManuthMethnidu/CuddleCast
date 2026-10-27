@@ -15,6 +15,7 @@ import { Episode, MediaItem } from '../types/schema';
 import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
 import { usePlayerStore } from '../store/playerStore';
+import { useSettingsStore } from '../store/settingsStore';
 import { WatchPartyModal } from './WatchPartyModal';
 import {
   STREAM_PROVIDERS,
@@ -60,12 +61,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       item.media_type !== 'tv')
   );
 
+  const { defaultProvider } = useSettingsStore();
+
   const [selectedProviderId, setSelectedProviderId] = useState<string>(() => {
     if (isDirectHlsStream) return 'hls';
-    if (initialProviderId && STREAM_PROVIDERS.some((p) => p.id === initialProviderId)) {
+    if (initialProviderId && STREAM_PROVIDERS.some((p) => p.id === initialProviderId && p.id !== 'vidfast')) {
       return initialProviderId;
     }
-    return 'vidfast';
+    if (defaultProvider && defaultProvider !== 'vidfast' && STREAM_PROVIDERS.some((p) => p.id === defaultProvider)) {
+      return defaultProvider;
+    }
+    return 'vidlink';
   });
 
   const [selectedServerId, setSelectedServerId] = useState<string>('Alpha');
@@ -73,6 +79,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [menuTab, setMenuTab] = useState<ProviderCategory | 'vidfast-nodes'>('fastest');
   const [showParty, setShowParty] = useState(false);
   const [showTopBar, setShowTopBar] = useState(true);
+  const [isIframeLoading, setIsIframeLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasStreamError, setHasStreamError] = useState(false);
@@ -112,9 +119,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     });
   }, [activeProvider, selectedProviderId, selectedServerId, item, episode, accentHex]);
 
-  // Reset error when provider or reload changes
+  // Reset error and show loading when provider, server or reload changes
   useEffect(() => {
     setHasStreamError(false);
+    setIsIframeLoading(true);
   }, [selectedProviderId, selectedServerId, reloadKey]);
 
   // Direct HLS initialization for IPTV / .m3u8 live channels only
@@ -187,18 +195,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => window.removeEventListener('message', handlePostMessage);
   }, [item.id, setStoreTime, setStoreDuration, setStorePlaying]);
 
-  // Auto-hide top bar after mouse inactivity
+  // Auto-hide top bar after mouse inactivity (ONLY when not loading and not in menus)
   const handleMouseMove = useCallback(() => {
     setShowTopBar(true);
     if (hideTimerRef.current) {
       window.clearTimeout(hideTimerRef.current);
     }
     hideTimerRef.current = window.setTimeout(() => {
-      if (!showServerMenu && !showParty && !hasStreamError) {
+      if (!showServerMenu && !showParty && !hasStreamError && !isIframeLoading) {
         setShowTopBar(false);
       }
-    }, 3200);
-  }, [showServerMenu, showParty, hasStreamError]);
+    }, 3800);
+  }, [showServerMenu, showParty, hasStreamError, isIframeLoading]);
 
   useEffect(() => {
     return () => {
@@ -307,21 +315,59 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           playsInline
         />
       ) : (
-        <iframe
-          key={`${selectedProviderId}-${selectedServerId}-${reloadKey}-${item.id}`}
-          src={embedUrl}
-          className="h-full w-full border-0 bg-black"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-          allowFullScreen
-          title={item.title || item.name}
-          onError={() => setHasStreamError(true)}
-        />
+        <>
+          {/* Loading Spinner & Status Overlay */}
+          {isIframeLoading && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/95 transition-opacity duration-300">
+              <div className="flex flex-col items-center gap-4 p-6 text-center max-w-sm">
+                <div
+                  className="h-12 w-12 rounded-full border-4 border-t-transparent animate-spin shadow-2xl"
+                  style={{ borderColor: accentHex, borderTopColor: 'transparent' }}
+                />
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-white tracking-wide flex items-center justify-center gap-2">
+                    <Server className="h-4 w-4" style={{ color: accentHex }} />
+                    <span>Connecting to {activeProvider?.name || 'Streaming Host'}...</span>
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    Loading high-speed stream for <span className="text-zinc-200 font-semibold">{item.title || item.name}</span>
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <button
+                    onClick={handleFailoverNext}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold text-zinc-300 hover:text-white border border-white/15 transition-all active:scale-95 shadow-md"
+                  >
+                    <SkipForward className="h-3.5 w-3.5" style={{ color: accentHex }} />
+                    <span>Slow loading? Try {nextProvider.name}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <iframe
+            key={`${selectedProviderId}-${selectedServerId}-${reloadKey}-${item.id}`}
+            src={embedUrl}
+            className="h-full w-full border-0 bg-black"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+            allowFullScreen
+            title={item.title || item.name}
+            onLoad={() => setIsIframeLoading(false)}
+            onError={() => {
+              setIsIframeLoading(false);
+              setHasStreamError(true);
+            }}
+          />
+        </>
       )}
 
-      {/* 2. Sleek Floating Top Bar (Auto-hides on inactivity so built-in controls remain 100% accessible) */}
+      {/* 2. Sleek Floating Top Bar (Stays visible while loading or in menus) */}
       <div
-        className={`absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-3 sm:p-5 bg-gradient-to-b from-black/90 via-black/50 to-transparent transition-opacity duration-300 pointer-events-auto ${
-          showTopBar ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        className={`absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-3 sm:p-5 bg-gradient-to-b from-black/95 via-black/70 to-transparent transition-opacity duration-300 pointer-events-auto ${
+          showTopBar || isIframeLoading || showServerMenu || hasStreamError
+            ? 'opacity-100'
+            : 'opacity-0 pointer-events-none'
         }`}
       >
         {/* Left: Back Button & Title Info */}
@@ -371,9 +417,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             >
               <Server className="h-3.5 w-3.5" style={{ color: accentHex }} />
               <span className="hidden sm:inline">
-                {selectedProviderId === 'vidfast'
-                  ? `VidFast: ${selectedServerId}`
-                  : activeProvider?.name || 'Servers'}
+                {activeProvider?.name || 'Servers'}
               </span>
               <span className="sm:hidden">
                 {activeProvider?.name || 'Server'}

@@ -14,6 +14,7 @@ import { MediaItem, Episode, CastMember } from '../types/schema';
 import { api } from '../services/api';
 import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
+import { useSettingsStore } from '../store/settingsStore';
 import { WatchPartyModal } from './WatchPartyModal';
 import {
   STREAM_PROVIDERS,
@@ -43,8 +44,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
   const [isPartyOpen, setIsPartyOpen] = useState(false);
+  const { defaultProvider } = useSettingsStore();
   const [selectedCategory, setSelectedCategory] = useState<ProviderCategory>('fastest');
-  const [selectedProviderId, setSelectedProviderId] = useState<string>('vidfast');
+  const [selectedProviderId, setSelectedProviderId] = useState<string>(() => {
+    if (defaultProvider && defaultProvider !== 'vidfast' && STREAM_PROVIDERS.some((p) => p.id === defaultProvider)) {
+      return defaultProvider;
+    }
+    return 'vidlink';
+  });
   const [mobileTab, setMobileTab] = useState<'overview' | 'servers' | 'episodes'>('overview');
 
   const isSeries = item.media_type === 'tv';
@@ -212,13 +219,23 @@ export const DetailModal: React.FC<DetailModalProps> = ({
             </div>
 
             {/* Action Buttons Row */}
-            <div className="flex items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full">
               <button
                 onClick={() => handleLaunchStream()}
                 className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 h-11 sm:h-12 px-6 sm:px-8 rounded-full bg-white text-black font-semibold text-sm sm:text-base transition-all hover:bg-white/90 active:scale-95 shadow-[var(--md-sys-elevation-level2)]"
               >
                 <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-black" />
                 <span>Play Now</span>
+              </button>
+
+              {/* Server Indicator & Quick Selector */}
+              <button
+                onClick={() => setMobileTab('servers')}
+                className="flex items-center gap-1.5 h-11 px-3.5 sm:h-12 sm:px-4 rounded-full border border-white/20 bg-black/40 hover:bg-white/10 text-xs font-semibold text-zinc-200 transition-all active:scale-95 shadow-md"
+                title="Select Streaming Server"
+              >
+                <Server className="h-3.5 w-3.5" style={{ color: accentHex }} />
+                <span>Server: <strong className="text-white font-bold">{STREAM_PROVIDERS.find(p => p.id === selectedProviderId)?.name || 'VidLink Pro'}</strong></span>
               </button>
 
               <button
@@ -478,8 +495,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
               )}
 
               {/* Streaming Servers Header */}
-              {(mobileTab === 'servers' || window.innerWidth >= 1024) && (
-                <div className="space-y-3">
+              <div className={`space-y-3 ${mobileTab === 'servers' ? 'block' : 'hidden lg:block'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Zap className="h-4 w-4" style={{ color: accentHex }} />
@@ -606,7 +622,6 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                     })}
                   </div>
                 </div>
-              )}
             </div>
           </div>
         </div>

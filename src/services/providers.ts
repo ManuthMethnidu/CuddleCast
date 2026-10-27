@@ -59,30 +59,11 @@ export const STREAM_PROVIDERS: StreamProvider[] = [
   // 1. FASTEST / PRIMARY STREAMING SERVERS (10)
   // ==========================================
   {
-    id: 'vidfast',
-    name: 'VidFast Cloud',
-    category: 'fastest',
-    badge: 'Fastest · 14 Servers',
-    description: 'High-speed cloud scraper network with 14 regional nodes and 4K support',
-    countryCode: 'US',
-    servers: VIDFAST_SERVERS,
-    getMovieUrl: (id, opts) => {
-      const server = opts?.server ? `&server=${encodeURIComponent(opts.server)}` : '';
-      const theme = opts?.themeHex ? `&theme=${encodeURIComponent(opts.themeHex.replace('#', ''))}` : '';
-      return `https://vidfast.vc/movie/${id}?autoPlay=true${server}${theme}`;
-    },
-    getTvUrl: (id, season, episode, opts) => {
-      const server = opts?.server ? `&server=${encodeURIComponent(opts.server)}` : '';
-      const theme = opts?.themeHex ? `&theme=${encodeURIComponent(opts.themeHex.replace('#', ''))}` : '';
-      return `https://vidfast.vc/tv/${id}/${season}/${episode}?autoPlay=true${server}${theme}`;
-    },
-  },
-  {
     id: 'vidlink',
     name: 'VidLink Pro',
     category: 'fastest',
-    badge: 'Clean · Ad-Free',
-    description: 'Modern ad-free player with custom accent synchronization',
+    badge: 'Clean · Ad-Free · Primary',
+    description: 'Ultra-fast ad-free player with custom theme and zero iframe restrictions',
     countryCode: 'US',
     getMovieUrl: (id, opts) => {
       const color = opts?.themeHex ? opts.themeHex.replace('#', '') : '2185D5';
@@ -98,7 +79,7 @@ export const STREAM_PROVIDERS: StreamProvider[] = [
     name: 'Videasy 4K',
     category: 'fastest',
     badge: '4K UHD',
-    description: 'High-definition 4K streaming pipeline with instant loading',
+    description: 'High-definition 4K streaming pipeline with instant loading and multi-audio',
     countryCode: 'GB',
     getMovieUrl: (id, opts) => {
       const color = opts?.themeHex ? `?color=${encodeURIComponent(opts.themeHex.replace('#', ''))}` : '';
