@@ -85,12 +85,18 @@
   --md-sys-shape-corner-large: 16px;
   --md-sys-shape-corner-extra-large: 28px;
   --md-sys-shape-corner-full: 9999px;
+  --md-sys-shape-corner-asym: 24px 8px 24px 8px;
+  --md-sys-shape-corner-hero: 32px 12px 32px 12px;
 
-  /* M3 Motion System */
+  /* M3 Expressive Motion Physics System */
   --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-spring-snappy: cubic-bezier(0.2, 0.0, 0, 1.25);
+  --md-sys-motion-spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --md-sys-motion-spring-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   --md-sys-motion-duration-short: 150ms;
   --md-sys-motion-duration-medium: 250ms;
   --md-sys-motion-duration-long: 400ms;
+  --md-sys-motion-duration-xl: 600ms;
 }
 
 body {
@@ -256,6 +262,249 @@ body {
 .m3-fab:hover {
   box-shadow: var(--md-sys-elevation-level4);
   transform: scale(1.05);
+}
+
+.m3-fab-extended {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  height: 3.5rem;
+  padding: 0 1.5rem;
+  border-radius: var(--md-sys-shape-corner-large);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  box-shadow: var(--md-sys-elevation-level3);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-spring-snappy);
+  cursor: pointer;
+  border: none;
+}
+
+.m3-fab-extended:hover {
+  box-shadow: var(--md-sys-elevation-level4);
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* M3 Expressive Outlined & Text Buttons */
+.m3-btn-outlined {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.65rem;
+  padding: 0 1.5rem;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-outline);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-spring-snappy);
+  cursor: pointer;
+}
+
+.m3-btn-outlined:hover {
+  background-color: rgba(243, 243, 243, 0.05);
+  border-color: var(--md-sys-color-primary);
+}
+
+.m3-btn-outlined:active {
+  transform: scale(0.97);
+}
+
+.m3-btn-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.65rem;
+  padding: 0 1rem;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-spring-snappy);
+  cursor: pointer;
+}
+
+.m3-btn-text:hover {
+  background-color: rgba(243, 243, 243, 0.05);
+}
+
+/* M3 Segmented Buttons */
+.m3-segmented-group {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-full);
+  padding: 2px;
+  background-color: var(--md-sys-color-surface-container-lowest);
+}
+
+.m3-segmented-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--md-sys-shape-corner-full);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface-variant);
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-spring-snappy);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.m3-segmented-item:hover {
+  color: var(--md-sys-color-on-surface);
+}
+
+.m3-segmented-item.is-selected {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+/* M3 Expressive Cards */
+.m3-card-filled {
+  background-color: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid transparent;
+  transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-spring-snappy);
+}
+
+.m3-card-filled:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+  transform: translateY(-2px);
+}
+
+.m3-card-outlined {
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-spring-snappy);
+}
+
+.m3-card-outlined:hover {
+  border-color: var(--md-sys-color-outline);
+  transform: translateY(-2px);
+}
+
+.m3-card-expressive {
+  background-color: var(--md-sys-color-surface-container-high);
+  border-radius: var(--md-sys-shape-corner-asym);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  box-shadow: var(--md-sys-elevation-level1);
+  transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-spring-bouncy);
+}
+
+.m3-card-expressive:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: var(--md-sys-elevation-level3);
+  border-color: var(--md-sys-color-primary);
+}
+
+/* M3 Expressive Badges */
+.m3-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-tertiary);
+  color: var(--md-sys-color-on-tertiary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.m3-badge-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-tertiary);
+}
+
+/* M3 Expressive Bottom Sheet */
+.m3-bottom-sheet {
+  border-top-left-radius: var(--md-sys-shape-corner-extra-large);
+  border-top-right-radius: var(--md-sys-shape-corner-extra-large);
+  background-color: var(--md-sys-color-surface-container-highest);
+  box-shadow: var(--md-sys-elevation-level4);
+  border-top: 1px solid var(--md-sys-color-outline);
+}
+
+/* =====================================================================
+   M3 DUAL TYPOGRAPHY SCALE (15 BASELINE + 15 EMPHASIZED)
+   ===================================================================== */
+.font-m3-display-lg { font-size: 3.5625rem; line-height: 4rem; letter-spacing: -0.25px; font-weight: 400; }
+.font-m3-display-lg-emphasized { font-size: 3.5625rem; line-height: 4rem; letter-spacing: -0.25px; font-weight: 700; }
+
+.font-m3-display-md { font-size: 2.8125rem; line-height: 3.25rem; letter-spacing: 0px; font-weight: 400; }
+.font-m3-display-md-emphasized { font-size: 2.8125rem; line-height: 3.25rem; letter-spacing: 0px; font-weight: 700; }
+
+.font-m3-display-sm { font-size: 2.25rem; line-height: 2.75rem; letter-spacing: 0px; font-weight: 400; }
+.font-m3-display-sm-emphasized { font-size: 2.25rem; line-height: 2.75rem; letter-spacing: 0px; font-weight: 700; }
+
+.font-m3-headline-lg { font-size: 2rem; line-height: 2.5rem; letter-spacing: 0px; font-weight: 400; }
+.font-m3-headline-lg-emphasized { font-size: 2rem; line-height: 2.5rem; letter-spacing: 0px; font-weight: 600; }
+
+.font-m3-headline-md { font-size: 1.75rem; line-height: 2.25rem; letter-spacing: 0px; font-weight: 400; }
+.font-m3-headline-md-emphasized { font-size: 1.75rem; line-height: 2.25rem; letter-spacing: 0px; font-weight: 600; }
+
+.font-m3-headline-sm { font-size: 1.5rem; line-height: 2rem; letter-spacing: 0px; font-weight: 400; }
+.font-m3-headline-sm-emphasized { font-size: 1.5rem; line-height: 2rem; letter-spacing: 0px; font-weight: 600; }
+
+.font-m3-title-lg { font-size: 1.375rem; line-height: 1.75rem; letter-spacing: 0px; font-weight: 400; }
+.font-m3-title-lg-emphasized { font-size: 1.375rem; line-height: 1.75rem; letter-spacing: 0px; font-weight: 700; }
+
+.font-m3-title-md { font-size: 1rem; line-height: 1.5rem; letter-spacing: 0.15px; font-weight: 500; }
+.font-m3-title-md-emphasized { font-size: 1rem; line-height: 1.5rem; letter-spacing: 0.15px; font-weight: 700; }
+
+.font-m3-title-sm { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.1px; font-weight: 500; }
+.font-m3-title-sm-emphasized { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.1px; font-weight: 700; }
+
+.font-m3-body-lg { font-size: 1rem; line-height: 1.5rem; letter-spacing: 0.5px; font-weight: 400; }
+.font-m3-body-lg-emphasized { font-size: 1rem; line-height: 1.5rem; letter-spacing: 0.5px; font-weight: 600; }
+
+.font-m3-body-md { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.25px; font-weight: 400; }
+.font-m3-body-md-emphasized { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.25px; font-weight: 600; }
+
+.font-m3-body-sm { font-size: 0.75rem; line-height: 1rem; letter-spacing: 0.4px; font-weight: 400; }
+.font-m3-body-sm-emphasized { font-size: 0.75rem; line-height: 1rem; letter-spacing: 0.4px; font-weight: 600; }
+
+.font-m3-label-lg { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.1px; font-weight: 500; }
+.font-m3-label-lg-emphasized { font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.1px; font-weight: 700; }
+
+.font-m3-label-md { font-size: 0.75rem; line-height: 1rem; letter-spacing: 0.5px; font-weight: 500; }
+.font-m3-label-md-emphasized { font-size: 0.75rem; line-height: 1rem; letter-spacing: 0.5px; font-weight: 700; }
+
+.font-m3-label-sm { font-size: 0.6875rem; line-height: 1rem; letter-spacing: 0.5px; font-weight: 500; }
+.font-m3-label-sm-emphasized { font-size: 0.6875rem; line-height: 1rem; letter-spacing: 0.5px; font-weight: 700; }
+
+/* =====================================================================
+   M3 SPRING MOTION UTILITIES
+   ===================================================================== */
+.ease-spring-snappy {
+  transition-timing-function: var(--md-sys-motion-spring-snappy);
+}
+
+.ease-spring-bouncy {
+  transition-timing-function: var(--md-sys-motion-spring-bouncy);
+}
+
+.ease-spring-smooth {
+  transition-timing-function: var(--md-sys-motion-spring-smooth);
 }
 
 /* Focus & Accessibility (a11y) States */

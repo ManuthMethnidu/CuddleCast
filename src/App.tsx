@@ -22,7 +22,7 @@ import { LiveTvView } from './components/LiveTvView';
 import { LiveSportsView } from './components/LiveSportsView';
 import { HistoryView } from './components/HistoryView';
 import { RadioPlayer } from './components/RadioPlayer';
-import { RadioAtlasView } from './components/RadioAtlasView';
+import { RadioView } from './components/RadioView';
 import { FloatingPiP } from './components/FloatingPiP';
 import { Footer } from './components/Footer';
 import { LoginView } from './components/LoginView';
@@ -353,7 +353,7 @@ const MainApp: React.FC = () => {
             }}
           />
         ) : activeCategory === 'radio' ? (
-          <RadioAtlasView onBack={() => navigate('/')} />
+          <RadioView onBack={() => navigate('/')} />
         ) : activeCategory === 'history' ? (
           <HistoryView
             items={allMedia}

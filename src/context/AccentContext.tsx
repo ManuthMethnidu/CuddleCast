@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { generateM3ExpressiveDarkScheme } from '../theme/colorGenerator';
+import { applyM3ColorScheme, defaultM3DarkScheme, type M3ColorScheme } from '../theme/m3-expressive';
 
 export type AccentColor =
   | 'blue'
@@ -35,6 +37,7 @@ interface AccentContextType {
   setAccent: (accent: AccentColor) => void;
   accentHex: string;
   accentGlow: string;
+  m3Scheme: M3ColorScheme;
 }
 
 const AccentContext = createContext<AccentContextType>({
@@ -42,6 +45,7 @@ const AccentContext = createContext<AccentContextType>({
   setAccent: () => {},
   accentHex: '#2185D5',
   accentGlow: 'rgba(33, 133, 213, 0.5)',
+  m3Scheme: defaultM3DarkScheme,
 });
 
 export const AccentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -58,6 +62,10 @@ export const AccentProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const activeOption = ACCENT_OPTIONS.find(o => o.id === accent) || ACCENT_OPTIONS[0];
 
+  const m3Scheme = React.useMemo(() => {
+    return generateM3ExpressiveDarkScheme(activeOption.hex);
+  }, [activeOption.hex]);
+
   const setAccent = (newAccent: AccentColor) => {
     setAccentState(newAccent);
     localStorage.setItem('dx_accent', newAccent);
@@ -66,7 +74,8 @@ export const AccentProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     document.documentElement.style.setProperty('--dx-accent', activeOption.hex);
     document.documentElement.style.setProperty('--dx-accent-glow', activeOption.glow);
-  }, [activeOption]);
+    applyM3ColorScheme(m3Scheme);
+  }, [activeOption, m3Scheme]);
 
   return (
     <AccentContext.Provider
@@ -75,6 +84,7 @@ export const AccentProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setAccent,
         accentHex: activeOption.hex,
         accentGlow: activeOption.glow,
+        m3Scheme,
       }}
     >
       {children}

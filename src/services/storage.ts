@@ -11,8 +11,8 @@ const STORAGE_KEYS = {
   LIKES_MEDIA: 'echora_likes_media',
   CUSTOM_TV_CHANNELS: 'echora_custom_tv_channels',
   TV_FAVORITES: 'echora_tv_favorites',
-  RADIO_FAVORITES: 'radio_atlas_favorites',
-  RADIO_RECENT: 'radio_atlas_recent',
+  RADIO_FAVORITES: 'echora_radio_favorites',
+  RADIO_RECENT: 'echora_radio_recent',
 };
 
 const LEGACY_STORAGE_KEYS = {
@@ -23,6 +23,8 @@ const LEGACY_STORAGE_KEYS = {
   LIKES: 'cuddlecast_likes',
   CUSTOM_TV_CHANNELS: 'cuddlecast_custom_tv_channels',
   TV_FAVORITES: 'cuddlecast_tv_favorites',
+  RADIO_FAVORITES: 'radio_atlas_favorites',
+  RADIO_RECENT: 'radio_atlas_recent',
 };
 
 export const AVATAR_PRESETS = [
@@ -576,15 +578,16 @@ class StorageService {
         return JSON.parse(raw);
       } catch {}
     }
-    if (uid === 'guest') {
-      const legacy = localStorage.getItem(STORAGE_KEYS.RADIO_FAVORITES);
-      if (legacy) {
-        try {
-          return JSON.parse(legacy);
-        } catch {}
-      }
+    // Check legacy storage
+    const legacy =
+      localStorage.getItem(LEGACY_STORAGE_KEYS.RADIO_FAVORITES) ||
+      localStorage.getItem('radio_atlas_favorites');
+    if (legacy) {
+      try {
+        return JSON.parse(legacy);
+      } catch {}
     }
-    return ['gl-nanoq'];
+    return ['lofi-girl', 'nightride-fm'];
   }
 
   saveRadioFavorites(favorites: string[], userId?: string): void {
@@ -603,13 +606,13 @@ class StorageService {
         return JSON.parse(raw);
       } catch {}
     }
-    if (uid === 'guest') {
-      const legacy = localStorage.getItem(STORAGE_KEYS.RADIO_RECENT);
-      if (legacy) {
-        try {
-          return JSON.parse(legacy);
-        } catch {}
-      }
+    const legacy =
+      localStorage.getItem(LEGACY_STORAGE_KEYS.RADIO_RECENT) ||
+      localStorage.getItem('radio_atlas_recent');
+    if (legacy) {
+      try {
+        return JSON.parse(legacy);
+      } catch {}
     }
     return [];
   }
