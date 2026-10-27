@@ -22,7 +22,6 @@ import { LiveSportsView } from './components/LiveSportsView';
 import { HistoryView } from './components/HistoryView';
 import { RadioPlayer } from './components/RadioPlayer';
 import { RadioAtlasView } from './components/RadioAtlasView';
-import { AIAssistantBot } from './components/AIAssistantBot';
 import { ProfileGate } from './components/ProfileGate';
 import { FloatingPiP } from './components/FloatingPiP';
 import { Footer } from './components/Footer';
@@ -379,20 +378,6 @@ const MainApp: React.FC = () => {
         isVisible={isRadioOpen}
         onClose={() => setIsRadioOpen(false)}
       />
-
-      {/* Floating AI Assistant Bot Widget */}
-      {activeCategory !== 'radio' &&
-        activeCategory !== 'live-tv' &&
-        activeCategory !== 'tv' &&
-        activeCategory !== 'live-sports' &&
-        activeCategory !== 'sports' &&
-        !currentMedia && (
-          <AIAssistantBot
-            items={allMedia}
-            onSelect={handleOpenDetail}
-            onPlay={handlePlay}
-          />
-        )}
 
       {/* Floating Picture-in-Picture Mini Player */}
       {isPiP && (

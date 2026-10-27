@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { UserProfile, UserWatchProgress } from '../types/schema';
+import { Database } from '../types/database.types';
 
 /**
  * =====================================================================
@@ -37,8 +38,8 @@ const isLiveSupabase = Boolean(
   SUPABASE_KEY !== 'your_supabase_anon_key_here'
 );
 
-export const supabase: SupabaseClient | null = isLiveSupabase
-  ? createClient(SUPABASE_URL, SUPABASE_KEY, {
+export const supabase: SupabaseClient<Database> | null = isLiveSupabase
+  ? createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -223,7 +224,7 @@ class StorageService {
         this.client
           .from('watchlist')
           .delete()
-          .match({ profile_id: active.id, media_id: mediaId })
+          .match({ profile_id: active.id, media_id: String(mediaId) })
           .then();
       }
     } else {
@@ -232,7 +233,7 @@ class StorageService {
       if (this.client && active) {
         this.client
           .from('watchlist')
-          .insert({ profile_id: active.id, media_id: mediaId })
+          .insert({ profile_id: active.id, media_id: String(mediaId) })
           .then();
       }
     }
@@ -266,7 +267,7 @@ class StorageService {
         this.client
           .from('likes')
           .delete()
-          .match({ profile_id: active.id, media_id: mediaId })
+          .match({ profile_id: active.id, media_id: String(mediaId) })
           .then();
       }
     } else {
@@ -275,7 +276,7 @@ class StorageService {
       if (this.client && active) {
         this.client
           .from('likes')
-          .insert({ profile_id: active.id, media_id: mediaId })
+          .insert({ profile_id: active.id, media_id: String(mediaId), is_like: true })
           .then();
       }
     }
@@ -323,7 +324,7 @@ class StorageService {
         .upsert(
           {
             profile_id: active.id,
-            media_id: mediaId,
+            media_id: String(mediaId),
             progress_seconds: Math.floor(progressSeconds),
             total_seconds: Math.floor(totalSeconds),
             last_watched: new Date().toISOString(),
