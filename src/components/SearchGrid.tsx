@@ -41,7 +41,7 @@ export const SearchGrid: React.FC<SearchGridProps> = ({
           <button
             key={sug}
             onClick={() => onSuggestionClick(sug)}
-            className="rounded-full border border-white/10 bg-[#18181d] px-3 py-1 text-xs text-zinc-300 transition-all hover:border-white/30 hover:text-white whitespace-nowrap flex-shrink-0"
+            className="h-8 px-3.5 rounded-lg border border-white/10 bg-[#3A4750]/70 text-xs font-medium text-zinc-200 transition-all hover:bg-[#3A4750] hover:text-white whitespace-nowrap flex-shrink-0 shadow-sm"
           >
             {sug}
           </button>

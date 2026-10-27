@@ -54,7 +54,7 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
     <div className="fixed inset-0 z-[1200] flex items-end sm:items-center justify-center bg-black/85 backdrop-blur-md p-0 sm:p-4 animate-fadeIn">
       <div className="fixed inset-0" onClick={onClose} />
 
-      <div className="relative z-10 w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-[#303841] border border-white/10 text-white shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="relative z-10 w-full max-w-lg rounded-t-[28px] sm:rounded-[28px] bg-[#303841] border border-white/10 text-white shadow-[var(--md-sys-elevation-level3)] overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3.5 sm:py-4 bg-[#3A4750] flex-shrink-0">
           <div className="flex items-center gap-2.5">
@@ -96,7 +96,7 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
                 </p>
                 <button
                   onClick={handleStartParty}
-                  className="w-full py-3 rounded-xl font-bold text-sm text-white shadow-lg transition-all hover:brightness-110 active:scale-98"
+                  className="w-full py-3 rounded-full font-semibold text-sm text-white shadow-[var(--md-sys-elevation-level1)] transition-all hover:brightness-110 active:scale-98"
                   style={{ background: accentHex }}
                 >
                   Start New Party
@@ -112,11 +112,11 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
                     value={inputCode}
                     onChange={e => setInputCode(e.target.value)}
                     placeholder="Enter code (e.g. DX-7492-SYNC)"
-                    className="flex-1 rounded-xl bg-[#303841] border border-white/10 px-4 py-2.5 text-sm text-white uppercase placeholder:normal-case placeholder:text-zinc-400 focus:outline-none focus:border-white/30"
+                    className="flex-1 rounded-full bg-[#303841] border border-white/10 px-4 py-2.5 text-sm text-white uppercase placeholder:normal-case placeholder:text-zinc-400 focus:outline-none focus:border-white/30"
                   />
                   <button
                     type="submit"
-                    className="px-5 rounded-xl font-bold text-sm bg-white/10 hover:bg-white/20 text-white transition-colors"
+                    className="px-6 rounded-full font-semibold text-sm bg-white/10 hover:bg-white/20 text-white transition-colors"
                   >
                     Join
                   </button>

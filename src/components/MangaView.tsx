@@ -397,26 +397,30 @@ export const MangaView: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 pt-6 overflow-x-auto pb-1 text-xs font-semibold">
+      {/* M3 Filter Chips (m3.material.io/develop/web) */}
+      <div className="flex items-center gap-2 pt-6 overflow-x-auto pb-1 text-xs">
         {[
           { id: 'all', label: 'All Titles' },
           { id: 'action', label: 'Action & Shonen' },
           { id: 'fantasy', label: 'Fantasy & Isekai' },
           { id: 'color', label: 'Full Color Editions' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveFilter(tab.id)}
-            className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
-              activeFilter === tab.id
-                ? 'bg-white text-black font-bold'
-                : 'bg-white/5 text-zinc-400 hover:text-white'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        ].map((tab) => {
+          const isSelected = activeFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveFilter(tab.id)}
+              className={`h-8 px-4 rounded-lg font-medium transition-all whitespace-nowrap border flex items-center gap-1.5 ${
+                isSelected
+                  ? 'bg-[#2185D5] text-white border-[#2185D5] shadow-[var(--md-sys-elevation-level1)]'
+                  : 'bg-[#3A4750]/60 border-white/10 text-zinc-300 hover:text-white hover:bg-[#3A4750]'
+              }`}
+            >
+              {isSelected && <span className="text-[10px]">✓</span>}
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Manga Grid */}
@@ -508,7 +512,7 @@ export const MangaView: React.FC = () => {
             onClick={() => setSelectedManga(null)}
           />
 
-          <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-[#303841] border border-white/10 text-white shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-2xl rounded-[28px] bg-[#303841] border border-white/10 text-white shadow-[var(--md-sys-elevation-level3)] overflow-hidden max-h-[85vh] flex flex-col">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10 bg-[#3A4750]">
               <div className="flex items-center gap-3.5">

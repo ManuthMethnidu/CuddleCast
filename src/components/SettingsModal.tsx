@@ -23,7 +23,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fadeIn">
       <div className="fixed inset-0" onClick={onClose} />
 
-      <div className="relative z-10 w-full max-w-xl rounded-2xl bg-[#303841] border border-white/10 text-white shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-xl rounded-[28px] bg-[#303841] border border-white/10 text-white shadow-[var(--md-sys-elevation-level3)] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 bg-[#3A4750]">
           <div className="flex items-center gap-2.5">
@@ -200,7 +200,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           <span className="text-xs text-zinc-300">Echora v2.15.9 · Next-Gen Cinema</span>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl text-xs font-bold text-white transition-all shadow"
+            className="px-6 py-2.5 rounded-full text-xs font-semibold text-white transition-all shadow-[var(--md-sys-elevation-level1)] hover:shadow-[var(--md-sys-elevation-level2)] active:scale-95"
             style={{ background: accentHex }}
           >
             Done

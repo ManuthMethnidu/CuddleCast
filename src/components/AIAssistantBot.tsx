@@ -80,12 +80,12 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
 
   return (
     <>
-      {/* Floating Bot Button (Exact blue/cyan circle as in Vidbox screenshot) */}
+      {/* M3 Floating Action Button (FAB) */}
       <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[130] flex flex-col items-end">
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-[#00A3FF] hover:bg-[#0091e6] text-white shadow-[0_8px_25px_rgba(0,163,255,0.45)] transition-all hover:scale-110 active:scale-95 border-2 border-white/20"
+            className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-[#2185D5] hover:bg-[#1b70b5] text-white shadow-[var(--md-sys-elevation-level3)] hover:shadow-[var(--md-sys-elevation-level4)] transition-all hover:scale-105 active:scale-95 border border-white/20"
             title="Echora AI Stream Assistant"
           >
             <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
@@ -94,7 +94,7 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
 
         {/* AI Chat Window Popup */}
         {isOpen && (
-          <div className="w-[340px] sm:w-[380px] h-[500px] rounded-2xl bg-[#303841] border border-white/10 text-white shadow-2xl flex flex-col overflow-hidden animate-scaleUp select-none">
+          <div className="w-[340px] sm:w-[380px] h-[500px] rounded-[28px] bg-[#303841] border border-white/10 text-white shadow-[var(--md-sys-elevation-level3)] flex flex-col overflow-hidden animate-scaleUp select-none">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 bg-[#3A4750]">
               <div className="flex items-center gap-2.5">

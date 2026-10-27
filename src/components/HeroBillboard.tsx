@@ -215,11 +215,11 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
           {currentItem.overview}
         </p>
 
-        {/* Action Buttons */}
+        {/* M3 Action Buttons (m3.material.io/develop/web) */}
         <div className="flex items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full sm:w-auto">
           <button
             onClick={() => onPlay(currentItem)}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 h-11 sm:h-12 px-6 sm:px-7 rounded-lg bg-white text-black font-bold text-sm sm:text-base transition-all hover:bg-white/85 active:scale-95 shadow-lg"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 h-11 sm:h-12 px-6 sm:px-8 rounded-full bg-white text-black font-semibold text-sm sm:text-base transition-all hover:bg-white/90 active:scale-95 shadow-[var(--md-sys-elevation-level2)]"
           >
             <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-black" />
             <span>Play</span>
@@ -227,7 +227,7 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
 
           <button
             onClick={() => onMoreInfo(currentItem)}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 h-11 sm:h-12 px-5 sm:px-6 rounded-lg bg-[rgba(109,109,118,0.55)] hover:bg-[rgba(109,109,118,0.4)] text-white font-semibold text-sm sm:text-base backdrop-blur-md transition-all active:scale-95"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 h-11 sm:h-12 px-5 sm:px-7 rounded-full bg-[#3A4750]/80 hover:bg-[#3A4750] text-[#F3F3F3] font-medium text-sm sm:text-base border border-white/10 backdrop-blur-md transition-all active:scale-95 shadow-[var(--md-sys-elevation-level1)]"
           >
             <Info className="h-4 sm:h-5 w-4 sm:w-5 stroke-white" />
             <span>More Info</span>

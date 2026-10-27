@@ -178,58 +178,55 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right: Search, Watch Party, Settings Icon & Profile */}
           <div className="flex items-center gap-1.5 sm:gap-3">
-            {/* Search Bar ("Search or paste link") */}
+            {/* M3 Search Bar ("Search movies, shows, anime, manga...") */}
             <div ref={searchContainerRef} className="relative flex items-center">
               <div
-                className={`relative flex items-center rounded-lg border transition-all duration-300 ${
+                className={`relative flex items-center rounded-full border transition-all duration-300 ${
                   isSearchActive || searchQuery
-                    ? 'w-36 sm:w-64 md:w-80 bg-black/90 border-white/50 shadow-lg'
-                    : 'w-28 sm:w-56 bg-white/[0.06] border-white/10 hover:bg-white/[0.09]'
+                    ? 'w-40 sm:w-64 md:w-80 bg-[#353f49] border-[#2185D5] shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
+                    : 'w-32 sm:w-56 bg-white/[0.08] border-white/10 hover:bg-white/[0.12]'
                 }`}
               >
+                <div className="pl-3 pr-1 text-zinc-400">
+                  <Search className="h-4 w-4" />
+                </div>
+
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={e => onSearchChange(e.target.value)}
                   onFocus={() => setIsSearchActive(true)}
-                  placeholder="Search..."
-                  className="h-8 sm:h-9 w-full bg-transparent pl-2.5 sm:pl-3.5 pr-7 sm:pr-8 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
+                  placeholder="Search Echora..."
+                  className="h-9 w-full bg-transparent pr-7 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
                 />
 
-                {searchQuery ? (
+                {searchQuery && (
                   <button
                     onClick={() => onSearchChange('')}
-                    className="absolute right-2 text-zinc-400 hover:text-white"
+                    className="absolute right-2.5 p-1 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white"
                   >
-                    <X className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => searchInputRef.current?.focus()}
-                    className="absolute right-2 text-zinc-400 hover:text-white"
-                  >
-                    <Search className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Watch Party Button (Desktop only on top bar) */}
+            {/* M3 Tonal Button: Watch Party */}
             <button
               onClick={() => setIsWatchPartyOpen(true)}
-              className="hidden sm:flex h-9 items-center gap-1.5 px-3 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-semibold text-zinc-200 hover:text-white transition-all active:scale-95"
+              className="hidden sm:flex h-9 items-center gap-2 px-3.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-xs font-medium text-zinc-100 hover:text-white transition-all active:scale-95 shadow-sm"
               title="Watch Party"
             >
-              <Users className="h-3.5 w-3.5" style={{ color: accentHex }} />
+              <Users className="h-4 w-4" style={{ color: accentHex }} />
               <span>Party</span>
             </button>
 
-            {/* Quick Settings Button (Desktop only on top bar) */}
+            {/* M3 Icon Button: Quick Settings */}
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-zinc-200 hover:text-white transition-all active:scale-95"
-              title="dx.bi Settings & Accents"
+              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-zinc-200 hover:text-white transition-all active:scale-95"
+              title="Echora Settings & Themes"
             >
               <SettingsIcon className="h-4 w-4" />
             </button>
@@ -306,8 +303,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation Bar (iOS / Android Stremio Style) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-[#303841]/95 backdrop-blur-2xl border-t border-white/10 px-1 py-1 pb-[calc(0.4rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.8)] select-none">
+      {/* M3 Web Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-[#303841]/95 backdrop-blur-2xl border-t border-white/10 px-2 py-1 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around shadow-[var(--md-sys-elevation-level3)] select-none">
         {[
           { id: 'all', label: 'Home', icon: Home },
           { id: 'manga', label: 'Manga', icon: BookOpen },
@@ -321,21 +318,35 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               key={cat.id}
               onClick={() => onCategoryChange(cat.id)}
-              className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
-              style={{ color: isSelected ? accentHex : 'var(--dx-text-3)' }}
+              className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 group"
             >
-              <Icon className="h-5 w-5" />
-              <span className="text-[10px] font-semibold mt-0.5 tracking-tight">{cat.label}</span>
+              <div
+                className="h-8 w-14 rounded-full flex items-center justify-center transition-all duration-200"
+                style={{
+                  backgroundColor: isSelected ? `${accentHex}28` : 'transparent',
+                  color: isSelected ? accentHex : 'var(--dx-text-3)',
+                }}
+              >
+                <Icon className="h-5 w-5" />
+              </div>
+              <span
+                className="text-[10px] mt-0.5 tracking-tight font-medium"
+                style={{ color: isSelected ? '#FFFFFF' : 'var(--dx-text-3)' }}
+              >
+                {cat.label}
+              </span>
             </button>
           );
         })}
 
         <button
           onClick={() => setIsSettingsOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 py-1 text-zinc-400 hover:text-white transition-all active:scale-95"
+          className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 group text-zinc-400 hover:text-white"
         >
-          <SettingsIcon className="h-5 w-5" />
-          <span className="text-[10px] font-semibold mt-0.5 tracking-tight">Settings</span>
+          <div className="h-8 w-14 rounded-full flex items-center justify-center transition-all">
+            <SettingsIcon className="h-5 w-5" />
+          </div>
+          <span className="text-[10px] mt-0.5 tracking-tight font-medium text-zinc-400">Settings</span>
         </button>
       </nav>
 

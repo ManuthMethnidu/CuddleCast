@@ -9,7 +9,8 @@ export const Footer: React.FC = () => {
       <div className="mx-auto max-w-[1560px] px-4 md:px-8 lg:px-12">
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">
-            <div className="mb-3 flex items-center gap-2">
+            <div className="mb-3 flex items-center gap-2.5">
+              <img src="/logo.png" alt="Echora" className="h-6 w-6 object-contain" />
               <span
                 className="font-black text-2xl uppercase tracking-wider"
                 style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}

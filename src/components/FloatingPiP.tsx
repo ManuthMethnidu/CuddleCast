@@ -41,7 +41,7 @@ export const FloatingPiP: React.FC<FloatingPiPProps> = ({
     <div
       role="region"
       aria-label="Picture in Picture Floating Player"
-      className="fixed bottom-6 right-6 z-[9999] w-80 sm:w-96 rounded-xl overflow-hidden shadow-2xl border border-white/20 bg-[#303841]/95 backdrop-blur-md transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
+      className="fixed bottom-6 right-6 z-[9999] w-80 sm:w-96 rounded-[20px] overflow-hidden shadow-[var(--md-sys-elevation-level4)] border border-white/20 bg-[#303841]/95 backdrop-blur-md transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
     >
       {/* Video Container / Thumbnail */}
       <div className="relative aspect-video w-full bg-black overflow-hidden group">

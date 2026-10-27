@@ -9,7 +9,7 @@ interface ProfileGateProps {
 }
 
 export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => {
-  const { accentHex } = useAccent();
+  const { accentHex, accentGlow } = useAccent();
   const [profiles, setProfiles] = useState<UserProfile[]>(() => authStorage.getProfiles());
   const [isManaging, setIsManaging] = useState(false);
   const [editingProfile, setEditingProfile] = useState<UserProfile | null>(null);
@@ -49,6 +49,12 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
     <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#303841] px-4 text-[#F3F3F3] animate-fadeIn select-none">
       <div className="relative z-10 text-center max-w-xl">
         <div className="mb-6 flex flex-col items-center">
+          <img
+            src="/logo.png"
+            alt="Echora"
+            className="h-16 w-16 mb-2 object-contain"
+            style={{ filter: `drop-shadow(0 0 15px ${accentGlow})` }}
+          />
           <span
             className="font-black text-4xl sm:text-5xl uppercase tracking-wider"
             style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
@@ -121,7 +127,7 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
           <form
             onSubmit={handleSaveEdit}
-            className="w-full max-w-md rounded-2xl bg-[#3A4750] p-6 border border-white/10 shadow-2xl"
+            className="w-full max-w-md rounded-[28px] bg-[#3A4750] p-6 border border-white/10 shadow-[var(--md-sys-elevation-level3)]"
           >
             <h3 className="text-xl font-bold text-white">Edit Profile</h3>
             <div className="mt-5 flex items-center gap-4">

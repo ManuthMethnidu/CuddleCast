@@ -24,7 +24,7 @@ export const PictureSoundPanel: React.FC<PictureSoundPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 sm:bottom-24 sm:right-6 sm:left-auto z-50 w-full sm:w-96 rounded-t-2xl sm:rounded-2xl max-h-[82vh] overflow-y-auto bg-[#303841]/95 border border-white/10 text-white shadow-2xl backdrop-blur-xl animate-fadeIn pb-[env(safe-area-inset-bottom,0px)] select-none">
+    <div className="fixed inset-x-0 bottom-0 sm:bottom-24 sm:right-6 sm:left-auto z-50 w-full sm:w-96 rounded-t-[28px] sm:rounded-[28px] max-h-[82vh] overflow-y-auto bg-[#303841]/95 border border-white/10 text-white shadow-[var(--md-sys-elevation-level3)] backdrop-blur-xl animate-fadeIn pb-[env(safe-area-inset-bottom,0px)] select-none">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-3.5 bg-[#3A4750]">
         <div className="flex items-center gap-2">

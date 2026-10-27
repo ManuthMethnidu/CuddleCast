@@ -76,37 +76,38 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
         }`}
       />
 
-      {/* Slide-out Sidebar Drawer */}
+      {/* M3 Navigation Drawer */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-[160] w-64 sm:w-72 bg-[#303841] border-r border-[#3A4750] text-[#F3F3F3] flex flex-col shadow-2xl transition-transform duration-300 ease-in-out select-none ${
+        className={`fixed top-0 left-0 bottom-0 z-[160] w-64 sm:w-72 rounded-r-[28px] bg-[#303841] border-r border-[#3A4750] text-[#F3F3F3] flex flex-col shadow-[var(--md-sys-elevation-level4)] transition-transform duration-300 ease-in-out select-none overflow-hidden ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Sidebar Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-[#3A4750]">
           <div className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="Echora" className="h-6 w-6 object-contain" />
             <span
               className="font-black text-2xl uppercase tracking-wider"
               style={{ fontFamily: "'Bebas Neue', sans-serif", color: accentHex }}
             >
               ECHORA
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 border border-white/10 px-1.5 py-0.5 rounded">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-300 border border-white/10 px-1.5 py-0.5 rounded-full">
               v2.15
             </span>
           </div>
 
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
             title="Close sidebar"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Navigation Items List */}
-        <div className="flex-1 overflow-y-auto no-scrollbar py-2 px-3 space-y-0.5">
+        {/* Navigation Items List (M3 Navigation Drawer items) */}
+        <div className="flex-1 overflow-y-auto no-scrollbar py-3 px-3 space-y-1">
           {navItems.map(item => {
             const isActive = activeView === item.id;
             const Icon = item.icon;
@@ -118,13 +119,14 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
                   onSelectView(item.id);
                   onClose();
                 }}
-                className={`group flex items-center w-full gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`group flex items-center w-full gap-3 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-white/10 text-white font-semibold shadow-inner'
+                    ? 'text-white font-semibold shadow-sm'
                     : 'text-zinc-300 hover:text-white hover:bg-white/5'
                 }`}
                 style={{
-                  borderLeft: isActive ? `3px solid ${accentHex}` : '3px solid transparent',
+                  backgroundColor: isActive ? `${accentHex}24` : undefined,
+                  color: isActive ? '#FFFFFF' : undefined,
                 }}
               >
                 {Icon && (

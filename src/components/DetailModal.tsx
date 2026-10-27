@@ -260,7 +260,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
             <div className="flex items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full">
               <button
                 onClick={() => onPlay(item, selectedEpisode || undefined)}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 h-11 sm:h-12 px-6 sm:px-8 rounded-lg bg-white text-black font-bold text-sm sm:text-base transition-all hover:bg-white/85 active:scale-95 shadow-xl"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 h-11 sm:h-12 px-6 sm:px-8 rounded-full bg-white text-black font-semibold text-sm sm:text-base transition-all hover:bg-white/90 active:scale-95 shadow-[var(--md-sys-elevation-level2)]"
               >
                 <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-black" />
                 <span>Play</span>
