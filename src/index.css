@@ -125,6 +125,119 @@ body {
 .shadow-accent { box-shadow: 0 0 25px var(--dx-accent-glow); }
 
 /* =====================================================================
+   MATERIAL DESIGN 3 (@material/web) DARK THEME COMPONENT TOKENS
+   ===================================================================== */
+md-icon-button {
+  --md-icon-button-icon-color: #F3F3F3;
+  --md-icon-button-hover-icon-color: #FFFFFF;
+  --md-icon-button-focus-icon-color: #FFFFFF;
+  --md-icon-button-pressed-icon-color: #FFFFFF;
+  --md-icon-button-state-layer-color: #FFFFFF;
+}
+
+md-filled-icon-button {
+  --md-filled-icon-button-container-color: var(--md-sys-color-surface-container-high, #3A4750);
+  --md-filled-icon-button-icon-color: #FFFFFF;
+  --md-filled-icon-button-hover-icon-color: #FFFFFF;
+  --md-filled-icon-button-state-layer-color: #FFFFFF;
+}
+
+md-outlined-icon-button {
+  --md-outlined-icon-button-outline-color: rgba(243, 243, 243, 0.35);
+  --md-outlined-icon-button-icon-color: #F3F3F3;
+  --md-outlined-icon-button-hover-icon-color: #FFFFFF;
+  --md-outlined-icon-button-hover-state-layer-color: #FFFFFF;
+  --md-outlined-icon-button-outline-width: 1px;
+}
+
+md-filled-button {
+  --md-filled-button-container-color: var(--md-sys-color-primary, #2185D5);
+  --md-filled-button-label-text-color: #FFFFFF;
+  --md-filled-button-icon-color: #FFFFFF;
+  --md-filled-button-hover-label-text-color: #FFFFFF;
+  --md-filled-button-hover-icon-color: #FFFFFF;
+  --md-filled-button-state-layer-color: #FFFFFF;
+}
+
+md-filled-tonal-button,
+md-tonal-button {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-surface-container-highest, #3A4750);
+  --md-filled-tonal-button-label-text-color: #F3F3F3;
+  --md-filled-tonal-button-icon-color: #F3F3F3;
+  --md-filled-tonal-button-hover-label-text-color: #FFFFFF;
+  --md-filled-tonal-button-hover-icon-color: #FFFFFF;
+  --md-filled-tonal-button-state-layer-color: #FFFFFF;
+}
+
+md-outlined-button {
+  --md-outlined-button-outline-color: rgba(243, 243, 243, 0.35);
+  --md-outlined-button-label-text-color: #F3F3F3;
+  --md-outlined-button-icon-color: #F3F3F3;
+  --md-outlined-button-hover-label-text-color: #FFFFFF;
+  --md-outlined-button-hover-icon-color: #FFFFFF;
+  --md-outlined-button-hover-state-layer-color: rgba(243, 243, 243, 0.08);
+  --md-outlined-button-outline-width: 1.5px;
+}
+
+md-text-button {
+  --md-text-button-label-text-color: var(--md-sys-color-primary, #2185D5);
+  --md-text-button-hover-label-text-color: #FFFFFF;
+  --md-text-button-icon-color: var(--md-sys-color-primary, #2185D5);
+  --md-text-button-state-layer-color: var(--md-sys-color-primary, #2185D5);
+}
+
+md-suggestion-chip, md-filter-chip {
+  --md-suggestion-chip-label-text-color: #F3F3F3;
+  --md-suggestion-chip-outline-color: rgba(243, 243, 243, 0.22);
+  --md-suggestion-chip-container-color: var(--md-sys-color-surface-container, #303841);
+  --md-filter-chip-label-text-color: #F3F3F3;
+  --md-filter-chip-outline-color: rgba(243, 243, 243, 0.22);
+  --md-filter-chip-selected-container-color: var(--md-sys-color-primary, #2185D5);
+  --md-filter-chip-selected-label-text-color: #FFFFFF;
+}
+
+md-switch {
+  --md-switch-track-outline-color: rgba(243, 243, 243, 0.3);
+  --md-switch-track-color: var(--md-sys-color-surface-container-highest, #3A4750);
+  --md-switch-selected-track-color: var(--md-sys-color-primary, #2185D5);
+  --md-switch-handle-color: #A0AAB4;
+  --md-switch-selected-handle-color: #FFFFFF;
+}
+
+md-linear-progress {
+  --md-linear-progress-track-color: rgba(243, 243, 243, 0.15);
+  --md-linear-progress-active-indicator-color: var(--md-sys-color-primary, #2185D5);
+  --md-linear-progress-track-height: 4px;
+}
+
+/* Ensure Slotted Lucide SVG Icons render cleanly without unwanted solid fills */
+md-filled-button svg:not(.fill-current),
+md-outlined-button svg:not(.fill-current),
+md-filled-tonal-button svg:not(.fill-current),
+md-tonal-button svg:not(.fill-current),
+md-elevated-button svg:not(.fill-current),
+md-text-button svg:not(.fill-current),
+md-icon-button svg:not(.fill-current),
+md-filled-icon-button svg:not(.fill-current),
+md-outlined-icon-button svg:not(.fill-current) {
+  fill: none !important;
+  stroke: currentColor !important;
+}
+
+md-filled-button svg.fill-current,
+md-outlined-button svg.fill-current,
+md-filled-tonal-button svg.fill-current,
+md-tonal-button svg.fill-current,
+md-elevated-button svg.fill-current,
+md-text-button svg.fill-current,
+md-icon-button svg.fill-current,
+md-filled-icon-button svg.fill-current,
+md-outlined-icon-button svg.fill-current {
+  fill: currentColor !important;
+  stroke: none !important;
+}
+
+/* =====================================================================
    MATERIAL DESIGN 3 (M3) COMPONENT SURFACES & BUTTONS
    ===================================================================== */
 .m3-card-elevated {

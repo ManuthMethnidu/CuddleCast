@@ -14,6 +14,7 @@ import {
   Tv,
   Tv2,
   Radio,
+  Trophy,
   ChevronDown,
   UserCog,
   ArrowLeftRight,
@@ -98,6 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navCategories = [
     { id: 'all', label: 'Home', icon: Home },
+    { id: 'sports', label: 'Sports', icon: Trophy, badge: 'LIVE' },
     { id: 'manga', label: 'Manga', icon: BookOpen, badge: 'HOT' },
     { id: 'anime', label: 'Anime', icon: Tv },
     { id: 'live-tv', label: 'Live TV', icon: Tv2 },
@@ -118,16 +120,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       >
         <div className="mx-auto flex items-center justify-between max-w-[1560px] px-3.5 sm:px-8 lg:px-12">
           {/* Left: Menu Trigger + Echora Logo + Desktop Nav Tabs */}
-          <div className="flex items-center gap-3 sm:gap-6 lg:gap-8">
+          <div className="flex items-center gap-2 sm:gap-5 lg:gap-7">
             {onToggleSidebar && (
-              <button
+              <md-icon-button
                 onClick={onToggleSidebar}
-                className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.14] border border-white/10 text-white transition-all active:scale-95"
                 title="Echora Menu (All Channels, Anime, Manga, 4K, Sports, Radio)"
                 aria-label="Open Navigation Menu"
               >
-                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
+                <Menu className="h-5 w-5 text-white" />
+              </md-icon-button>
             )}
 
             {/* Echora Logo & Wordmark */}
@@ -195,25 +196,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   />
                 )}
               </button>
-
-              {/* M3 Expressive Design System Tab */}
-              <button
-                onClick={() => onCategoryChange('design-system')}
-                className={`relative py-1 font-medium transition-colors hover:text-white flex items-center gap-1.5 ${
-                  activeCategory === 'design-system' ? 'text-white font-bold' : 'text-[var(--dx-text-2)]'
-                }`}
-              >
-                <span>M3 Expressive</span>
-                <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full leading-none bg-[var(--md-sys-color-tertiary-container)] text-[var(--md-sys-color-on-tertiary-container)]">
-                  3.0
-                </span>
-                {activeCategory === 'design-system' && (
-                  <span
-                    className="absolute -bottom-1 left-0 right-0 h-[2px] rounded-full"
-                    style={{ background: accentHex }}
-                  />
-                )}
-              </button>
             </nav>
           </div>
 
@@ -253,31 +235,29 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
-            {/* M3 Tonal Button: Watch Party */}
-            <button
-              onClick={() => setIsWatchPartyOpen(true)}
-              className="hidden sm:flex h-9 items-center gap-2 px-3.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-xs font-medium text-zinc-100 hover:text-white transition-all active:scale-95 shadow-sm"
-              title="Watch Party"
-            >
-              <Users className="h-4 w-4" style={{ color: accentHex }} />
-              <span>Party</span>
-            </button>
+            {/* M3 Filled Tonal Button: Watch Party */}
+            <div className="hidden sm:inline-flex">
+              <md-filled-tonal-button
+                onClick={() => setIsWatchPartyOpen(true)}
+                title="Watch Party"
+              >
+                <Users className="h-4 w-4" slot="icon" style={{ color: accentHex }} />
+                Party
+              </md-filled-tonal-button>
+            </div>
 
             {/* M3 Icon Button: Quick Settings */}
-            <button
-              onClick={() => onCategoryChange('settings')}
-              className={`hidden sm:flex h-9 w-9 items-center justify-center rounded-full border transition-all active:scale-95 ${
-                activeCategory === 'settings'
-                  ? 'bg-white/20 border-white text-white'
-                  : 'bg-white/[0.08] hover:bg-white/[0.14] border-white/10 text-zinc-200 hover:text-white'
-              }`}
-              title="System Settings & Performance"
-            >
-              <SettingsIcon
-                className="h-4 w-4"
-                style={{ color: activeCategory === 'settings' ? accentHex : undefined }}
-              />
-            </button>
+            <div className="hidden sm:inline-flex">
+              <md-icon-button
+                onClick={() => onCategoryChange('settings')}
+                title="System Settings & Performance"
+              >
+                <SettingsIcon
+                  className="h-4 w-4 text-white"
+                  style={{ color: activeCategory === 'settings' ? accentHex : undefined }}
+                />
+              </md-icon-button>
+            </div>
 
             {/* Clerk Authentication & Switch Account Controls */}
             {isSignedIn && user ? (
@@ -436,7 +416,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 )}
               </div>
             ) : (
-              <button
+              <md-filled-button
                 onClick={() => {
                   if (openSignIn) {
                     openSignIn();
@@ -444,12 +424,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onCategoryChange('login');
                   }
                 }}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all hover:brightness-110 active:scale-95 shadow-md"
-                style={{ background: accentHex }}
               >
-                <LogIn className="h-4 w-4" />
-                <span>Sign In</span>
-              </button>
+                <LogIn className="h-4 w-4" slot="icon" />
+                Sign In
+              </md-filled-button>
             )}
           </div>
         </div>
@@ -459,10 +437,10 @@ export const Navbar: React.FC<NavbarProps> = ({
       <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-[#303841]/95 backdrop-blur-2xl border-t border-white/10 px-2 py-1 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around shadow-[var(--md-sys-elevation-level3)] select-none">
         {[
           { id: 'all', label: 'Home', icon: Home },
+          { id: 'sports', label: 'Sports', icon: Trophy },
           { id: 'manga', label: 'Manga', icon: BookOpen },
           { id: 'anime', label: 'Anime', icon: Tv },
           { id: 'live-tv', label: 'Live TV', icon: Tv2 },
-          { id: 'radio', label: 'Radio', icon: Radio },
         ].map(cat => {
           const Icon = cat.icon;
           const isSelected = activeCategory === cat.id;

@@ -190,14 +190,14 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
               className="max-h-14 sm:max-h-28 w-auto object-contain drop-shadow-[0_6px_24px_rgba(0,0,0,0.6)]"
             />
           ) : (
-            <h1 className="text-2xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] leading-[1.05]">
+            <h1 className="md-typescale-display-small sm:md-typescale-display-medium font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] leading-[1.05]">
               {currentItem.title || currentItem.name}
             </h1>
           )}
         </div>
 
         {/* Metadata Row */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium text-zinc-300">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 md-typescale-label-medium font-medium text-zinc-300">
           <span className="dx-match font-bold text-emerald-400">
             {Math.round(currentItem.vote_average * 10)}% Match
           </span>
@@ -213,48 +213,68 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
         </div>
 
         {/* Synopsis */}
-        <p className="line-clamp-2 sm:line-clamp-3 text-xs sm:text-base text-zinc-200 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] max-w-lg">
+        <p className="line-clamp-2 sm:line-clamp-3 md-typescale-body-large text-zinc-200 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] max-w-lg">
           {currentItem.overview}
         </p>
 
-        {/* M3 Action Buttons (m3.material.io/develop/web) */}
-        <div className="flex items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full sm:w-auto">
-          <button
+        {/* M3 Action Buttons using @material/web */}
+        <div className="flex items-center gap-3 pt-1 sm:pt-2 w-full sm:w-auto">
+          <md-filled-button
             onClick={() => onPlay(currentItem)}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 h-11 sm:h-12 px-6 sm:px-8 rounded-full bg-white text-black font-semibold text-sm sm:text-base transition-all hover:bg-white/90 active:scale-95 shadow-[var(--md-sys-elevation-level2)]"
+            className="h-11 sm:h-12 text-sm sm:text-base font-semibold"
+            style={{
+              '--md-filled-button-container-color': '#FFFFFF',
+              '--md-filled-button-label-text-color': '#000000',
+              '--md-filled-button-icon-color': '#000000',
+            }}
           >
-            <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-black" />
-            <span>Play</span>
-          </button>
+            <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-current" slot="icon" />
+            Play
+          </md-filled-button>
 
-          <button
+          <md-filled-tonal-button
             onClick={() => onMoreInfo(currentItem)}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 h-11 sm:h-12 px-5 sm:px-7 rounded-full bg-[#3A4750]/80 hover:bg-[#3A4750] text-[#F3F3F3] font-medium text-sm sm:text-base border border-white/10 backdrop-blur-md transition-all active:scale-95 shadow-[var(--md-sys-elevation-level1)]"
+            className="h-11 sm:h-12 text-sm sm:text-base font-medium"
+            style={{
+              '--md-filled-tonal-button-container-color': 'rgba(58, 71, 80, 0.85)',
+              '--md-filled-tonal-button-label-text-color': '#FFFFFF',
+              '--md-filled-tonal-button-icon-color': '#FFFFFF',
+            }}
           >
-            <Info className="h-4 sm:h-5 w-4 sm:w-5 stroke-white" />
-            <span>More Info</span>
-          </button>
+            <Info className="h-4 sm:h-5 w-4 sm:w-5" slot="icon" />
+            More Info
+          </md-filled-tonal-button>
         </div>
       </div>
 
       {/* Right Edge: Sound Toggle & Maturity Badge */}
       <div className="absolute z-[3] right-4 sm:right-[var(--dx-gutter,3rem)] top-16 sm:top-auto sm:bottom-[calc(5vw+3.5rem)] flex items-center gap-2 sm:gap-3">
         {videoEnded ? (
-          <button
+          <md-filled-icon-button
             onClick={handleReplay}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/50 text-white backdrop-blur-md transition-transform hover:scale-110"
-            title="Replay"
+            title="Replay Trailer"
+            style={{
+              '--md-filled-icon-button-container-color': 'rgba(48, 56, 65, 0.8)',
+              '--md-filled-icon-button-icon-color': '#FFFFFF',
+            }}
           >
-            <RotateCcw className="h-5 w-5" />
-          </button>
+            <RotateCcw className="h-5 w-5 text-white" />
+          </md-filled-icon-button>
         ) : isVideoPlaying ? (
-          <button
+          <md-filled-icon-button
             onClick={toggleMute}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/50 text-white backdrop-blur-md transition-transform hover:scale-110"
             title={isMuted ? 'Unmute' : 'Mute'}
+            style={{
+              '--md-filled-icon-button-container-color': 'rgba(48, 56, 65, 0.8)',
+              '--md-filled-icon-button-icon-color': '#FFFFFF',
+            }}
           >
-            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-          </button>
+            {isMuted ? (
+              <VolumeX className="h-5 w-5 text-white" />
+            ) : (
+              <Volume2 className="h-5 w-5 text-white" />
+            )}
+          </md-filled-icon-button>
         ) : null}
 
         <div className="flex items-center border-l-2 border-white bg-black/40 px-3.5 py-1 text-xs font-bold text-zinc-200 backdrop-blur-md">

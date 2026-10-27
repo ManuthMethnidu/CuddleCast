@@ -34,26 +34,28 @@ export const SearchGrid: React.FC<SearchGridProps> = ({
 
   return (
     <div className="mx-auto max-w-[1560px] px-3.5 pt-16 sm:pt-24 pb-20 md:px-8 lg:px-12 select-none">
-      {/* Exploration Suggestions */}
+      {/* Exploration Suggestions with Material Web Chips */}
       <div className="mb-6 flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-        <span className="text-xs text-zinc-400 whitespace-nowrap flex-shrink-0">Explore titles:</span>
-        {SUGGESTIONS.map(sug => (
-          <button
-            key={sug}
-            onClick={() => onSuggestionClick(sug)}
-            className="h-8 px-3.5 rounded-lg border border-white/10 bg-[#3A4750]/70 text-xs font-medium text-zinc-200 transition-all hover:bg-[#3A4750] hover:text-white whitespace-nowrap flex-shrink-0 shadow-sm"
-          >
-            {sug}
-          </button>
-        ))}
+        <span className="md-typescale-label-medium text-zinc-400 whitespace-nowrap flex-shrink-0 mr-1">
+          Explore titles:
+        </span>
+        <md-chip-set>
+          {SUGGESTIONS.map(sug => (
+            <md-suggestion-chip
+              key={sug}
+              label={sug}
+              onClick={() => onSuggestionClick(sug)}
+            ></md-suggestion-chip>
+          ))}
+        </md-chip-set>
       </div>
 
       {/* Grid Results Header */}
       <div className="mb-6">
-        <h2 className="text-xl font-extrabold text-white sm:text-2xl">
+        <h2 className="md-typescale-headline-medium font-extrabold text-white">
           {query ? `Search results for "${query}"` : `${category.toUpperCase()} Titles`}
         </h2>
-        <p className="text-xs text-zinc-400 mt-1">
+        <p className="md-typescale-body-small text-zinc-400 mt-1">
           Showing {items.length} titles
         </p>
       </div>
@@ -65,8 +67,9 @@ export const SearchGrid: React.FC<SearchGridProps> = ({
             <div
               key={item.id}
               onClick={() => onSelect(item)}
-              className="group relative cursor-pointer overflow-hidden rounded-md bg-[#18181d] border border-white/5 transition-transform duration-200 hover:scale-105"
+              className="group relative cursor-pointer overflow-hidden rounded-m3-md bg-[#18181d] border border-white/5 transition-transform duration-200 hover:scale-105"
             >
+              <md-ripple></md-ripple>
               {/* Floating IMDb badge */}
               <div className="dx-badge">
                 <i>IMDb</i>

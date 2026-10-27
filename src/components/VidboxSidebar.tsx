@@ -21,7 +21,6 @@ import {
   Blocks,
   ArrowLeftRight,
   UserCog,
-  Palette,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import { useUser, useClerk } from '@clerk/react';
@@ -42,7 +41,6 @@ export type NavViewId =
   | 'history'
   | 'watchlist'
   | 'settings'
-  | 'design-system'
   | 'addons'
   | 'login';
 
@@ -79,7 +77,6 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
     { id: 'history' as const, label: 'History', icon: History },
     { id: 'watchlist' as const, label: 'Watchlist', icon: Bookmark },
     { id: 'settings' as const, label: 'Settings', icon: Sliders },
-    { id: 'design-system' as const, label: 'M3 Expressive', icon: Palette },
     { id: 'addons' as const, label: 'Addons', icon: Blocks },
   ];
 
@@ -114,13 +111,12 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
             </span>
           </div>
 
-          <button
+          <md-icon-button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
             title="Close sidebar"
           >
-            <X className="h-4 w-4" />
-          </button>
+            <X className="h-4 w-4 text-white" />
+          </md-icon-button>
         </div>
 
         {/* Navigation Items List (M3 Navigation Drawer items) */}
@@ -136,7 +132,7 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
                   onSelectView(item.id);
                   onClose();
                 }}
-                className={`group flex items-center w-full gap-3 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+                className={`group relative overflow-hidden flex items-center w-full gap-3 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
                   isActive
                     ? 'text-white font-semibold shadow-sm'
                     : 'text-zinc-300 hover:text-white hover:bg-white/5'
@@ -146,6 +142,7 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
                   color: isActive ? '#FFFFFF' : undefined,
                 }}
               >
+                <md-ripple></md-ripple>
                 {Icon && (
                   <Icon
                     className={`h-4 w-4 flex-none transition-transform group-hover:scale-110 ${

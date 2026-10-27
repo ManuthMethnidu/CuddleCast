@@ -67,14 +67,18 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
     <section className="group/row relative my-4 sm:my-6 px-3.5 sm:px-[var(--dx-gutter,3rem)] max-w-[1560px] mx-auto select-none dx-row-section">
       {/* Row Header with Title and Page Indicator */}
       <div className="flex items-center justify-between pb-2.5">
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+        <h2 className="md-typescale-title-large sm:md-typescale-headline-small font-bold tracking-tight text-white flex items-center gap-2">
           <span>{rail.title}</span>
-          <button
+          <md-text-button
             onClick={handleSeeAll}
-            className="text-xs font-semibold text-zinc-400 hover:text-white transition-colors ml-2"
+            className="text-xs ml-1"
+            style={{
+              '--md-text-button-label-text-color': accentHex,
+              '--md-text-button-hover-label-text-color': '#FFFFFF',
+            }}
           >
             See All &gt;
-          </button>
+          </md-text-button>
         </h2>
 
         {/* Row Page Indicators */}
@@ -87,23 +91,33 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
 
       {/* Side Arrow Paddles */}
       {canScrollLeft && (
-        <button
-          onClick={() => scroll('left')}
-          aria-label="Previous page"
-          className="absolute z-20 top-12 bottom-3 left-0 w-12 flex items-center justify-center bg-gradient-to-r from-[#303841] via-[#303841]/80 to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
-        >
-          <ChevronLeft className="h-8 w-8 transition-transform hover:scale-125" />
-        </button>
+        <div className="absolute z-20 top-12 bottom-3 left-0 w-12 flex items-center justify-center bg-gradient-to-r from-[#303841] via-[#303841]/80 to-transparent opacity-0 group-hover/row:opacity-100 transition-all">
+          <md-filled-icon-button
+            onClick={() => scroll('left')}
+            aria-label="Previous page"
+            style={{
+              '--md-filled-icon-button-container-color': 'rgba(58, 71, 80, 0.95)',
+              '--md-filled-icon-button-icon-color': '#FFFFFF',
+            }}
+          >
+            <ChevronLeft className="h-6 w-6 text-white" />
+          </md-filled-icon-button>
+        </div>
       )}
 
       {canScrollRight && (
-        <button
-          onClick={() => scroll('right')}
-          aria-label="Next page"
-          className="absolute z-20 top-12 bottom-3 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-[#303841] via-[#303841]/80 to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
-        >
-          <ChevronRight className="h-8 w-8 transition-transform hover:scale-125" />
-        </button>
+        <div className="absolute z-20 top-12 bottom-3 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-[#303841] via-[#303841]/80 to-transparent opacity-0 group-hover/row:opacity-100 transition-all">
+          <md-filled-icon-button
+            onClick={() => scroll('right')}
+            aria-label="Next page"
+            style={{
+              '--md-filled-icon-button-container-color': 'rgba(58, 71, 80, 0.95)',
+              '--md-filled-icon-button-icon-color': '#FFFFFF',
+            }}
+          >
+            <ChevronRight className="h-6 w-6 text-white" />
+          </md-filled-icon-button>
+        </div>
       )}
 
       {/* Horizontal Track */}
@@ -128,12 +142,13 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
             >
               {/* Poster Card Container */}
               <div
-                className={`relative overflow-hidden rounded-md bg-[#18181d] border border-white/5 transition-all duration-200 group-hover/card:border-white/25 group-hover/card:shadow-xl group-hover/card:shadow-black/60 ${
+                className={`relative overflow-hidden rounded-m3-md bg-[#18181d] border border-white/5 transition-all duration-200 group-hover/card:border-white/25 group-hover/card:shadow-xl group-hover/card:shadow-black/60 ${
                   rail.isContinueWatching
                     ? 'h-28 w-48 sm:h-40 sm:w-72'
                     : 'h-44 w-28 sm:h-64 sm:w-44 md:h-72 md:w-48'
                 }`}
               >
+                <md-ripple></md-ripple>
                 {/* Floating Hardware-Optimized IMDb Badge */}
                 <div className="dx-badge z-10">
                   <i>IMDb</i>
@@ -170,15 +185,12 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
                 {/* Continue Watching Wide Card Overlay */}
                 {rail.isContinueWatching && (
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-3 pointer-events-none">
-                    <span className="text-sm font-bold text-white truncate drop-shadow">
+                    <span className="md-typescale-title-small font-bold text-white truncate drop-shadow">
                       {item.title || item.name}
                     </span>
                     {progressPercent !== null && (
-                      <div className="mt-2 h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full transition-all duration-300"
-                          style={{ width: `${progressPercent}%`, background: accentHex }}
-                        />
+                      <div className="mt-2 w-full">
+                        <md-linear-progress value={progressPercent / 100} className="w-full"></md-linear-progress>
                       </div>
                     )}
                   </div>

@@ -8,6 +8,8 @@ import { App } from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { CLERK_PUBLISHABLE_KEY } from './config/clerk';
 import './index.css';
+import '@material/web/all.js';
+import '@material/web/typography/md-typescale-styles.css';
 
 // TanStack Query Client for caching server state and avoiding React context repaint lag
 const queryClient = new QueryClient({

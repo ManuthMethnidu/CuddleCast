@@ -156,13 +156,16 @@ export const DetailModal: React.FC<DetailModalProps> = ({
 
       {/* Top Navigation Bar with Back Button */}
       <header className="sticky top-0 z-40 flex items-center justify-between px-4 sm:px-12 h-14 sm:h-16 pt-[env(safe-area-inset-top,0px)] bg-gradient-to-b from-black/90 to-transparent backdrop-blur-md">
-        <button
+        <md-filled-icon-button
           onClick={onClose}
-          className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-black/60 border border-white/20 text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105 active:scale-95"
           title="Back to Browse (Esc)"
+          style={{
+            '--md-filled-icon-button-container-color': 'rgba(0, 0, 0, 0.6)',
+            '--md-filled-icon-button-icon-color': '#FFFFFF',
+          }}
         >
-          <ArrowLeft className="h-4 sm:h-5 w-4 sm:w-5" />
-        </button>
+          <ArrowLeft className="h-5 w-5 text-white" />
+        </md-filled-icon-button>
 
         <div className="flex items-center gap-3">
           <span
@@ -227,56 +230,80 @@ export const DetailModal: React.FC<DetailModalProps> = ({
               <span className="dx-pill">Direct Fast Embed</span>
             </div>
 
-            {/* Action Buttons Row */}
+            {/* Action Buttons Row using Material Web */}
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full">
-              <button
+              <md-filled-button
                 onClick={() => handleLaunchStream()}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 h-11 sm:h-12 px-6 sm:px-8 rounded-full bg-white text-black font-semibold text-sm sm:text-base transition-all hover:bg-white/90 active:scale-95 shadow-[var(--md-sys-elevation-level2)]"
+                className="flex-1 sm:flex-initial h-11 sm:h-12 text-sm sm:text-base font-semibold"
+                style={{
+                  '--md-filled-button-container-color': '#FFFFFF',
+                  '--md-filled-button-label-text-color': '#000000',
+                  '--md-filled-button-icon-color': '#000000',
+                }}
               >
-                <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-black" />
-                <span>Play Now</span>
-              </button>
+                <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-current" slot="icon" />
+                Play Now
+              </md-filled-button>
 
               {/* Server Indicator & Quick Selector */}
-              <button
+              <md-outlined-button
                 onClick={() => setMobileTab('servers')}
-                className="flex items-center gap-1.5 h-11 px-3.5 sm:h-12 sm:px-4 rounded-full border border-white/20 bg-black/40 hover:bg-white/10 text-xs font-semibold text-zinc-200 transition-all active:scale-95 shadow-md"
                 title="Select Streaming Server"
+                className="h-11 sm:h-12 text-xs font-semibold"
+                style={{
+                  '--md-outlined-button-outline-color': 'rgba(243, 243, 243, 0.35)',
+                  '--md-outlined-button-label-text-color': '#F3F3F3',
+                }}
               >
-                <Server className="h-3.5 w-3.5" style={{ color: accentHex }} />
-                <span>Server: <strong className="text-white font-bold">{STREAM_PROVIDERS.find(p => p.id === selectedProviderId)?.name || 'VidLink Pro'}</strong></span>
-              </button>
+                <Server className="h-4 w-4" slot="icon" style={{ color: accentHex }} />
+                Server: {STREAM_PROVIDERS.find(p => p.id === selectedProviderId)?.name || 'VidLink Pro'}
+              </md-outlined-button>
 
-              <button
+              <md-outlined-icon-button
                 onClick={toggleWatchlist}
-                className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-white/30 bg-black/40 hover:border-white text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95 flex-none"
-                title="Add to Library"
+                title={inWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
+                style={{
+                  '--md-outlined-icon-button-outline-color': 'rgba(243, 243, 243, 0.35)',
+                  '--md-outlined-icon-button-icon-color': '#FFFFFF',
+                }}
               >
-                {inWatchlist ? <Check className="h-5 w-5" style={{ color: accentHex }} /> : <Plus className="h-5 w-5" />}
-              </button>
+                {inWatchlist ? (
+                  <Check className="h-5 w-5 text-white" style={{ color: accentHex }} />
+                ) : (
+                  <Plus className="h-5 w-5 text-white" />
+                )}
+              </md-outlined-icon-button>
 
-              <button
+              <md-outlined-icon-button
                 onClick={toggleLike}
-                className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-white/30 bg-black/40 hover:border-white text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95 flex-none"
                 title="Like"
+                style={{
+                  '--md-outlined-icon-button-outline-color': 'rgba(243, 243, 243, 0.35)',
+                  '--md-outlined-icon-button-icon-color': '#FFFFFF',
+                }}
               >
                 <ThumbsUp
-                  className="h-5 w-5"
+                  className="h-5 w-5 text-white"
                   style={{
                     color: isLiked ? accentHex : '#fff',
                     fill: isLiked ? accentHex : 'none',
                   }}
                 />
-              </button>
+              </md-outlined-icon-button>
 
-              <button
+              <md-filled-tonal-button
                 onClick={() => setIsPartyOpen(true)}
-                className="flex items-center gap-1.5 h-11 px-4 sm:h-12 sm:px-5 rounded-full border border-white/30 bg-black/40 hover:border-white text-xs sm:text-sm font-semibold text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95 flex-none"
                 title="Watch Party"
+                className="h-11 sm:h-12"
+                style={{
+                  '--md-filled-tonal-button-container-color': 'rgba(58, 71, 80, 0.85)',
+                  '--md-filled-tonal-button-label-text-color': '#FFFFFF',
+                  '--md-filled-tonal-button-icon-color': accentHex,
+                }}
               >
-                <Users className="h-4 w-4" style={{ color: accentHex }} />
+                <Users className="h-4 w-4" slot="icon" style={{ color: accentHex }} />
                 <span className="hidden sm:inline">Watch Party</span>
-              </button>
+              </md-filled-tonal-button>
             </div>
 
             {/* Mobile Tab Bar */}

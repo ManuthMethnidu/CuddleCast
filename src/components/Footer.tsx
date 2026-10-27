@@ -5,7 +5,7 @@ export const Footer: React.FC = () => {
   const { accentHex } = useAccent();
 
   return (
-    <footer className="border-t border-white/10 bg-[#303841] py-16 text-xs text-zinc-400">
+    <footer className="border-t border-white/10 bg-[#303841] py-16 md-typescale-body-small text-zinc-400">
       <div className="mx-auto max-w-[1560px] px-4 md:px-8 lg:px-12">
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">
@@ -17,16 +17,16 @@ export const Footer: React.FC = () => {
               >
                 ECHORA
               </span>
-              <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
+              <span className="md-typescale-label-small font-bold tracking-widest text-zinc-400 uppercase">
                 Cinema
               </span>
             </div>
-            <p className="leading-relaxed text-zinc-400">
-              A high-performance cinematic streaming platform with multi-provider failover, live TV, manga reader, and watch parties. Built with React 19, TypeScript, Tailwind CSS, TanStack Query, and Zustand.
+            <p className="leading-relaxed text-zinc-400 md-typescale-body-small">
+              A high-performance cinematic streaming platform with multi-provider failover, live TV, manga reader, and watch parties. Built on Google Material 3 Expressive, React 18, TypeScript, Tailwind CSS, TanStack Query, and Zustand.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-12 text-zinc-400">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-12 text-zinc-400 md-typescale-body-small">
             <div className="flex flex-col gap-2.5">
               <span className="font-semibold text-zinc-200">Navigation</span>
               <a href="#home" className="hover:text-white transition-colors">Home</a>

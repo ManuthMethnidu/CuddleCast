@@ -75,12 +75,12 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          <button
+          <md-icon-button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+            title="Close Watch Party"
           >
-            <X className="h-4 w-4" />
-          </button>
+            <X className="h-4 w-4 text-white" />
+          </md-icon-button>
         </div>
 
         {/* Body */}
@@ -94,13 +94,13 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
                 <p className="text-xs text-zinc-300 max-w-sm mx-auto leading-relaxed">
                   Start a room and invite your friends. Everyone's stream stays in lockstep down to the exact second.
                 </p>
-                <button
+                <md-filled-button
                   onClick={handleStartParty}
-                  className="w-full py-3 rounded-full font-semibold text-sm text-white shadow-[var(--md-sys-elevation-level1)] transition-all hover:brightness-110 active:scale-98"
-                  style={{ background: accentHex }}
+                  className="w-full h-11 text-sm font-semibold"
                 >
+                  <Sparkles className="h-4 w-4" slot="icon" />
                   Start New Party
-                </button>
+                </md-filled-button>
               </div>
 
               {/* Join party */}
@@ -112,14 +112,14 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
                     value={inputCode}
                     onChange={e => setInputCode(e.target.value)}
                     placeholder="Enter code (e.g. DX-7492-SYNC)"
-                    className="flex-1 rounded-full bg-[#303841] border border-white/10 px-4 py-2.5 text-sm text-white uppercase placeholder:normal-case placeholder:text-zinc-400 focus:outline-none focus:border-white/30"
+                    className="flex-1 rounded-full bg-[#303841] border border-white/10 px-4 py-2 text-sm text-white uppercase placeholder:normal-case placeholder:text-zinc-400 focus:outline-none focus:border-white/30"
                   />
-                  <button
+                  <md-filled-button
                     type="submit"
-                    className="px-6 rounded-full font-semibold text-sm bg-white/10 hover:bg-white/20 text-white transition-colors"
+                    className="h-10 text-xs font-semibold"
                   >
                     Join
-                  </button>
+                  </md-filled-button>
                 </div>
               </form>
 
@@ -137,14 +137,18 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
                   <span className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider">Party Code</span>
                   <p className="text-xl font-mono font-black text-white tracking-wider">{partyCode}</p>
                 </div>
-                <button
+                <md-filled-tonal-button
                   onClick={copyCode}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all"
-                  style={{ background: copied ? '#10b981' : `${accentHex}30`, color: copied ? '#fff' : accentHex }}
+                  className="h-9 text-xs font-bold"
+                  style={{
+                    '--md-filled-tonal-button-container-color': copied ? '#10b981' : 'rgba(58, 71, 80, 0.9)',
+                    '--md-filled-tonal-button-label-text-color': '#FFFFFF',
+                    '--md-filled-tonal-button-icon-color': '#FFFFFF',
+                  }}
                 >
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  <span>{copied ? 'Copied' : 'Copy Code'}</span>
-                </button>
+                  {copied ? <Check className="h-4 w-4" slot="icon" /> : <Copy className="h-4 w-4" slot="icon" />}
+                  {copied ? 'Copied' : 'Copy Code'}
+                </md-filled-tonal-button>
               </div>
 
               {/* Active Participants & Sync Telemetry */}
@@ -197,12 +201,16 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
               </div>
 
               {/* Leave button */}
-              <button
+              <md-outlined-button
                 onClick={() => setInParty(false)}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+                className="w-full text-xs font-semibold"
+                style={{
+                  '--md-outlined-button-outline-color': 'rgba(243, 243, 243, 0.25)',
+                  '--md-outlined-button-label-text-color': '#ffb4ab',
+                }}
               >
                 Leave Party
-              </button>
+              </md-outlined-button>
             </div>
           )}
         </div>

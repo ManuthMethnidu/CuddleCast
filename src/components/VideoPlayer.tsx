@@ -51,14 +51,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setPlaying: setStorePlaying,
   } = usePlayerStore();
 
-  // Determine if this is an explicit direct .m3u8 live IPTV feed (NOT TMDB movies/tv)
+  // Determine if this is an explicit direct .m3u8 live IPTV / sports feed (NOT TMDB movies/tv)
   const isDirectHlsStream = Boolean(
     item.overview === 'Live match broadcast' ||
     item.overview === 'Live IPTV stream' ||
-    (item.streamUrl &&
-      item.streamUrl.includes('.m3u8') &&
-      item.media_type !== 'movie' &&
-      item.media_type !== 'tv')
+    (item.streamUrl && item.streamUrl.includes('.m3u8'))
   );
 
   const { defaultProvider } = useSettingsStore();
@@ -98,6 +95,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // Compute embed URL for the active provider
   const embedUrl = useMemo(() => {
+    if (item.streamUrl && !item.streamUrl.includes('.m3u8')) {
+      return item.streamUrl;
+    }
     if (!activeProvider || selectedProviderId === 'hls') return '';
     const isTv = item.media_type === 'tv' || Boolean(episode);
 

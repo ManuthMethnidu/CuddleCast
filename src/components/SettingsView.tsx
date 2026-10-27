@@ -16,11 +16,9 @@ import {
   ArrowLeftRight,
   UserCog,
   Palette,
-  ExternalLink,
 } from 'lucide-react';
 import { useAccent, ACCENT_OPTIONS } from '../context/AccentContext';
-import { M3Button, M3Badge } from './m3';
-import { useNavigate } from 'react-router-dom';
+import { M3Badge } from './m3';
 import { useSettingsStore, PerformanceMode } from '../store/settingsStore';
 import { STREAM_PROVIDERS } from '../services/providers';
 import { authStorage } from '../services/storage';
@@ -36,7 +34,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onNavigateLogin,
 }) => {
   const { accentHex, accent, setAccent } = useAccent();
-  const navigate = useNavigate();
   const settings = useSettingsStore();
   const { isSignedIn, user } = useUser();
   const { signOut, openUserProfile, openSignIn, setActive } = useClerk();
@@ -187,19 +184,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </M3Badge>
                 </div>
                 <p className="text-xs text-zinc-400">
-                  Google HCT dynamic color engine, 5-tier tonal surfaces, and spring physics
+                  Google HCT dynamic color engine, 5-tier tonal surfaces, and Material Web Components
                 </p>
               </div>
             </div>
-
-            <M3Button
-              variant="tonal"
-              size="sm"
-              icon={<ExternalLink className="w-3.5 h-3.5" />}
-              onClick={() => navigate('/design-system')}
-            >
-              Open M3 Showcase
-            </M3Button>
           </div>
 
           <div className="p-5 rounded-2xl bg-[#18181d] border border-white/10 space-y-4">
@@ -474,16 +462,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Play silent trailer preview in the hero banner after 1.5s idle
                 </p>
               </div>
-              <input
-                type="checkbox"
-                checked={settings.billboard}
-                onChange={(e) => {
-                  settings.setBillboard(e.target.checked);
+              <md-switch
+                selected={settings.billboard}
+                onClick={() => {
+                  settings.setBillboard(!settings.billboard);
                   showNotification('Billboard trailer preference updated');
                 }}
-                className="h-4 w-4 rounded cursor-pointer shrink-0"
-                style={{ accentColor: accentHex }}
-              />
+              ></md-switch>
             </div>
 
             <div className="flex items-center justify-between p-4 rounded-xl bg-[#18181d] border border-white/10">
@@ -493,16 +478,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Show IMDb rating pills pinned on the top corner of movie posters
                 </p>
               </div>
-              <input
-                type="checkbox"
-                checked={settings.ratings}
-                onChange={(e) => {
-                  settings.setRatings(e.target.checked);
+              <md-switch
+                selected={settings.ratings}
+                onClick={() => {
+                  settings.setRatings(!settings.ratings);
                   showNotification('Rating badge preference updated');
                 }}
-                className="h-4 w-4 rounded cursor-pointer shrink-0"
-                style={{ accentColor: accentHex }}
-              />
+              ></md-switch>
             </div>
 
             <div className="flex items-center justify-between p-4 rounded-xl bg-[#18181d] border border-white/10">
@@ -512,16 +494,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Display 16:9 landscape cards with live progress bars on the home row
                 </p>
               </div>
-              <input
-                type="checkbox"
-                checked={settings.wideContinue}
-                onChange={(e) => {
-                  settings.setWideContinue(e.target.checked);
+              <md-switch
+                selected={settings.wideContinue}
+                onClick={() => {
+                  settings.setWideContinue(!settings.wideContinue);
                   showNotification('Continue watching preference updated');
                 }}
-                className="h-4 w-4 rounded cursor-pointer shrink-0"
-                style={{ accentColor: accentHex }}
-              />
+              ></md-switch>
             </div>
 
             <div className="flex items-center justify-between p-4 rounded-xl bg-[#18181d] border border-white/10">
@@ -531,16 +510,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Show Rotten Tomatoes, Metacritic, and critic pull-quotes on title pages
                 </p>
               </div>
-              <input
-                type="checkbox"
-                checked={settings.criticReviews}
-                onChange={(e) => {
-                  settings.setCriticReviews(e.target.checked);
+              <md-switch
+                selected={settings.criticReviews}
+                onClick={() => {
+                  settings.setCriticReviews(!settings.criticReviews);
                   showNotification('Critic reviews preference updated');
                 }}
-                className="h-4 w-4 rounded cursor-pointer shrink-0"
-                style={{ accentColor: accentHex }}
-              />
+              ></md-switch>
             </div>
           </div>
         </section>
@@ -574,16 +550,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Automatically start the next episode when current episode finishes
                 </p>
               </div>
-              <input
-                type="checkbox"
-                checked={settings.autoplayNext}
-                onChange={(e) => {
-                  settings.setAutoplayNext(e.target.checked);
+              <md-switch
+                selected={settings.autoplayNext}
+                onClick={() => {
+                  settings.setAutoplayNext(!settings.autoplayNext);
                   showNotification('Autoplay next episode updated');
                 }}
-                className="h-4 w-4 rounded cursor-pointer shrink-0"
-                style={{ accentColor: accentHex }}
-              />
+              ></md-switch>
             </div>
 
             <div className="flex items-center justify-between p-4 rounded-xl bg-[#18181d] border border-white/10">
@@ -593,16 +566,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Display floating skip button during introductory theme songs
                 </p>
               </div>
-              <input
-                type="checkbox"
-                checked={settings.skipIntro}
-                onChange={(e) => {
-                  settings.setSkipIntro(e.target.checked);
+              <md-switch
+                selected={settings.skipIntro}
+                onClick={() => {
+                  settings.setSkipIntro(!settings.skipIntro);
                   showNotification('Skip intro preference updated');
                 }}
-                className="h-4 w-4 rounded cursor-pointer shrink-0"
-                style={{ accentColor: accentHex }}
-              />
+              ></md-switch>
             </div>
           </div>
         </section>
@@ -806,13 +776,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Clear playback timestamp resumes and continue watching entries
                 </p>
               </div>
-              <button
+              <md-outlined-button
                 onClick={handleClearHistory}
-                className="flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                className="w-full text-xs font-semibold"
+                style={{
+                  '--md-outlined-button-outline-color': 'rgba(243, 243, 243, 0.35)',
+                  '--md-outlined-button-label-text-color': '#F3F3F3',
+                  '--md-outlined-button-icon-color': '#F3F3F3',
+                }}
               >
-                <Trash2 className="h-3.5 w-3.5" />
-                <span>Clear Watch History</span>
-              </button>
+                <Trash2 className="h-3.5 w-3.5" slot="icon" />
+                Clear Watch History
+              </md-outlined-button>
             </div>
 
             <div className="p-4 rounded-xl bg-[#18181d] border border-white/10 flex flex-col justify-between space-y-3">
@@ -822,13 +797,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Remove all bookmarked titles from your personal library
                 </p>
               </div>
-              <button
+              <md-outlined-button
                 onClick={handleClearWatchlist}
-                className="flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                className="w-full text-xs font-semibold"
+                style={{
+                  '--md-outlined-button-outline-color': 'rgba(243, 243, 243, 0.35)',
+                  '--md-outlined-button-label-text-color': '#F3F3F3',
+                  '--md-outlined-button-icon-color': '#F3F3F3',
+                }}
               >
-                <Trash2 className="h-3.5 w-3.5" />
-                <span>Clear Watchlist</span>
-              </button>
+                <Trash2 className="h-3.5 w-3.5" slot="icon" />
+                Clear Watchlist
+              </md-outlined-button>
             </div>
 
             <div className="p-4 rounded-xl bg-[#18181d] border border-white/10 flex flex-col justify-between space-y-3">
@@ -838,13 +818,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Revert all performance, provider, and player settings to defaults
                 </p>
               </div>
-              <button
+              <md-filled-button
                 onClick={handleResetSettings}
-                className="flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-lg text-xs font-semibold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition-colors"
+                className="w-full text-xs font-semibold"
+                style={{
+                  '--md-filled-button-container-color': '#e50914',
+                  '--md-filled-button-label-text-color': '#FFFFFF',
+                  '--md-filled-button-icon-color': '#FFFFFF',
+                }}
               >
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span>Reset All Defaults</span>
-              </button>
+                <RotateCcw className="h-3.5 w-3.5" slot="icon" />
+                Reset All Defaults
+              </md-filled-button>
             </div>
           </div>
         </section>
