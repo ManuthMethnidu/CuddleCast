@@ -108,6 +108,7 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
           return (
             <div
               key={`${item.id}-${index}`}
+              data-media-card="true"
               onClick={() => onSelect(item)}
               className="group/card relative flex-none cursor-pointer transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.98]"
             >

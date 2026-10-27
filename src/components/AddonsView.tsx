@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Blocks, Check, ExternalLink, Settings as SettingsIcon, ShieldCheck } from 'lucide-react';
+import { Blocks, Check, Settings as SettingsIcon, ShieldCheck, Zap } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 
 interface Addon {
   id: string;
   name: string;
   version: string;
-  category: 'Official' | 'Streams' | 'Subtitles' | 'Catalogs' | 'Anime';
+  category: 'Official' | 'Cloud Streams' | 'Subtitles' | 'Catalogs' | 'Anime';
   description: string;
   installed: boolean;
   author: string;
@@ -20,16 +20,25 @@ const DEFAULT_ADDONS: Addon[] = [
     category: 'Official',
     description: 'Official metadata provider for movies, series, cast, ratings, and artwork.',
     installed: true,
-    author: 'Stremio Official',
+    author: 'Echora Official',
   },
   {
-    id: 'torrentio',
-    name: 'Torrentio [Real-Debrid]',
-    version: 'v1.0.8',
-    category: 'Streams',
-    description: 'Scrapes multiple torrent providers with cached Real-Debrid instant streaming and 4K HDR sources.',
+    id: 'vidfast-cloud',
+    name: 'VidFast Cloud Stream Engine',
+    version: 'v4.2.0',
+    category: 'Cloud Streams',
+    description: 'High-speed cloud streaming network with 47 verified servers, 4K UHD resolution, and multi-language dubs.',
     installed: true,
-    author: 'TheBeast',
+    author: 'VidFast VC',
+  },
+  {
+    id: 'vidlink-pro',
+    name: 'VidLink Ultra Engine',
+    version: 'v2.8.1',
+    category: 'Cloud Streams',
+    description: 'Zero-ad, ultra-responsive cloud video player with instant buffer caching and custom accent sync.',
+    installed: true,
+    author: 'VidLink Pro',
   },
   {
     id: 'cyberflix',
@@ -65,8 +74,8 @@ export const AddonsView: React.FC = () => {
   const [addons, setAddons] = useState<Addon[]>(DEFAULT_ADDONS);
 
   const toggleInstall = (id: string) => {
-    setAddons(prev =>
-      prev.map(a => (a.id === id ? { ...a, installed: !a.installed } : a))
+    setAddons((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, installed: !a.installed } : a))
     );
   };
 
@@ -77,30 +86,25 @@ export const AddonsView: React.FC = () => {
           <Blocks className="h-6 w-6" style={{ color: accentHex }} />
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Installed Addons
+              Installed Streaming Addons
             </h1>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Manage your Stremio catalogs, stream scrapers, and subtitle providers
+              Manage your cloud stream scrapers, metadata catalogs, and subtitle providers
             </p>
           </div>
         </div>
 
-        <a
-          href="https://stremio-addons.netlify.app"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-all border border-white/15 self-start sm:self-auto"
-        >
-          <span>Community Directory</span>
-          <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+          <Zap className="h-3.5 w-3.5" />
+          <span>47 Cloud Servers Online</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-8">
-        {addons.map(addon => (
+        {addons.map((addon) => (
           <div
             key={addon.id}
-            className="flex flex-col justify-between p-5 rounded-2xl border border-white/10 bg-[#18181d] space-y-4 hover:border-white/20 transition-all"
+            className="flex flex-col justify-between p-5 rounded-2xl border border-white/10 bg-[#18181d] space-y-4 hover:border-white/20 transition-all shadow-lg"
           >
             <div>
               <div className="flex items-center justify-between">
@@ -144,10 +148,10 @@ export const AddonsView: React.FC = () => {
                 {addon.installed ? (
                   <>
                     <Check className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>Installed</span>
+                    <span>Enabled</span>
                   </>
                 ) : (
-                  <span>Install Addon</span>
+                  <span>Enable Addon</span>
                 )}
               </button>
             </div>

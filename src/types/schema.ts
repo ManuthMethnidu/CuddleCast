@@ -25,8 +25,8 @@ export interface MediaItem {
 
 export interface BillboardData extends MediaItem {
   rank?: number;
-  streamUrl: string;
-  trailerUrl: string;
+  streamUrl?: string;
+  trailerUrl?: string;
 }
 
 export interface CarouselRail {
@@ -46,7 +46,7 @@ export interface Episode {
   runtime: number;
   still_path: string;
   progress?: number;
-  streamUrl: string;
+  streamUrl?: string;
 }
 
 export interface Season {

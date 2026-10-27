@@ -91,6 +91,7 @@ const MainApp: React.FC = () => {
   // Selected item for modal overlay
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [playingEpisode, setPlayingEpisode] = useState<Episode | undefined>();
+  const [initialProviderId, setInitialProviderId] = useState<string | undefined>();
 
   // TanStack Query: Cached Server States with 0 lag
   const { data: billboardItems = [], isLoading: isBillboardLoading } = useBillboardQuery();
@@ -178,8 +179,9 @@ const MainApp: React.FC = () => {
     }
   };
 
-  const handlePlay = (item: MediaItem, episode?: Episode) => {
+  const handlePlay = (item: MediaItem, episode?: Episode, providerId?: string) => {
     setPlayingEpisode(episode);
+    setInitialProviderId(providerId);
     playMedia(item);
     navigate(`/watch/${item.id}`, {
       state: {
@@ -448,6 +450,7 @@ const MainApp: React.FC = () => {
         <VideoPlayer
           item={currentMedia}
           episode={playingEpisode}
+          initialProviderId={initialProviderId}
           onClose={handleClosePlayer}
           onNextEpisode={handleNextEpisode}
         />

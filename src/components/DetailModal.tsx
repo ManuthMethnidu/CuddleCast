@@ -6,34 +6,26 @@ import {
   Check,
   ThumbsUp,
   Users,
-  Film,
   Sparkles,
   Zap,
+  Server,
 } from 'lucide-react';
 import { MediaItem, Episode, CastMember } from '../types/schema';
 import { api } from '../services/api';
 import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
 import { WatchPartyModal } from './WatchPartyModal';
+import {
+  STREAM_PROVIDERS,
+  ProviderCategory,
+  getProvidersByCategory,
+} from '../services/providers';
 
 interface DetailModalProps {
   item: MediaItem;
   onClose: () => void;
-  onPlay: (item: MediaItem, episode?: Episode) => void;
+  onPlay: (item: MediaItem, episode?: Episode, providerId?: string) => void;
   onSelectRelated: (item: MediaItem) => void;
-}
-
-interface StremioStream {
-  id: string;
-  name: string;
-  addon: string;
-  quality: '4K HDR' | '1080p' | '720p' | 'SD';
-  resolution: string;
-  audio: string;
-  size: string;
-  seeds: number;
-  isDebrid: boolean;
-  streamUrl: string;
 }
 
 export const DetailModal: React.FC<DetailModalProps> = ({
@@ -51,22 +43,22 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
   const [isPartyOpen, setIsPartyOpen] = useState(false);
-  const [streamSort, setStreamSort] = useState<'addon' | 'quality' | 'seeds' | 'size'>('addon');
-  const [providerFilter, setProviderFilter] = useState<'all' | 'debrid' | 'p2p'>('all');
-  const [mobileTab, setMobileTab] = useState<'overview' | 'streams' | 'episodes'>('overview');
+  const [selectedCategory, setSelectedCategory] = useState<ProviderCategory>('fastest');
+  const [selectedProviderId, setSelectedProviderId] = useState<string>('vidfast');
+  const [mobileTab, setMobileTab] = useState<'overview' | 'servers' | 'episodes'>('overview');
 
   const isSeries = item.media_type === 'tv';
 
   useEffect(() => {
-    api.getEpisodes(item.id, selectedSeason).then(eps => {
+    api.getEpisodes(item.id, selectedSeason).then((eps) => {
       setEpisodes(eps);
       if (eps.length > 0 && !selectedEpisode) {
         setSelectedEpisode(eps[0]);
       }
     });
     api.getCast(item.id).then(setCast);
-    api.searchMedia(item.title ? item.title.slice(0, 3) : 'a').then(results => {
-      setRelatedItems(results.filter(r => r.id !== item.id).slice(0, 6));
+    api.searchMedia(item.title ? item.title.slice(0, 3) : 'a').then((results) => {
+      setRelatedItems(results.filter((r) => r.id !== item.id).slice(0, 6));
     });
   }, [item, selectedSeason]);
 
@@ -95,63 +87,12 @@ export const DetailModal: React.FC<DetailModalProps> = ({
     setIsLiked(state);
   };
 
-  // Mock Stremio Streams based on item metadata
-  const streams: StremioStream[] = [
-    {
-      id: 'torrentio-4k',
-      name: `${item.title || item.name} 2160p UHD BluRay x265 HDR TrueHD 7.1 Atmos`,
-      addon: 'Torrentio [RD+]',
-      quality: '4K HDR',
-      resolution: '3840x2160',
-      audio: 'Dolby Atmos 7.1',
-      size: '18.4 GB',
-      seeds: 342,
-      isDebrid: true,
-      streamUrl: item.streamUrl || 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-    },
-    {
-      id: 'torrentio-1080p',
-      name: `${item.title || item.name} 1080p WEB-DL DDP5.1 Atmos H.264`,
-      addon: 'Torrentio [RD+]',
-      quality: '1080p',
-      resolution: '1920x1080',
-      audio: 'DDP 5.1 Atmos',
-      size: '4.8 GB',
-      seeds: 512,
-      isDebrid: true,
-      streamUrl: item.streamUrl || 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-    },
-    {
-      id: 'cyberflix-1080p',
-      name: `${item.title || item.name} 1080p Multi-Audio BluRay REMUX AVC DTS-HD MA 5.1`,
-      addon: 'CyberFlix Multi-Audio',
-      quality: '1080p',
-      resolution: '1920x1080',
-      audio: 'DTS-HD MA 5.1',
-      size: '6.2 GB',
-      seeds: 184,
-      isDebrid: false,
-      streamUrl: item.streamUrl || 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-    },
-    {
-      id: 'torrentgalaxy-720p',
-      name: `${item.title || item.name} 720p HDTV x264 AAC 2.0`,
-      addon: 'Torrent Galaxy [P2P]',
-      quality: '720p',
-      resolution: '1280x720',
-      audio: 'AAC 2.0',
-      size: '1.4 GB',
-      seeds: 98,
-      isDebrid: false,
-      streamUrl: item.streamUrl || 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-    },
-  ];
+  const handleLaunchStream = (provId?: string, ep?: Episode) => {
+    const chosenProvider = provId || selectedProviderId;
+    onPlay(item, ep || selectedEpisode || undefined, chosenProvider);
+  };
 
-  const filteredStreams = streams.filter(s => {
-    if (providerFilter === 'debrid') return s.isDebrid;
-    if (providerFilter === 'p2p') return !s.isDebrid;
-    return true;
-  });
+  const visibleProviders = getProvidersByCategory(selectedCategory);
 
   const criticReviews = [
     {
@@ -262,23 +203,22 @@ export const DetailModal: React.FC<DetailModalProps> = ({
               <span className="text-zinc-400">·</span>
 
               <span className="text-zinc-300 font-mono">
-                {isSeries ? '2 Seasons' : '2h 14m'}
+                {isSeries ? `${selectedSeason} Season` : '2h 14m'}
               </span>
 
               <span className="dx-pill">{isSeries ? 'Series' : 'Film'}</span>
               <span className="dx-pill">4K UHD</span>
-              <span className="dx-pill">HDR10</span>
-              <span className="dx-pill">Dolby Atmos</span>
+              <span className="dx-pill">Direct Fast Embed</span>
             </div>
 
             {/* Action Buttons Row */}
             <div className="flex items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full">
               <button
-                onClick={() => onPlay(item, selectedEpisode || undefined)}
+                onClick={() => handleLaunchStream()}
                 className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 h-11 sm:h-12 px-6 sm:px-8 rounded-full bg-white text-black font-semibold text-sm sm:text-base transition-all hover:bg-white/90 active:scale-95 shadow-[var(--md-sys-elevation-level2)]"
               >
                 <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-black" />
-                <span>Play</span>
+                <span>Play Now</span>
               </button>
 
               <button
@@ -313,7 +253,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
               </button>
             </div>
 
-            {/* Mobile Tab Bar (For fast mobile navigation between Overview, Streams, Episodes) */}
+            {/* Mobile Tab Bar */}
             <div className="flex lg:hidden items-center border-b border-white/10 pt-2 pb-1 gap-5 text-xs font-bold uppercase tracking-wider">
               <button
                 onClick={() => setMobileTab('overview')}
@@ -331,14 +271,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({
               </button>
 
               <button
-                onClick={() => setMobileTab('streams')}
+                onClick={() => setMobileTab('servers')}
                 className={`py-2 relative transition-colors flex items-center gap-1.5 ${
-                  mobileTab === 'streams' ? 'text-white' : 'text-zinc-400'
+                  mobileTab === 'servers' ? 'text-white' : 'text-zinc-400'
                 }`}
               >
-                <Zap className="h-3.5 w-3.5" style={{ color: accentHex }} />
-                <span>Streams ({filteredStreams.length})</span>
-                {mobileTab === 'streams' && (
+                <Server className="h-3.5 w-3.5" style={{ color: accentHex }} />
+                <span>Servers ({STREAM_PROVIDERS.length})</span>
+                {mobileTab === 'servers' && (
                   <span
                     className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
                     style={{ background: accentHex }}
@@ -364,7 +304,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
               )}
             </div>
 
-            {/* Overview Section Content (Always shown on desktop; shown on mobile if mobileTab === 'overview') */}
+            {/* Overview Section Content */}
             <div className={`space-y-6 ${mobileTab === 'overview' ? 'block' : 'hidden lg:block'}`}>
               {/* Synopsis Description */}
               <p className="text-sm sm:text-lg text-zinc-200 leading-relaxed max-w-3xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
@@ -380,7 +320,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                   {((item.genres as string[]) || ['Action', 'Sci-Fi', 'Adventure', 'Drama']).map((genre: string, idx: number) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center px-3 py-1 rounded-full bg-white/[0.08] border border-white/10 text-xs font-medium text-zinc-200 hover:bg-white/[0.15] transition-colors"
+                      className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/10 hover:bg-white/15 border border-white/10 text-white backdrop-blur-md transition-colors"
                     >
                       {genre}
                     </span>
@@ -388,63 +328,63 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                 </div>
               </div>
 
-              {/* Cast & Directors Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 text-sm">
-                <div className="space-y-1">
+              {/* Cast & Crew Carousel */}
+              {cast.length > 0 && (
+                <div className="space-y-3 pt-2">
                   <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">
-                    Starring Cast
+                    Featured Cast
                   </span>
-                  <p className="text-zinc-200 font-medium text-xs sm:text-sm">
-                    {cast.length > 0
-                      ? cast.slice(0, 5).map(c => c.name).join(', ')
-                      : 'Timothée Chalamet, Zendaya, Rebecca Ferguson, Javier Bardem, Josh Brolin'}
-                  </p>
+                  <div className="flex items-center gap-4 overflow-x-auto pb-3 pt-1 scrollbar-none">
+                    {cast.map(c => (
+                      <div key={c.id} className="flex-none flex flex-col items-center gap-2 w-20 text-center">
+                        <img
+                          src={c.profile_path || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'}
+                          alt={c.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-16 w-16 rounded-full object-cover border-2 border-white/20 shadow-md"
+                        />
+                        <div className="w-full">
+                          <p className="text-xs font-bold text-white truncate">{c.name}</p>
+                          <p className="text-[10px] text-zinc-400 truncate">{c.character}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-
-                <div className="space-y-1">
-                  <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">
-                    Director & Creators
-                  </span>
-                  <p className="text-zinc-200 font-medium text-xs sm:text-sm">
-                    Denis Villeneuve, Frank Herbert, Jon Spaihts
-                  </p>
-                </div>
-              </div>
+              )}
 
               {/* Critic Reviews Section */}
-              <div className="space-y-3 pt-4">
+              <div className="space-y-3 pt-2">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4" style={{ color: accentHex }} />
-                  <span className="text-xs font-bold uppercase tracking-widest text-zinc-300">
-                    Critic Reviews & Consensus
+                  <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">
+                    Critic Acclaim
                   </span>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {criticReviews.map((rev, idx) => (
+                  {criticReviews.map((rev, i) => (
                     <div
-                      key={idx}
-                      className="rounded-xl border border-white/10 bg-[#18181d]/80 p-3.5 sm:p-4 backdrop-blur-md flex flex-col justify-between space-y-2.5 sm:space-y-3"
+                      key={i}
+                      className="p-3.5 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md space-y-2 flex flex-col justify-between"
                     >
-                      <p className="text-xs text-zinc-300 italic leading-relaxed">
-                        "{rev.quote}"
-                      </p>
-                      <div className="flex items-center justify-between border-t border-white/10 pt-2 text-[11px] font-semibold text-zinc-400">
-                        <span>{rev.source} · {rev.author}</span>
-                        <span className="font-bold text-emerald-400">{rev.score}</span>
+                      <p className="text-xs italic text-zinc-200 line-clamp-3">"{rev.quote}"</p>
+                      <div className="flex items-center justify-between text-[11px] font-semibold text-zinc-400 pt-1 border-t border-white/10">
+                        <span>{rev.source}</span>
+                        <span className="text-emerald-400 font-bold">{rev.score}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Related Media Grid */}
+              {/* More Like This (Related Items) */}
               {relatedItems.length > 0 && (
-                <div className="space-y-3 pt-6 border-t border-white/10">
-                  <h3 className="text-base font-bold text-white tracking-tight">
+                <div className="space-y-3 pt-3">
+                  <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">
                     More Like This
-                  </h3>
-                  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2.5 sm:gap-3">
+                  </span>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                     {relatedItems.map(rel => (
                       <div
                         key={rel.id}
@@ -477,14 +417,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({
             </div>
           </div>
 
-          {/* Right Column: Stremio Streams & Episodes Panel */}
+          {/* Right Column: Episodes (TV) & Cloud Streaming Servers (47 Providers) */}
           <div
             className={`lg:col-span-5 xl:col-span-4 space-y-4 ${
               mobileTab !== 'overview' ? 'block' : 'hidden lg:block'
             }`}
           >
-            <div className="rounded-2xl border border-white/10 bg-[#131317]/90 p-4 sm:p-5 shadow-2xl backdrop-blur-2xl space-y-4 sm:space-y-5">
-              {/* If TV Series: Seasons and Episodes Selector */}
+            <div className="rounded-2xl border border-white/10 bg-[#131317]/95 p-4 sm:p-5 shadow-2xl backdrop-blur-2xl space-y-4">
+              {/* TV Episodes Selector */}
               {isSeries && (mobileTab === 'episodes' || window.innerWidth >= 1024) && (
                 <div className="space-y-3 pb-4 border-b border-white/10">
                   <div className="flex items-center justify-between">
@@ -493,7 +433,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                     </span>
                     <select
                       value={selectedSeason}
-                      onChange={e => setSelectedSeason(Number(e.target.value))}
+                      onChange={(e) => setSelectedSeason(Number(e.target.value))}
                       className="rounded-lg bg-white/10 border border-white/15 px-3 py-1.5 text-xs font-semibold text-white outline-none focus:border-white transition-colors"
                     >
                       <option value={1} className="bg-[#18181d]">Season 1</option>
@@ -502,8 +442,8 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                     </select>
                   </div>
 
-                  <div className="max-h-60 overflow-y-auto space-y-2 pr-1 scrollbar-none">
-                    {episodes.map(ep => (
+                  <div className="max-h-56 overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-white/20">
+                    {episodes.map((ep) => (
                       <div
                         key={ep.id}
                         onClick={() => setSelectedEpisode(ep)}
@@ -537,107 +477,135 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                 </div>
               )}
 
-              {/* Streams Header with Filter & Sort */}
-              {(mobileTab === 'streams' || window.innerWidth >= 1024) && (
-                <>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4" style={{ color: accentHex }} />
-                        <span className="text-sm font-bold text-white tracking-tight">
-                          Streams & Addons
-                        </span>
-                      </div>
-                      <span className="text-[11px] font-semibold text-zinc-400">
-                        {filteredStreams.length} available
+              {/* Streaming Servers Header */}
+              {(mobileTab === 'servers' || window.innerWidth >= 1024) && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4" style={{ color: accentHex }} />
+                      <span className="text-sm font-bold text-white tracking-tight">
+                        Cloud Stream Engine
                       </span>
                     </div>
-
-                    {/* Filter / Sort Row */}
-                    <div className="flex items-center justify-between gap-2 text-xs">
-                      <select
-                        value={streamSort}
-                        onChange={e => setStreamSort(e.target.value as any)}
-                        className="rounded-lg bg-white/10 border border-white/15 px-2.5 py-1 text-xs font-medium text-white outline-none"
-                      >
-                        <option value="addon" className="bg-[#18181d]">Addon order</option>
-                        <option value="quality" className="bg-[#18181d]">Best quality</option>
-                        <option value="seeds" className="bg-[#18181d]">Most seeds</option>
-                        <option value="size" className="bg-[#18181d]">Largest first</option>
-                      </select>
-
-                      <select
-                        value={providerFilter}
-                        onChange={e => setProviderFilter(e.target.value as any)}
-                        className="rounded-lg bg-white/10 border border-white/15 px-2.5 py-1 text-xs font-medium text-white outline-none"
-                      >
-                        <option value="all" className="bg-[#18181d]">All Providers</option>
-                        <option value="debrid" className="bg-[#18181d]">Debrid (RD+)</option>
-                        <option value="p2p" className="bg-[#18181d]">P2P / Torrent</option>
-                      </select>
-                    </div>
+                    <span className="text-[11px] font-semibold text-emerald-400">
+                      {STREAM_PROVIDERS.length} Active Servers
+                    </span>
                   </div>
 
-                  {/* Interactive Streams List */}
-                  <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
-                    {filteredStreams.map(stream => (
-                      <div
-                        key={stream.id}
-                        onClick={() => onPlay(item, selectedEpisode || undefined)}
-                        className="group relative flex flex-col gap-1.5 p-3 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.09] hover:border-white/30 cursor-pointer transition-all active:scale-[0.98]"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase text-black"
-                              style={{
-                                background:
-                                  stream.quality === '4K HDR'
-                                    ? '#e50914'
-                                    : stream.quality === '1080p'
-                                    ? '#2f80ff'
-                                    : '#1db954',
-                                color: '#fff',
-                              }}
+                  {/* Category Filter Tabs */}
+                  <div className="grid grid-cols-4 gap-1 p-1 bg-white/5 rounded-xl border border-white/10 text-[10px] font-bold">
+                    <button
+                      onClick={() => setSelectedCategory('fastest')}
+                      className={`py-1.5 px-1 rounded-lg transition-all text-center truncate ${
+                        selectedCategory === 'fastest'
+                          ? 'bg-white/20 text-white shadow-sm'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                      style={{
+                        color: selectedCategory === 'fastest' ? accentHex : undefined,
+                      }}
+                    >
+                      Fastest
+                    </button>
+                    <button
+                      onClick={() => setSelectedCategory('ott')}
+                      className={`py-1.5 px-1 rounded-lg transition-all text-center truncate ${
+                        selectedCategory === 'ott'
+                          ? 'bg-white/20 text-white shadow-sm'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                      style={{
+                        color: selectedCategory === 'ott' ? accentHex : undefined,
+                      }}
+                    >
+                      OTT
+                    </button>
+                    <button
+                      onClick={() => setSelectedCategory('international')}
+                      className={`py-1.5 px-1 rounded-lg transition-all text-center truncate ${
+                        selectedCategory === 'international'
+                          ? 'bg-white/20 text-white shadow-sm'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                      style={{
+                        color: selectedCategory === 'international' ? accentHex : undefined,
+                      }}
+                    >
+                      Dubs
+                    </button>
+                    <button
+                      onClick={() => setSelectedCategory('backup')}
+                      className={`py-1.5 px-1 rounded-lg transition-all text-center truncate ${
+                        selectedCategory === 'backup'
+                          ? 'bg-white/20 text-white shadow-sm'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                      style={{
+                        color: selectedCategory === 'backup' ? accentHex : undefined,
+                      }}
+                    >
+                      Backup
+                    </button>
+                  </div>
+
+                  {/* Server Cards List */}
+                  <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/20">
+                    {visibleProviders.map((prov) => {
+                      const isSelected = selectedProviderId === prov.id;
+                      return (
+                        <div
+                          key={prov.id}
+                          onClick={() => {
+                            setSelectedProviderId(prov.id);
+                            handleLaunchStream(prov.id);
+                          }}
+                          className={`group relative flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all active:scale-[0.98] ${
+                            isSelected
+                              ? 'bg-white/15 border-white/30 text-white shadow-lg'
+                              : 'bg-white/[0.04] border-white/5 hover:bg-white/[0.08] hover:border-white/20 text-zinc-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 pr-2">
+                            <div
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-black/40 border border-white/10"
                             >
-                              {stream.quality}
-                            </span>
-                            <span className="text-xs font-bold text-white">
-                              {stream.addon}
-                            </span>
+                              <Server className="h-4 w-4" style={{ color: isSelected ? accentHex : '#94a3b8' }} />
+                            </div>
+
+                            <div className="flex flex-col min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold truncate group-hover:text-white transition-colors">
+                                  {prov.name}
+                                </span>
+                                {prov.badge && (
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-white/10 text-zinc-300 shrink-0">
+                                    {prov.badge}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-zinc-400 truncate mt-0.5">
+                                {prov.description}
+                              </span>
+                            </div>
                           </div>
 
-                          {stream.isDebrid && (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-bold text-emerald-400">
-                              ⚡ Instant Debrid
-                            </span>
-                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProviderId(prov.id);
+                              handleLaunchStream(prov.id);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-black bg-white hover:bg-white/90 active:scale-95 shrink-0 shadow-md transition-all"
+                            title={`Play on ${prov.name}`}
+                          >
+                            <Play className="h-3 w-3 fill-black" />
+                            <span>Play</span>
+                          </button>
                         </div>
-
-                        <p className="text-xs text-zinc-300 font-mono line-clamp-1 group-hover:text-white transition-colors">
-                          {stream.name}
-                        </p>
-
-                        <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono pt-1">
-                          <span>{stream.audio} · {stream.size}</span>
-                          <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                            <Film className="h-3 w-3" />
-                            {stream.seeds} seeds
-                          </span>
-                        </div>
-
-                        {/* Hover Play Glow Pill */}
-                        <div
-                          className="absolute right-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold text-black shadow-lg"
-                          style={{ background: '#fff' }}
-                        >
-                          <Play className="h-3 w-3 fill-black" />
-                          <span>Stream</span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>

@@ -16,8 +16,10 @@ import {
   Bookmark,
   X,
   LogIn,
+  LogOut,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
+import { useUser, useClerk } from '@clerk/react';
 
 export type NavViewId =
   | 'home'
@@ -50,6 +52,8 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
   onSelectView,
 }) => {
   const { accentHex } = useAccent();
+  const { isSignedIn, user } = useUser();
+  const { signOut, openUserProfile } = useClerk();
 
   const navItems = [
     { id: 'home' as const, label: 'Home', icon: Home },
@@ -162,18 +166,58 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
           })}
         </div>
 
-        {/* Account / Sign In Quick Button */}
+        {/* Account / Authentication Status Area */}
         <div className="p-3 border-t border-white/10 bg-[#303841]">
-          <button
-            onClick={() => {
-              onSelectView('login');
-              onClose();
-            }}
-            className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all active:scale-98"
-          >
-            <LogIn className="h-4 w-4" style={{ color: accentHex }} />
-            <span>Sign In / My Account</span>
-          </button>
+          {isSignedIn && user ? (
+            <div className="space-y-2">
+              <div
+                onClick={() => {
+                  if (openUserProfile) openUserProfile();
+                }}
+                className="flex items-center gap-3 p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer border border-white/10"
+                title="Manage Account"
+              >
+                <img
+                  src={user.imageUrl}
+                  alt={user.fullName || 'User'}
+                  className="h-9 w-9 rounded-full object-cover border border-white/20 flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-white truncate">
+                      {user.fullName || user.username || 'Echora Member'}
+                    </p>
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" title="Active Session" />
+                  </div>
+                  <p className="text-[10px] text-zinc-400 truncate">
+                    {user.primaryEmailAddress?.emailAddress || 'Signed In'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  signOut();
+                  onClose();
+                }}
+                className="flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-lg text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition-colors border border-rose-500/20"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                onSelectView('login');
+                onClose();
+              }}
+              className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all active:scale-98 shadow-sm"
+            >
+              <LogIn className="h-4 w-4" style={{ color: accentHex }} />
+              <span>Sign In / Create Account</span>
+            </button>
+          )}
         </div>
 
         {/* Sidebar Footer */}

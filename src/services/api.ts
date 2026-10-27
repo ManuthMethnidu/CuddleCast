@@ -4,13 +4,6 @@ import { authStorage } from './storage';
 
 const DATA_MODE = (import.meta.env?.VITE_DATA_MODE as string) || 'auto';
 
-export const DEFAULT_STREAM =
-  (import.meta.env?.VITE_DEFAULT_HLS_STREAM as string) ||
-  'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
-export const DEFAULT_TRAILER =
-  (import.meta.env?.VITE_FALLBACK_TRAILER_HLS as string) ||
-  'https://test-streams.mux.dev/pts_shift/master.m3u8';
-
 /**
  * Secure Serverless Proxy Requester
  * Requests are routed through /api/tmdb (Vercel Edge Function or Vite dev proxy),
@@ -36,6 +29,14 @@ async function fetchFromTMDB(
   return await res.json();
 }
 
+/**
+ * Clean static item from test Mux stream URLs
+ */
+function sanitizeStaticItem(item: any): MediaItem {
+  const { streamUrl: _streamUrl, ...rest } = item;
+  return rest as MediaItem;
+}
+
 class ApiService {
   async getBillboard(): Promise<BillboardData[]> {
     if (DATA_MODE !== 'mock') {
@@ -57,25 +58,23 @@ class ApiService {
             genre_ids: r.genre_ids || [],
             adult: Boolean(r.adult),
             rank: idx + 1,
-            streamUrl: DEFAULT_STREAM,
-            trailerUrl: DEFAULT_TRAILER,
           }));
         }
       } catch (err) {
-        console.warn('Live billboard fetch fallback:', err);
+        console.warn('Live billboard fetch notice:', err);
       }
     }
 
-    return (capturedData.billboard as BillboardData[]).map((item) => ({
-      ...item,
-      streamUrl: DEFAULT_STREAM,
-      trailerUrl: DEFAULT_TRAILER,
-    }));
+    // Static fallback without mock Mux stream URLs
+    return (capturedData.billboard as any[]).map((item, idx) => ({
+      ...sanitizeStaticItem(item),
+      rank: idx + 1,
+    })) as BillboardData[];
   }
 
   async getRails(): Promise<CarouselRail[]> {
     const progressList = authStorage.getProgressList();
-    const allItems = capturedData.allItems as MediaItem[];
+    const allItems = (capturedData.allItems as any[]).map(sanitizeStaticItem);
 
     const continueWatchingItems = progressList.map((prog) => {
       const match = allItems.find((i) => i.id === prog.media_id) || allItems[0];
@@ -90,10 +89,7 @@ class ApiService {
     const activeContinueWatching =
       continueWatchingItems.length > 0
         ? continueWatchingItems
-        : (capturedData.continueWatching as (MediaItem & {
-            progress_seconds: number;
-            total_seconds: number;
-          })[]);
+        : ((capturedData.continueWatching as any[]) || []).map(sanitizeStaticItem);
 
     const rails = capturedData.rails.map((rail) => {
       if (rail.id === 'continue-watching') {
@@ -102,7 +98,10 @@ class ApiService {
           items: activeContinueWatching,
         };
       }
-      return rail;
+      return {
+        ...rail,
+        items: (rail.items || []).map(sanitizeStaticItem),
+      };
     });
 
     return rails as CarouselRail[];
@@ -130,23 +129,21 @@ class ApiService {
           genre_ids: r.genres ? r.genres.map((g: any) => g.id) : [],
           genres: r.genres ? r.genres.map((g: any) => g.name) : [],
           adult: Boolean(r.adult),
-          streamUrl: DEFAULT_STREAM,
-          trailerUrl: DEFAULT_TRAILER,
         };
       } catch (err) {
-        console.warn('Live details fetch fallback:', err);
+        console.warn('Live details fetch notice:', err);
       }
     }
 
-    const allItems = capturedData.allItems as MediaItem[];
+    const allItems = (capturedData.allItems as any[]).map(sanitizeStaticItem);
     const match = allItems.find((i) => i.id === id);
     if (match) return match;
 
-    const billboard = capturedData.billboard as MediaItem[];
+    const billboard = (capturedData.billboard as any[]).map(sanitizeStaticItem);
     const bMatch = billboard.find((i) => i.id === id);
     if (bMatch) return bMatch;
 
-    return allItems[0] || null;
+    return null;
   }
 
   async getEpisodes(mediaId: number, seasonNumber: number = 1): Promise<Episode[]> {
@@ -162,15 +159,17 @@ class ApiService {
             overview: ep.overview || '',
             runtime: ep.runtime || 45,
             still_path: ep.still_path ? `https://image.tmdb.org/t/p/w500${ep.still_path}` : '',
-            streamUrl: DEFAULT_STREAM,
           }));
         }
       } catch (err) {
-        console.warn('Live episodes fetch fallback:', err);
+        console.warn('Live episodes fetch notice:', err);
       }
     }
 
-    return capturedData.episodes as Episode[];
+    return ((capturedData.episodes as any[]) || []).map((ep) => {
+      const { streamUrl: _s, ...rest } = ep;
+      return rest as Episode;
+    });
   }
 
   async getCast(mediaId: number, mediaType?: 'movie' | 'tv'): Promise<CastMember[]> {
@@ -187,7 +186,7 @@ class ApiService {
           }));
         }
       } catch (err) {
-        console.warn('Live cast fetch fallback:', err);
+        console.warn('Live cast fetch notice:', err);
       }
     }
 
@@ -222,17 +221,15 @@ class ApiService {
               popularity: r.popularity || 0,
               genre_ids: r.genre_ids || [],
               adult: Boolean(r.adult),
-              streamUrl: DEFAULT_STREAM,
-              trailerUrl: DEFAULT_TRAILER,
             }));
         }
       } catch (err) {
-        console.warn('Live search fallback to local dataset:', err);
+        console.warn('Live search fallback notice:', err);
       }
     }
 
     const q = query.toLowerCase().trim();
-    const allItems = capturedData.allItems as MediaItem[];
+    const allItems = (capturedData.allItems as any[]).map(sanitizeStaticItem);
     return allItems.filter(
       (item) =>
         (item.title && item.title.toLowerCase().includes(q)) ||
@@ -243,12 +240,12 @@ class ApiService {
 
   async getWatchlistItems(): Promise<MediaItem[]> {
     const watchlistIds = authStorage.getWatchlist();
-    const allItems = capturedData.allItems as MediaItem[];
+    const allItems = (capturedData.allItems as any[]).map(sanitizeStaticItem);
     return allItems.filter((i) => watchlistIds.includes(i.id));
   }
 
   async getAllMedia(): Promise<MediaItem[]> {
-    return (capturedData.allItems as MediaItem[]) || [];
+    return ((capturedData.allItems as any[]) || []).map(sanitizeStaticItem);
   }
 }
 
