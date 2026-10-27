@@ -70,6 +70,21 @@ export const DetailModal: React.FC<DetailModalProps> = ({
     });
   }, [item, selectedSeason]);
 
+  // Keyboard shortcut: ESC to close detail modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isPartyOpen) {
+          setIsPartyOpen(false);
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPartyOpen, onClose]);
+
   const toggleWatchlist = () => {
     const state = authStorage.toggleWatchlist(item.id);
     setInWatchlist(state);

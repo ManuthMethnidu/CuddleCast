@@ -25,6 +25,7 @@ import { RadioAtlasView } from './components/RadioAtlasView';
 import { ProfileGate } from './components/ProfileGate';
 import { FloatingPiP } from './components/FloatingPiP';
 import { Footer } from './components/Footer';
+import { LoginView } from './components/LoginView';
 import { Episode, MediaItem, UserProfile } from './types/schema';
 import { api } from './services/api';
 import { authStorage } from './services/supabase';
@@ -117,17 +118,36 @@ const MainApp: React.FC = () => {
     }
   }, [activeCategory]);
 
-  // Deep-linking: Load title modal from /title/:id or ?titleId=
+  // 1. Sync Title Modal with Route (/title/:id or ?titleId=)
   useEffect(() => {
-    const titleMatch = location.pathname.match(/\/title\/(\d+)/);
+    const titleMatch = location.pathname.match(/\/title\/([^/]+)/);
     const titleId = titleMatch ? titleMatch[1] : searchParams.get('titleId');
 
-    if (titleId && (!selectedItem || selectedItem.id !== Number(titleId))) {
-      api.getMediaDetails(Number(titleId)).then((found) => {
-        if (found) setSelectedItem(found);
-      });
+    if (titleId) {
+      if (!selectedItem || String(selectedItem.id) !== titleId) {
+        api.getMediaDetails(Number(titleId) || 0).then((found) => {
+          if (found) setSelectedItem(found);
+        });
+      }
+    } else if (selectedItem) {
+      setSelectedItem(null);
     }
   }, [location.pathname, searchParams, selectedItem]);
+
+  // 2. Sync Video Player with Route (/watch/:id)
+  useEffect(() => {
+    const watchMatch = location.pathname.match(/\/watch\/([^/]+)/);
+    if (!watchMatch && currentMedia) {
+      closePlayer();
+    } else if (watchMatch) {
+      const watchId = watchMatch[1];
+      if (!currentMedia || String(currentMedia.id) !== watchId) {
+        api.getMediaDetails(Number(watchId) || 0).then((found) => {
+          if (found) playMedia(found);
+        });
+      }
+    }
+  }, [location.pathname, currentMedia, closePlayer, playMedia]);
 
   // Parallel / Nested Modal Route Handlers
   const handleOpenDetail = (item: MediaItem) => {
@@ -143,7 +163,12 @@ const MainApp: React.FC = () => {
   const handleCloseDetail = () => {
     setSelectedItem(null);
     if (location.pathname.startsWith('/title/')) {
-      navigate(-1);
+      const background = (location.state as { backgroundLocation?: { pathname?: string } })?.backgroundLocation?.pathname;
+      if (background && background !== location.pathname) {
+        navigate(background, { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } else {
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
@@ -167,7 +192,12 @@ const MainApp: React.FC = () => {
   const handleClosePlayer = () => {
     closePlayer();
     if (location.pathname.startsWith('/watch/')) {
-      navigate(-1);
+      const background = (location.state as { backgroundLocation?: { pathname?: string } })?.backgroundLocation?.pathname;
+      if (background && background !== location.pathname) {
+        navigate(background, { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     }
   };
 
@@ -191,6 +221,18 @@ const MainApp: React.FC = () => {
     }
     setIsSidebarOpen(false);
   };
+
+  if (currentPath === 'login') {
+    return (
+      <LoginView
+        onBack={() => navigate('/')}
+        onSuccess={() => {
+          setActiveProfile(authStorage.getActiveProfile());
+          navigate('/');
+        }}
+      />
+    );
+  }
 
   if (showProfileGate || !activeProfile) {
     return (

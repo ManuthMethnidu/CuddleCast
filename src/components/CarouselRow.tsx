@@ -1,7 +1,6 @@
 import React, { useRef, useState, memo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { CarouselRail, MediaItem } from '../types/schema';
-import { HoverCardPortal } from './HoverCardPortal';
 import { useAccent } from '../context/AccentContext';
 
 interface CarouselRowProps {
@@ -18,8 +17,6 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
   const { accentHex } = useAccent();
   const rowRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
-  const [hoveredItem, setHoveredItem] = useState<{ item: MediaItem; rect: DOMRect } | null>(null);
-  const hoverTimeoutRef = useRef<number | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
@@ -48,23 +45,6 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
       });
       setTimeout(checkScrollLimits, 350);
     }
-  };
-
-  const handleMouseEnter = (item: MediaItem, e: React.MouseEvent<HTMLDivElement>) => {
-    if (typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
-      return;
-    }
-    const target = e.currentTarget;
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-
-    hoverTimeoutRef.current = window.setTimeout(() => {
-      const rect = target.getBoundingClientRect();
-      setHoveredItem({ item, rect });
-    }, 550);
-  };
-
-  const handleMouseLeave = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
   };
 
   if (!rail.items || rail.items.length === 0) return null;
@@ -96,7 +76,7 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
         <button
           onClick={() => scroll('left')}
           aria-label="Previous page"
-          className="absolute z-10 top-12 bottom-3 left-0 w-12 flex items-center justify-center bg-gradient-to-r from-[#303841] to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
+          className="absolute z-20 top-12 bottom-3 left-0 w-12 flex items-center justify-center bg-gradient-to-r from-[#303841] via-[#303841]/80 to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
         >
           <ChevronLeft className="h-8 w-8 transition-transform hover:scale-125" />
         </button>
@@ -106,7 +86,7 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
         <button
           onClick={() => scroll('right')}
           aria-label="Next page"
-          className="absolute z-10 top-12 bottom-3 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-[#303841] to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
+          className="absolute z-20 top-12 bottom-3 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-[#303841] via-[#303841]/80 to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
         >
           <ChevronRight className="h-8 w-8 transition-transform hover:scale-125" />
         </button>
@@ -128,21 +108,19 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
           return (
             <div
               key={`${item.id}-${index}`}
-              onMouseEnter={e => handleMouseEnter(item, e)}
-              onMouseLeave={handleMouseLeave}
               onClick={() => onSelect(item)}
-              className="relative flex-none cursor-pointer transition-transform duration-200 hover:scale-[1.03]"
+              className="group/card relative flex-none cursor-pointer transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.98]"
             >
               {/* Poster Card Container */}
               <div
-                className={`relative overflow-hidden rounded-md bg-[#18181d] border border-white/5 shadow-md ${
+                className={`relative overflow-hidden rounded-md bg-[#18181d] border border-white/5 transition-all duration-200 group-hover/card:border-white/25 group-hover/card:shadow-xl group-hover/card:shadow-black/60 ${
                   rail.isContinueWatching
                     ? 'h-28 w-48 sm:h-40 sm:w-72'
                     : 'h-44 w-28 sm:h-64 sm:w-44 md:h-72 md:w-48'
                 }`}
               >
                 {/* Floating Hardware-Optimized IMDb Badge */}
-                <div className="dx-badge">
+                <div className="dx-badge z-10">
                   <i>IMDb</i>
                   <span>{item.vote_average.toFixed(1)}</span>
                 </div>
@@ -156,12 +134,27 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
                   alt={item.title || item.name}
                   loading="lazy"
                   decoding="async"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-105"
                 />
+
+                {/* Instant Play Button Overlay on Hover */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPlay(item);
+                    }}
+                    className="pointer-events-auto h-11 w-11 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-xl transition-transform hover:scale-115 active:scale-95"
+                    style={{ borderColor: accentHex }}
+                    title="Quick Play"
+                  >
+                    <Play className="h-4 w-4 fill-white ml-0.5" style={{ color: accentHex }} />
+                  </div>
+                </div>
 
                 {/* Continue Watching Wide Card Overlay */}
                 {rail.isContinueWatching && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-3">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-3 pointer-events-none">
                     <span className="text-sm font-bold text-white truncate drop-shadow">
                       {item.title || item.name}
                     </span>
@@ -180,23 +173,6 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
           );
         })}
       </div>
-
-      {/* Floating Hover Portal */}
-      {hoveredItem && (
-        <HoverCardPortal
-          item={hoveredItem.item}
-          rect={hoveredItem.rect}
-          onClose={() => setHoveredItem(null)}
-          onPlay={item => {
-            setHoveredItem(null);
-            onPlay(item);
-          }}
-          onMoreInfo={item => {
-            setHoveredItem(null);
-            onSelect(item);
-          }}
-        />
-      )}
     </section>
   );
 };

@@ -15,6 +15,7 @@ import {
   History,
   Bookmark,
   X,
+  LogIn,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 
@@ -32,7 +33,8 @@ export type NavViewId =
   | 'radio'
   | 'continue-watch'
   | 'history'
-  | 'watchlist';
+  | 'watchlist'
+  | 'login';
 
 interface VidboxSidebarProps {
   isOpen: boolean;
@@ -158,6 +160,20 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
               </button>
             );
           })}
+        </div>
+
+        {/* Account / Sign In Quick Button */}
+        <div className="p-3 border-t border-white/10 bg-[#303841]">
+          <button
+            onClick={() => {
+              onSelectView('login');
+              onClose();
+            }}
+            className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all active:scale-98"
+          >
+            <LogIn className="h-4 w-4" style={{ color: accentHex }} />
+            <span>Sign In / My Account</span>
+          </button>
         </div>
 
         {/* Sidebar Footer */}

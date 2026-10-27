@@ -5,6 +5,7 @@ import {
   X,
   User,
   LogOut,
+  LogIn,
   Sliders,
   Settings as SettingsIcon,
   Home,
@@ -123,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 e.preventDefault();
                 onCategoryChange('home');
               }}
-              className="flex items-center transition-transform hover:scale-105 active:scale-95"
+              className="flex items-center mr-2 sm:mr-4 transition-transform hover:scale-105 active:scale-95 flex-shrink-0"
             >
               <EchoraLogo size="md" />
             </a>
@@ -254,6 +255,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
 
                   <div className="py-1 text-xs">
+                    <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        onCategoryChange('login');
+                      }}
+                      className="flex w-full items-center gap-2 px-4 py-2 hover:bg-white/5 text-zinc-300 hover:text-white"
+                    >
+                      <LogIn className="h-3.5 w-3.5 text-[#2185D5]" /> Sign In / Account
+                    </button>
+
                     <button
                       onClick={() => {
                         setIsProfileMenuOpen(false);
