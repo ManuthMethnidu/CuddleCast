@@ -1,4 +1,5 @@
 import React, { useRef, useState, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { CarouselRail, MediaItem } from '../types/schema';
 import { useAccent } from '../context/AccentContext';
@@ -15,6 +16,7 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
   onPlay,
 }) => {
   const { accentHex } = useAccent();
+  const navigate = useNavigate();
   const rowRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -47,6 +49,18 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
     }
   };
 
+  const handleSeeAll = () => {
+    if (rail.id === 'continue-watching') {
+      navigate('/continue-watch');
+    } else if (rail.id.includes('movie')) {
+      navigate('/movies');
+    } else if (rail.id.includes('series') || rail.id.includes('tv')) {
+      navigate('/series');
+    } else {
+      navigate('/discover');
+    }
+  };
+
   if (!rail.items || rail.items.length === 0) return null;
 
   return (
@@ -56,7 +70,7 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
           <span>{rail.title}</span>
           <button
-            onClick={() => onSelect(rail.items[0])}
+            onClick={handleSeeAll}
             className="text-xs font-semibold text-zinc-400 hover:text-white transition-colors ml-2"
           >
             See All &gt;
@@ -170,6 +184,22 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* Title & Metadata Caption below regular portrait card */}
+              {!rail.isContinueWatching && (
+                <div className="mt-1.5 px-0.5 max-w-[112px] sm:max-w-[176px] md:max-w-[192px]">
+                  <p className="text-xs font-semibold text-zinc-200 truncate group-hover/card:text-white transition-colors">
+                    {item.title || item.name}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 mt-0.5">
+                    <span>{(item.release_date || item.first_air_date || '').slice(0, 4) || '2026'}</span>
+                    <span>·</span>
+                    <span className="uppercase text-[9px] font-bold px-1 py-0.5 rounded bg-white/10 text-zinc-300">
+                      {item.media_type === 'tv' ? 'Series' : 'Movie'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

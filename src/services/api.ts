@@ -37,28 +37,54 @@ function sanitizeStaticItem(item: any): MediaItem {
   return rest as MediaItem;
 }
 
+/**
+ * Universal mapper from raw TMDB response to normalized Echora MediaItem
+ */
+function mapTmdbToMediaItem(r: any, defaultType: 'movie' | 'tv' = 'movie'): MediaItem {
+  const isTv =
+    r.media_type === 'tv' ||
+    (!r.media_type && (defaultType === 'tv' || Boolean(r.first_air_date)));
+  const mediaType: 'movie' | 'tv' = isTv ? 'tv' : 'movie';
+  const releaseDate = r.release_date || r.first_air_date || '';
+
+  return {
+    id: r.id,
+    title: r.title || r.name || 'Untitled',
+    name: r.name || r.title || 'Untitled',
+    original_title: r.original_title || r.original_name,
+    overview: r.overview || '',
+    poster_path: r.poster_path
+      ? `https://image.tmdb.org/t/p/w500${r.poster_path}`
+      : r.backdrop_path
+      ? `https://image.tmdb.org/t/p/w500${r.backdrop_path}`
+      : '',
+    backdrop_path: r.backdrop_path
+      ? `https://image.tmdb.org/t/p/original${r.backdrop_path}`
+      : r.poster_path
+      ? `https://image.tmdb.org/t/p/original${r.poster_path}`
+      : '',
+    media_type: mediaType,
+    release_date: releaseDate,
+    first_air_date: r.first_air_date,
+    vote_average: typeof r.vote_average === 'number' ? Math.round(r.vote_average * 10) / 10 : 0,
+    vote_count: r.vote_count || 0,
+    popularity: r.popularity || 0,
+    genre_ids: r.genre_ids || (r.genres ? r.genres.map((g: any) => g.id) : []),
+    genres: r.genres ? r.genres.map((g: any) => g.name) : [],
+    adult: Boolean(r.adult),
+  };
+}
+
 class ApiService {
   async getBillboard(): Promise<BillboardData[]> {
     if (DATA_MODE !== 'mock') {
       try {
         const data = await fetchFromTMDB('/trending/all/day');
         if (data.results && data.results.length > 0) {
-          return data.results.slice(0, 5).map((r: any, idx: number) => ({
-            id: r.id,
-            title: r.title || r.name || 'Featured Title',
-            name: r.name || r.title || 'Featured Title',
-            overview: r.overview || '',
-            poster_path: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : '',
-            backdrop_path: r.backdrop_path ? `https://image.tmdb.org/t/p/original${r.backdrop_path}` : '',
-            media_type: (r.media_type === 'tv' ? 'tv' : 'movie') as 'movie' | 'tv',
-            release_date: r.release_date || r.first_air_date || '',
-            vote_average: r.vote_average || 0,
-            vote_count: r.vote_count || 0,
-            popularity: r.popularity || 0,
-            genre_ids: r.genre_ids || [],
-            adult: Boolean(r.adult),
+          return data.results.slice(0, 8).map((r: any, idx: number) => ({
+            ...mapTmdbToMediaItem(r, r.media_type === 'tv' ? 'tv' : 'movie'),
             rank: idx + 1,
-          }));
+          })) as BillboardData[];
         }
       } catch (err) {
         console.warn('Live billboard fetch notice:', err);
@@ -74,10 +100,11 @@ class ApiService {
 
   async getRails(): Promise<CarouselRail[]> {
     const progressList = authStorage.getProgressList();
-    const allItems = (capturedData.allItems as any[]).map(sanitizeStaticItem);
+    const staticAllItems = (capturedData.allItems as any[]).map(sanitizeStaticItem);
 
+    // Continue Watching from local storage
     const continueWatchingItems = progressList.map((prog) => {
-      const match = allItems.find((i) => i.id === prog.media_id) || allItems[0];
+      const match = staticAllItems.find((i) => i.id === prog.media_id) || staticAllItems[0];
       return {
         ...match,
         progress_seconds: prog.progress_seconds,
@@ -91,6 +118,118 @@ class ApiService {
         ? continueWatchingItems
         : ((capturedData.continueWatching as any[]) || []).map(sanitizeStaticItem);
 
+    if (DATA_MODE !== 'mock') {
+      try {
+        const [
+          trendingMoviesRes,
+          trendingSeriesRes,
+          popularMoviesRes,
+          popularSeriesRes,
+          topRatedMoviesRes,
+          topRatedSeriesRes,
+          airingSeriesRes,
+        ] = await Promise.allSettled([
+          fetchFromTMDB('/trending/movie/day'),
+          fetchFromTMDB('/trending/tv/day'),
+          fetchFromTMDB('/movie/popular'),
+          fetchFromTMDB('/tv/popular'),
+          fetchFromTMDB('/movie/top_rated'),
+          fetchFromTMDB('/tv/top_rated'),
+          fetchFromTMDB('/tv/on_the_air'),
+        ]);
+
+        const getResults = (
+          res: PromiseSettledResult<any>,
+          type: 'movie' | 'tv'
+        ): MediaItem[] => {
+          if (res.status === 'fulfilled' && res.value?.results?.length > 0) {
+            return res.value.results.map((r: any) => mapTmdbToMediaItem(r, type));
+          }
+          return [];
+        };
+
+        const trendingMovies = getResults(trendingMoviesRes, 'movie');
+        const trendingSeries = getResults(trendingSeriesRes, 'tv');
+        const popularMovies = getResults(popularMoviesRes, 'movie');
+        const popularSeries = getResults(popularSeriesRes, 'tv');
+        const topRatedMovies = getResults(topRatedMoviesRes, 'movie');
+        const topRatedSeries = getResults(topRatedSeriesRes, 'tv');
+        const airingSeries = getResults(airingSeriesRes, 'tv');
+
+        if (trendingMovies.length > 0) {
+          const liveRails: CarouselRail[] = [];
+
+          if (activeContinueWatching.length > 0) {
+            liveRails.push({
+              id: 'continue-watching',
+              title: 'Continue Watching',
+              isContinueWatching: true,
+              items: activeContinueWatching,
+            });
+          }
+
+          liveRails.push({
+            id: 'trending-movies',
+            title: 'Trending Movies Today',
+            items: trendingMovies,
+          });
+
+          if (trendingSeries.length > 0) {
+            liveRails.push({
+              id: 'trending-series',
+              title: 'Trending TV Series',
+              items: trendingSeries,
+            });
+          }
+
+          if (popularMovies.length > 0) {
+            liveRails.push({
+              id: 'popular-movies',
+              title: 'Popular Movies',
+              items: popularMovies,
+            });
+          }
+
+          if (popularSeries.length > 0) {
+            liveRails.push({
+              id: 'popular-series',
+              title: 'Popular Series',
+              items: popularSeries,
+            });
+          }
+
+          if (topRatedMovies.length > 0) {
+            liveRails.push({
+              id: 'top-rated-movies',
+              title: 'Top Rated Movies',
+              items: topRatedMovies,
+            });
+          }
+
+          if (topRatedSeries.length > 0) {
+            liveRails.push({
+              id: 'top-rated-series',
+              title: 'Top Rated Series',
+              items: topRatedSeries,
+            });
+          }
+
+          if (airingSeries.length > 0) {
+            liveRails.push({
+              id: 'airing-series',
+              title: 'Airing This Week',
+              items: airingSeries,
+            });
+          }
+
+          return liveRails;
+        }
+      } catch (err) {
+        console.warn('Live rails fetch notice, falling back to static:', err);
+      }
+    }
+
+    // Static fallback
     const rails = capturedData.rails.map((rail) => {
       if (rail.id === 'continue-watching') {
         return {
@@ -109,29 +248,19 @@ class ApiService {
 
   async getMediaDetails(id: number, mediaType?: 'movie' | 'tv'): Promise<MediaItem | null> {
     if (DATA_MODE !== 'mock') {
-      try {
-        const type = mediaType || 'movie';
-        const r = await fetchFromTMDB(`/${type}/${id}`);
-        return {
-          id: r.id,
-          title: r.title || r.name || 'Untitled',
-          name: r.name || r.title || 'Untitled',
-          original_title: r.original_title || r.original_name,
-          overview: r.overview || '',
-          poster_path: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : '',
-          backdrop_path: r.backdrop_path ? `https://image.tmdb.org/t/p/original${r.backdrop_path}` : '',
-          media_type: (type === 'tv' || r.first_air_date ? 'tv' : 'movie') as 'movie' | 'tv',
-          release_date: r.release_date || r.first_air_date || '',
-          first_air_date: r.first_air_date,
-          vote_average: r.vote_average || 0,
-          vote_count: r.vote_count || 0,
-          popularity: r.popularity || 0,
-          genre_ids: r.genres ? r.genres.map((g: any) => g.id) : [],
-          genres: r.genres ? r.genres.map((g: any) => g.name) : [],
-          adult: Boolean(r.adult),
-        };
-      } catch (err) {
-        console.warn('Live details fetch notice:', err);
+      const typesToTry: ('movie' | 'tv')[] = mediaType
+        ? [mediaType, mediaType === 'movie' ? 'tv' : 'movie']
+        : ['movie', 'tv'];
+
+      for (const type of typesToTry) {
+        try {
+          const r = await fetchFromTMDB(`/${type}/${id}`);
+          if (r && r.id && !r.status_code) {
+            return mapTmdbToMediaItem(r, type);
+          }
+        } catch {
+          // Try next media type
+        }
       }
     }
 
@@ -174,19 +303,24 @@ class ApiService {
 
   async getCast(mediaId: number, mediaType?: 'movie' | 'tv'): Promise<CastMember[]> {
     if (DATA_MODE !== 'mock') {
-      try {
-        const type = mediaType || 'movie';
-        const data = await fetchFromTMDB(`/${type}/${mediaId}/credits`);
-        if (data.cast && data.cast.length > 0) {
-          return data.cast.slice(0, 15).map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            character: c.character || '',
-            profile_path: c.profile_path ? `https://image.tmdb.org/t/p/w200${c.profile_path}` : '',
-          }));
+      const typesToTry: ('movie' | 'tv')[] = mediaType
+        ? [mediaType, mediaType === 'movie' ? 'tv' : 'movie']
+        : ['movie', 'tv'];
+
+      for (const type of typesToTry) {
+        try {
+          const data = await fetchFromTMDB(`/${type}/${mediaId}/credits`);
+          if (data.cast && data.cast.length > 0) {
+            return data.cast.slice(0, 15).map((c: any) => ({
+              id: c.id,
+              name: c.name,
+              character: c.character || '',
+              profile_path: c.profile_path ? `https://image.tmdb.org/t/p/w200${c.profile_path}` : '',
+            }));
+          }
+        } catch {
+          // Continue to next type
         }
-      } catch (err) {
-        console.warn('Live cast fetch notice:', err);
       }
     }
 
@@ -205,23 +339,7 @@ class ApiService {
         if (data.results && data.results.length > 0) {
           return data.results
             .filter((r: any) => r.media_type === 'movie' || r.media_type === 'tv')
-            .map((r: any) => ({
-              id: r.id,
-              title: r.title || r.name || 'Untitled',
-              name: r.name || r.title || 'Untitled',
-              original_title: r.original_title || r.original_name,
-              overview: r.overview || '',
-              poster_path: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : '',
-              backdrop_path: r.backdrop_path ? `https://image.tmdb.org/t/p/original${r.backdrop_path}` : '',
-              media_type: (r.media_type === 'tv' ? 'tv' : 'movie') as 'movie' | 'tv',
-              release_date: r.release_date || r.first_air_date || '',
-              first_air_date: r.first_air_date,
-              vote_average: r.vote_average || 0,
-              vote_count: r.vote_count || 0,
-              popularity: r.popularity || 0,
-              genre_ids: r.genre_ids || [],
-              adult: Boolean(r.adult),
-            }));
+            .map((r: any) => mapTmdbToMediaItem(r, r.media_type === 'tv' ? 'tv' : 'movie'));
         }
       } catch (err) {
         console.warn('Live search fallback notice:', err);
@@ -245,6 +363,42 @@ class ApiService {
   }
 
   async getAllMedia(): Promise<MediaItem[]> {
+    if (DATA_MODE !== 'mock') {
+      try {
+        const [popMovies, popTv, trendMovies, trendTv] = await Promise.allSettled([
+          fetchFromTMDB('/movie/popular'),
+          fetchFromTMDB('/tv/popular'),
+          fetchFromTMDB('/trending/movie/week'),
+          fetchFromTMDB('/trending/tv/week'),
+        ]);
+
+        const items: MediaItem[] = [];
+        const seenIds = new Set<number>();
+
+        const addItems = (res: PromiseSettledResult<any>, type: 'movie' | 'tv') => {
+          if (res.status === 'fulfilled' && res.value?.results) {
+            for (const r of res.value.results) {
+              if (!seenIds.has(r.id)) {
+                seenIds.add(r.id);
+                items.push(mapTmdbToMediaItem(r, type));
+              }
+            }
+          }
+        };
+
+        addItems(popMovies, 'movie');
+        addItems(popTv, 'tv');
+        addItems(trendMovies, 'movie');
+        addItems(trendTv, 'tv');
+
+        if (items.length > 0) {
+          return items;
+        }
+      } catch (err) {
+        console.warn('Live all-media fetch notice:', err);
+      }
+    }
+
     return ((capturedData.allItems as any[]) || []).map(sanitizeStaticItem);
   }
 }
