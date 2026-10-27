@@ -78,12 +78,12 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
 
       {/* Slide-out Sidebar Drawer */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-[160] w-64 sm:w-72 bg-[#0c0c10] border-r border-white/10 text-white flex flex-col shadow-2xl transition-transform duration-300 ease-in-out select-none ${
+        className={`fixed top-0 left-0 bottom-0 z-[160] w-64 sm:w-72 bg-[#303841] border-r border-[#3A4750] text-[#F3F3F3] flex flex-col shadow-2xl transition-transform duration-300 ease-in-out select-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-[#09090c]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-[#3A4750]">
           <div className="flex items-center gap-2.5">
             <span
               className="font-black text-2xl uppercase tracking-wider"
@@ -159,7 +159,7 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-3.5 border-t border-white/10 bg-[#09090c] text-xs text-zinc-400 flex items-center justify-between">
+        <div className="p-3.5 border-t border-white/10 bg-[#3A4750] text-xs text-zinc-300 flex items-center justify-between">
           <span className="text-[11px]">Echora · Streaming Engine</span>
           <span className="text-[10px] font-mono text-zinc-500">100% Ad-Free</span>
         </div>

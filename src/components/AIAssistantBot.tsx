@@ -94,11 +94,11 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
 
         {/* AI Chat Window Popup */}
         {isOpen && (
-          <div className="w-[340px] sm:w-[380px] h-[500px] rounded-2xl bg-[#131317] border border-white/10 text-white shadow-2xl flex flex-col overflow-hidden animate-scaleUp select-none">
+          <div className="w-[340px] sm:w-[380px] h-[500px] rounded-2xl bg-[#303841] border border-white/10 text-white shadow-2xl flex flex-col overflow-hidden animate-scaleUp select-none">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 bg-[#0b0b0d]">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 bg-[#3A4750]">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#00A3FF] text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2185D5] text-white">
                   <Bot className="h-4 w-4" />
                 </div>
                 <div>
@@ -106,7 +106,7 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
                     <span>Echora AI</span>
                     <Sparkles className="h-3 w-3 text-amber-400" />
                   </h4>
-                  <p className="text-[10px] text-zinc-400">Smart Stream Concierge</p>
+                  <p className="text-[10px] text-zinc-300">Smart Stream Concierge</p>
                 </div>
               </div>
 
@@ -130,8 +130,8 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
                   <div
                     className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed ${
                       msg.sender === 'user'
-                        ? 'bg-[#00A3FF] text-white font-medium'
-                        : 'bg-[#18181d] border border-white/5 text-zinc-200'
+                        ? 'bg-[#2185D5] text-white font-medium'
+                        : 'bg-[#3A4750] border border-white/5 text-zinc-100'
                     }`}
                   >
                     {msg.text}
@@ -147,7 +147,7 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
                         return (
                           <div
                             key={id}
-                            className="flex items-center gap-2.5 p-2 rounded-xl bg-[#0b0b0d] border border-white/10 hover:border-white/30 transition-all cursor-pointer group"
+                            className="flex items-center gap-2.5 p-2 rounded-xl bg-[#303841] border border-white/10 hover:border-white/30 transition-all cursor-pointer group"
                             onClick={() => onSelect(rec)}
                           >
                             <img
@@ -215,18 +215,18 @@ export const AIAssistantBot: React.FC<AIAssistantBotProps> = ({
                 e.preventDefault();
                 handleSend(input);
               }}
-              className="p-2.5 border-t border-white/10 bg-[#09090c] flex gap-2"
+              className="p-2.5 border-t border-white/10 bg-[#3A4750] flex gap-2"
             >
               <input
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 placeholder="Ask Echora AI for a recommendation..."
-                className="flex-1 rounded-xl bg-[#18181d] border border-white/10 px-3 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#00A3FF]"
+                className="flex-1 rounded-xl bg-[#303841] border border-white/10 px-3 py-2 text-xs text-white placeholder:text-zinc-400 focus:outline-none focus:border-[#2185D5]"
               />
               <button
                 type="submit"
-                className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#00A3FF] hover:bg-[#0091e6] text-white shadow transition-transform active:scale-95"
+                className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2185D5] hover:bg-[#1b70b5] text-white shadow transition-transform active:scale-95"
               >
                 <Send className="h-3.5 w-3.5" />
               </button>

@@ -54,9 +54,9 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
     <div className="fixed inset-0 z-[1200] flex items-end sm:items-center justify-center bg-black/85 backdrop-blur-md p-0 sm:p-4 animate-fadeIn">
       <div className="fixed inset-0" onClick={onClose} />
 
-      <div className="relative z-10 w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-[#131317] border border-white/10 text-white shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="relative z-10 w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-[#303841] border border-white/10 text-white shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3.5 sm:py-4 bg-[#0b0b0d] flex-shrink-0">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 sm:px-6 py-3.5 sm:py-4 bg-[#3A4750] flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div
               className="flex h-9 w-9 items-center justify-center rounded-lg"
@@ -88,10 +88,10 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
           {!inParty ? (
             <div className="space-y-6">
               {/* Start party card */}
-              <div className="rounded-xl bg-[#18181d] border border-white/5 p-5 text-center space-y-3">
+              <div className="rounded-xl bg-[#3A4750] border border-white/5 p-5 text-center space-y-3">
                 <Sparkles className="h-7 w-7 mx-auto" style={{ color: accentHex }} />
                 <h4 className="font-bold text-lg text-white">Host a Watch Party</h4>
-                <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">
+                <p className="text-xs text-zinc-300 max-w-sm mx-auto leading-relaxed">
                   Start a room and invite your friends. Everyone's stream stays in lockstep down to the exact second.
                 </p>
                 <button
@@ -104,7 +104,7 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
               </div>
 
               {/* Join party */}
-              <form onSubmit={handleJoinParty} className="rounded-xl bg-[#18181d] border border-white/5 p-5 space-y-3">
+              <form onSubmit={handleJoinParty} className="rounded-xl bg-[#3A4750] border border-white/5 p-5 space-y-3">
                 <h4 className="font-bold text-sm text-white">Join with a Party Code</h4>
                 <div className="flex gap-2">
                   <input
@@ -112,7 +112,7 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
                     value={inputCode}
                     onChange={e => setInputCode(e.target.value)}
                     placeholder="Enter code (e.g. DX-7492-SYNC)"
-                    className="flex-1 rounded-xl bg-[#0b0b0d] border border-white/10 px-4 py-2.5 text-sm text-white uppercase placeholder:normal-case placeholder:text-zinc-500 focus:outline-none focus:border-white/30"
+                    className="flex-1 rounded-xl bg-[#303841] border border-white/10 px-4 py-2.5 text-sm text-white uppercase placeholder:normal-case placeholder:text-zinc-400 focus:outline-none focus:border-white/30"
                   />
                   <button
                     type="submit"
@@ -132,9 +132,9 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
           ) : (
             <div className="space-y-5">
               {/* Party Code Card */}
-              <div className="rounded-xl bg-[#18181d] border border-white/5 p-4 flex items-center justify-between">
+              <div className="rounded-xl bg-[#3A4750] border border-white/5 p-4 flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Party Code</span>
+                  <span className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider">Party Code</span>
                   <p className="text-xl font-mono font-black text-white tracking-wider">{partyCode}</p>
                 </div>
                 <button
@@ -152,9 +152,9 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-zinc-400">Watching together (3):</span>
                   <div className="flex -space-x-2 overflow-hidden">
-                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#131317] bg-blue-500 text-[10px] font-bold flex items-center justify-center">You</div>
-                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#131317] bg-purple-500 text-[10px] font-bold flex items-center justify-center">AL</div>
-                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#131317] bg-emerald-500 text-[10px] font-bold flex items-center justify-center">MY</div>
+                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#303841] bg-blue-500 text-[10px] font-bold flex items-center justify-center">You</div>
+                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#303841] bg-purple-500 text-[10px] font-bold flex items-center justify-center">AL</div>
+                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#303841] bg-emerald-500 text-[10px] font-bold flex items-center justify-center">MY</div>
                   </div>
                 </div>
 
@@ -165,15 +165,15 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
               </div>
 
               {/* Live Chat Box */}
-              <div className="rounded-xl bg-[#18181d] border border-white/5 p-3 flex flex-col h-48 justify-between">
+              <div className="rounded-xl bg-[#3A4750] border border-white/5 p-3 flex flex-col h-48 justify-between">
                 <div className="overflow-y-auto space-y-2 pr-1 text-xs">
                   {chatMessages.map((msg, i) => (
                     <div key={i} className="flex flex-col">
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-zinc-300">{msg.sender}</span>
-                        <span className="text-[10px] text-zinc-500">{msg.time}</span>
+                        <span className="text-[10px] text-zinc-400">{msg.time}</span>
                       </div>
-                      <p className="text-zinc-200 mt-0.5">{msg.text}</p>
+                      <p className="text-zinc-100 mt-0.5">{msg.text}</p>
                     </div>
                   ))}
                 </div>
@@ -184,7 +184,7 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     placeholder="Send a reaction or message..."
-                    className="flex-1 rounded-lg bg-[#0b0b0d] border border-white/10 px-3 py-1.5 text-xs text-white focus:outline-none focus:border-white/30"
+                    className="flex-1 rounded-lg bg-[#303841] border border-white/10 px-3 py-1.5 text-xs text-white focus:outline-none focus:border-white/30"
                   />
                   <button
                     type="submit"

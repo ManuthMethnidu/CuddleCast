@@ -5,7 +5,7 @@ export const Footer: React.FC = () => {
   const { accentHex } = useAccent();
 
   return (
-    <footer className="border-t border-white/10 bg-[#0b0b0d] py-16 text-xs text-zinc-500">
+    <footer className="border-t border-white/10 bg-[#303841] py-16 text-xs text-zinc-400">
       <div className="mx-auto max-w-[1560px] px-4 md:px-8 lg:px-12">
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">

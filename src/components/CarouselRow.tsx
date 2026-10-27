@@ -96,7 +96,7 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
         <button
           onClick={() => scroll('left')}
           aria-label="Previous page"
-          className="absolute z-10 top-12 bottom-3 left-0 w-12 flex items-center justify-center bg-gradient-to-r from-[#0b0b0d] to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
+          className="absolute z-10 top-12 bottom-3 left-0 w-12 flex items-center justify-center bg-gradient-to-r from-[#303841] to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
         >
           <ChevronLeft className="h-8 w-8 transition-transform hover:scale-125" />
         </button>
@@ -106,7 +106,7 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
         <button
           onClick={() => scroll('right')}
           aria-label="Next page"
-          className="absolute z-10 top-12 bottom-3 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-[#0b0b0d] to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
+          className="absolute z-10 top-12 bottom-3 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-[#303841] to-transparent text-white opacity-0 group-hover/row:opacity-100 transition-all hover:scale-110"
         >
           <ChevronRight className="h-8 w-8 transition-transform hover:scale-125" />
         </button>

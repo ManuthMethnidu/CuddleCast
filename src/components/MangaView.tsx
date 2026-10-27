@@ -384,7 +384,7 @@ export const MangaView: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search manga (e.g. Solo Leveling, One Piece)..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#131317] border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-white/30"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#3A4750] border border-white/10 text-xs text-white placeholder:text-zinc-400 focus:outline-none focus:border-white/30"
           />
           {searchQuery && (
             <button
@@ -433,7 +433,7 @@ export const MangaView: React.FC = () => {
             <div
               key={manga.id}
               onClick={() => handleOpenManga(manga)}
-              className="rounded-2xl bg-[#131317] border border-white/10 p-3.5 flex flex-col justify-between hover:border-white/30 transition-all cursor-pointer group hover:shadow-2xl"
+              className="rounded-2xl bg-[#3A4750] border border-white/10 p-3.5 flex flex-col justify-between hover:border-white/30 transition-all cursor-pointer group hover:shadow-2xl"
             >
               <div className="flex gap-3.5">
                 {/* Cover Art */}
@@ -508,9 +508,9 @@ export const MangaView: React.FC = () => {
             onClick={() => setSelectedManga(null)}
           />
 
-          <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-[#131317] border border-white/10 text-white shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+          <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-[#303841] border border-white/10 text-white shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10 bg-[#0b0b0d]">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10 bg-[#3A4750]">
               <div className="flex items-center gap-3.5">
                 <img
                   src={selectedManga.coverUrl}
@@ -521,7 +521,7 @@ export const MangaView: React.FC = () => {
                   <h3 className="font-bold text-base sm:text-lg truncate max-w-xs sm:max-w-md">
                     {selectedManga.title}
                   </h3>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-zinc-300">
                     Select a chapter to start reading in HD
                   </p>
                 </div>
@@ -536,14 +536,14 @@ export const MangaView: React.FC = () => {
             </div>
 
             {/* Chapters Count Banner */}
-            <div className="flex items-center justify-between px-6 py-2.5 bg-[#18181d] border-b border-white/5 text-xs">
-              <span className="text-zinc-300 font-semibold">
+            <div className="flex items-center justify-between px-6 py-2.5 bg-[#353f49] border-b border-white/5 text-xs">
+              <span className="text-zinc-200 font-semibold">
                 {isLoadingChapters
                   ? 'Indexing chapters...'
                   : `${chapters.length} chapters available`}
               </span>
 
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-white/10 text-zinc-400">
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-white/10 text-zinc-300">
                 English Translations
               </span>
             </div>
@@ -566,7 +566,7 @@ export const MangaView: React.FC = () => {
                   <div
                     key={ch.id}
                     onClick={() => handleReadChapter(ch)}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#18181d] hover:bg-white/10 border border-white/5 transition-colors cursor-pointer group"
+                    className="flex items-center justify-between p-3 rounded-xl bg-[#3A4750] hover:bg-white/10 border border-white/5 transition-colors cursor-pointer group"
                   >
                     <div className="flex items-center gap-3">
                       <span

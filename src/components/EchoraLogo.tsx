@@ -45,8 +45,8 @@ export const EchoraLogo: React.FC<EchoraLogoProps> = ({
           </defs>
 
           {/* Disc backing */}
-          <circle cx="24" cy="24" r="22" fill="#0c0d14" stroke="#27272a" strokeWidth="1.5" />
-          <circle cx="24" cy="24" r="20" fill="url(#echoraIconGrad)" fillOpacity="0.16" />
+          <circle cx="24" cy="24" r="22" fill="#303841" stroke="#3A4750" strokeWidth="1.5" />
+          <circle cx="24" cy="24" r="20" fill="url(#echoraIconGrad)" fillOpacity="0.2" />
 
           {/* Concentric Sonic / Light Resonance Waves */}
           <path
@@ -57,14 +57,14 @@ export const EchoraLogo: React.FC<EchoraLogoProps> = ({
           />
           <path
             d="M 17 24 A 7 7 0 0 1 31 24"
-            stroke="#ffffff"
+            stroke="#F3F3F3"
             strokeWidth="2.4"
             strokeLinecap="round"
             strokeOpacity="0.9"
           />
 
           {/* Central Play Beacon */}
-          <polygon points="21,18 31,24 21,30" fill="#ffffff" />
+          <polygon points="21,18 31,24 21,30" fill="#F3F3F3" />
           <circle cx="24" cy="36" r="2.5" fill={accentHex} />
         </svg>
       </div>
@@ -72,7 +72,7 @@ export const EchoraLogo: React.FC<EchoraLogoProps> = ({
       {/* Wordmark in Bebas Neue / Inter */}
       <div className="flex flex-col leading-none">
         <div className={`flex items-center tracking-wider font-black ${fontSize}`} style={{ fontFamily: "'Bebas Neue', 'Inter', sans-serif" }}>
-          <span className="text-white drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+          <span className="text-[#F3F3F3] drop-shadow-[0_2px_8px_rgba(243,243,243,0.25)]">
             ECH
           </span>
           <span
@@ -85,7 +85,7 @@ export const EchoraLogo: React.FC<EchoraLogoProps> = ({
           </span>
         </div>
         {showTagline && (
-          <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-zinc-400 font-bold mt-0.5">
+          <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-[#F3F3F3]/70 font-bold mt-0.5">
             Next-Gen Cinema
           </span>
         )}

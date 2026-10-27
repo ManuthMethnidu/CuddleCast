@@ -93,7 +93,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({ isVisible, onClose }) 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[140] w-80 sm:w-96 rounded-2xl bg-[#131317]/95 border border-white/10 p-3.5 shadow-2xl backdrop-blur-xl text-white select-none animate-fadeIn">
+    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[140] w-80 sm:w-96 rounded-2xl bg-[#303841]/95 border border-white/10 p-3.5 shadow-2xl backdrop-blur-xl text-white select-none animate-fadeIn">
       <audio ref={audioRef} src={currentStation.url} preload="none" />
 
       {/* Top Station Header */}
@@ -193,7 +193,7 @@ export const RadioPlayer: React.FC<RadioPlayerProps> = ({ isVisible, onClose }) 
 
       {/* Station Dropdown List */}
       {isStationMenuOpen && (
-        <div className="mt-2.5 rounded-xl bg-[#0b0b0d] border border-white/10 p-1.5 space-y-1 animate-fadeIn">
+        <div className="mt-2.5 rounded-xl bg-[#3A4750] border border-white/10 p-1.5 space-y-1 animate-fadeIn">
           {STATIONS.map(st => (
             <button
               key={st.id}

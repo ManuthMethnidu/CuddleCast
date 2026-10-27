@@ -86,9 +86,9 @@ export const MangaRail: React.FC<MangaRailProps> = ({ onSelectManga }) => {
         <button
           onClick={() => handleScroll('left')}
           aria-label="Scroll left"
-          className="absolute z-20 top-14 bottom-4 left-0 w-12 flex items-center justify-center bg-gradient-to-r from-[#0b0b0d] via-[#0b0b0d]/80 to-transparent text-white opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-110"
+          className="absolute z-20 top-14 bottom-4 left-0 w-12 flex items-center justify-center bg-gradient-to-r from-[#303841] via-[#303841]/80 to-transparent text-white opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-110"
         >
-          <div className="w-9 h-9 rounded-full bg-zinc-900/90 border border-white/20 flex items-center justify-center shadow-lg">
+          <div className="w-9 h-9 rounded-full bg-[#3A4750] border border-white/20 flex items-center justify-center shadow-lg">
             <ChevronLeft className="w-5 h-5" />
           </div>
         </button>
@@ -99,9 +99,9 @@ export const MangaRail: React.FC<MangaRailProps> = ({ onSelectManga }) => {
         <button
           onClick={() => handleScroll('right')}
           aria-label="Scroll right"
-          className="absolute z-20 top-14 bottom-4 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-[#0b0b0d] via-[#0b0b0d]/80 to-transparent text-white opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-110"
+          className="absolute z-20 top-14 bottom-4 right-0 w-12 flex items-center justify-center bg-gradient-to-l from-[#303841] via-[#303841]/80 to-transparent text-white opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-110"
         >
-          <div className="w-9 h-9 rounded-full bg-zinc-900/90 border border-white/20 flex items-center justify-center shadow-lg">
+          <div className="w-9 h-9 rounded-full bg-[#3A4750] border border-white/20 flex items-center justify-center shadow-lg">
             <ChevronRight className="w-5 h-5" />
           </div>
         </button>

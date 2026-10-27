@@ -23,14 +23,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fadeIn">
       <div className="fixed inset-0" onClick={onClose} />
 
-      <div className="relative z-10 w-full max-w-xl rounded-2xl bg-[#131317] border border-white/10 text-white shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-xl rounded-2xl bg-[#303841] border border-white/10 text-white shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 bg-[#0b0b0d]">
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 bg-[#3A4750]">
           <div className="flex items-center gap-2.5">
             <Sliders className="h-5 w-5" style={{ color: accentHex }} />
             <div>
-              <h3 className="font-bold text-base">dx.bi Settings</h3>
-              <p className="text-xs text-zinc-400">Appearance, playback and streaming features</p>
+              <h3 className="font-bold text-base">Echora Settings</h3>
+              <p className="text-xs text-zinc-300">Appearance, playback and streaming features</p>
             </div>
           </div>
 
@@ -50,17 +50,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               <Palette className="h-4 w-4" style={{ color: accentHex }} />
               <span className="font-bold text-sm">Accent Colour</span>
             </div>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-zinc-300">
               Colour used for the logo, progress bars, active tabs, and player highlights.
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
               {ACCENT_OPTIONS.map(opt => (
                 <button
                   key={opt.id}
                   onClick={() => setAccent(opt.id as AccentColor)}
                   className="flex items-center gap-2 p-2 rounded-xl border text-xs font-semibold transition-all hover:scale-105"
                   style={{
-                    backgroundColor: accent === opt.id ? `${opt.hex}25` : '#18181d',
+                    backgroundColor: accent === opt.id ? `${opt.hex}25` : '#3A4750',
                     borderColor: accent === opt.id ? opt.hex : 'rgba(255,255,255,0.08)',
                     color: accent === opt.id ? '#fff' : 'var(--dx-text-2)',
                   }}
@@ -84,10 +84,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#18181d] border border-white/5">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#3A4750] border border-white/5">
                 <div>
                   <p className="font-semibold text-xs text-white">Rotating Billboard</p>
-                  <p className="text-[11px] text-zinc-400">Cinematic top banner with Ken Burns zoom & trailer preview</p>
+                  <p className="text-[11px] text-zinc-300">Cinematic top banner with Ken Burns zoom & trailer preview</p>
                 </div>
                 <input
                   type="checkbox"
@@ -98,10 +98,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#18181d] border border-white/5">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#3A4750] border border-white/5">
                 <div>
                   <p className="font-semibold text-xs text-white">Hover Preview Cards</p>
-                  <p className="text-[11px] text-zinc-400">Unfold cards with artwork aura glow and auto-playing mini trailers</p>
+                  <p className="text-[11px] text-zinc-300">Unfold cards with artwork aura glow and auto-playing mini trailers</p>
                 </div>
                 <input
                   type="checkbox"
@@ -112,10 +112,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#18181d] border border-white/5">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#3A4750] border border-white/5">
                 <div>
                   <p className="font-semibold text-xs text-white">Ratings on Posters (IMDb)</p>
-                  <p className="text-[11px] text-zinc-400">Show IMDb rating badges pinned on poster corners</p>
+                  <p className="text-[11px] text-zinc-300">Show IMDb rating badges pinned on poster corners</p>
                 </div>
                 <input
                   type="checkbox"
@@ -126,10 +126,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#18181d] border border-white/5">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#3A4750] border border-white/5">
                 <div>
                   <p className="font-semibold text-xs text-white">Wide Continue Watching</p>
-                  <p className="text-[11px] text-zinc-400">Landscape cards with title art and live watch progress bar</p>
+                  <p className="text-[11px] text-zinc-300">Landscape cards with title art and live watch progress bar</p>
                 </div>
                 <input
                   type="checkbox"
@@ -140,10 +140,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#18181d] border border-white/5">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#3A4750] border border-white/5">
                 <div>
                   <p className="font-semibold text-xs text-white">Critic Reviews (Rotten Tomatoes & Metacritic)</p>
-                  <p className="text-[11px] text-zinc-400">Critic scores and review quotes on title detail pages</p>
+                  <p className="text-[11px] text-zinc-300">Critic scores and review quotes on title detail pages</p>
                 </div>
                 <input
                   type="checkbox"
@@ -164,10 +164,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#18181d] border border-white/5">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#3A4750] border border-white/5">
                 <div>
                   <p className="font-semibold text-xs text-white">Skip Intro & Up Next</p>
-                  <p className="text-[11px] text-zinc-400">Auto-detect intro scenes and countdown to next episode</p>
+                  <p className="text-[11px] text-zinc-300">Auto-detect intro scenes and countdown to next episode</p>
                 </div>
                 <input
                   type="checkbox"
@@ -178,10 +178,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#18181d] border border-white/5">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#3A4750] border border-white/5">
                 <div>
                   <p className="font-semibold text-xs text-white">Dialogue Boost & Night Mode</p>
-                  <p className="text-[11px] text-zinc-400">Dynamic speech frequency lifting and dynamic range evening</p>
+                  <p className="text-[11px] text-zinc-300">Dynamic speech frequency lifting and dynamic range evening</p>
                 </div>
                 <input
                   type="checkbox"
@@ -196,8 +196,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-white/10 px-6 py-4 bg-[#0b0b0d]">
-          <span className="text-xs text-zinc-500">dx.bi v2.15.9 · Stremio Clean-Room 1:1</span>
+        <div className="flex items-center justify-between border-t border-white/10 px-6 py-4 bg-[#3A4750]">
+          <span className="text-xs text-zinc-300">Echora v2.15.9 · Next-Gen Cinema</span>
           <button
             onClick={onClose}
             className="px-5 py-2 rounded-xl text-xs font-bold text-white transition-all shadow"

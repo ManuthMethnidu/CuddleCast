@@ -98,8 +98,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       <header
         className={`fixed top-0 z-[100] w-full transition-all duration-300 pt-[env(safe-area-inset-top,0px)] ${
           isScrolled
-            ? 'bg-[#0b0b0d]/95 backdrop-blur-xl border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-2.5 sm:py-3'
-            : 'bg-gradient-to-b from-black/85 via-black/40 to-transparent pt-3 pb-2.5 sm:pt-4 sm:pb-3'
+            ? 'bg-[#303841]/95 backdrop-blur-xl border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-2.5 sm:py-3'
+            : 'bg-gradient-to-b from-[#303841]/90 via-[#303841]/40 to-transparent pt-3 pb-2.5 sm:pt-4 sm:pb-3'
         }`}
       >
         <div className="mx-auto flex items-center justify-between max-w-[1560px] px-3.5 sm:px-8 lg:px-12">
@@ -250,10 +250,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {/* Profile Dropdown */}
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-52 rounded-xl border border-white/10 bg-[#18181d] py-2 text-sm text-white shadow-2xl backdrop-blur-xl animate-fadeIn z-50">
+                <div className="absolute right-0 mt-2 w-52 rounded-xl border border-white/10 bg-[#3A4750] py-2 text-sm text-white shadow-2xl backdrop-blur-xl animate-fadeIn z-50">
                   <div className="border-b border-white/10 px-4 py-2">
                     <p className="font-bold text-white truncate">{activeProfile.name}</p>
-                    <p className="text-[11px] text-zinc-400">dx.bi Viewer Profile</p>
+                    <p className="text-[11px] text-zinc-300">Echora Viewer Profile</p>
                   </div>
 
                   <div className="py-1 text-xs">
@@ -307,7 +307,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </header>
 
       {/* Mobile Bottom Navigation Bar (iOS / Android Stremio Style) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-[#0c0c10]/95 backdrop-blur-2xl border-t border-white/10 px-1 py-1 pb-[calc(0.4rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.8)] select-none">
+      <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-[#303841]/95 backdrop-blur-2xl border-t border-white/10 px-1 py-1 pb-[calc(0.4rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.8)] select-none">
         {[
           { id: 'all', label: 'Home', icon: Home },
           { id: 'manga', label: 'Manga', icon: BookOpen },

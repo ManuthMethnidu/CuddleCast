@@ -205,7 +205,7 @@ const MainApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0b0d] text-[#f4f4f5] flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#303841] text-[#F3F3F3] flex flex-col font-sans select-none">
       {/* Sticky Top Navigation Bar */}
       <Navbar
         activeProfile={activeProfile}
@@ -231,7 +231,7 @@ const MainApp: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1 pb-16 md:pb-0" data-grid-nav="true">
         {isLoading ? (
-          <div className="flex h-screen items-center justify-center bg-[#0b0b0d]">
+          <div className="flex h-screen items-center justify-center bg-[#303841]">
             <div className="flex flex-col items-center gap-4">
               <div
                 className="h-12 w-12 rounded-full border-4 border-t-transparent animate-spin shadow-lg"

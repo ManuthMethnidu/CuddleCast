@@ -138,7 +138,7 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[68vh] sm:h-[min(84vh,58vw)] min-h-[26rem] sm:min-h-[30rem] -mb-[4vw] overflow-hidden bg-[#0b0b0d] isolate select-none contain-paint"
+      className="relative w-full h-[68vh] sm:h-[min(84vh,58vw)] min-h-[26rem] sm:min-h-[30rem] -mb-[4vw] overflow-hidden bg-[#303841] isolate select-none contain-paint"
     >
       {/* Background Poster Image with Ken Burns Zoom */}
       <div

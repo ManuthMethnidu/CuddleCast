@@ -46,7 +46,7 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#0b0b0d] px-4 text-white animate-fadeIn select-none">
+    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#303841] px-4 text-[#F3F3F3] animate-fadeIn select-none">
       <div className="relative z-10 text-center max-w-xl">
         <div className="mb-6 flex flex-col items-center">
           <span
@@ -121,7 +121,7 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
           <form
             onSubmit={handleSaveEdit}
-            className="w-full max-w-md rounded-2xl bg-[#18181d] p-6 border border-white/10 shadow-2xl"
+            className="w-full max-w-md rounded-2xl bg-[#3A4750] p-6 border border-white/10 shadow-2xl"
           >
             <h3 className="text-xl font-bold text-white">Edit Profile</h3>
             <div className="mt-5 flex items-center gap-4">
@@ -134,7 +134,7 @@ export const ProfileGate: React.FC<ProfileGateProps> = ({ onSelectProfile }) => 
                 type="text"
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
-                className="w-full rounded-lg bg-[#0b0b0d] px-4 py-2.5 text-white border border-white/10 focus:outline-none focus:border-white/40"
+                className="w-full rounded-lg bg-[#303841] px-4 py-2.5 text-white border border-white/10 focus:outline-none focus:border-white/40"
                 placeholder="Profile Name"
               />
             </div>

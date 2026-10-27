@@ -160,7 +160,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-[110] overflow-y-auto bg-[#0b0b0d] text-[#f4f4f5] animate-fadeIn select-none -webkit-overflow-scrolling-touch">
+    <div className="fixed inset-0 z-[110] overflow-y-auto bg-[#303841] text-[#F3F3F3] animate-fadeIn select-none -webkit-overflow-scrolling-touch">
       {/* Background Backdrop Layer with Cinematic Vignette */}
       <div className="fixed inset-0 -z-10 pointer-events-none">
         <img
@@ -169,14 +169,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({
           decoding="async"
           className="h-full w-full object-cover object-center filter brightness-[0.75] contrast-[1.05]"
         />
-        {/* Authentic Multi-direction dx.bi Stremio Gradients */}
+        {/* Authentic Multi-direction Echora Gradients */}
         <div
           className="absolute inset-0"
           style={{
             background: `
-              linear-gradient(90deg, rgba(11, 11, 13, 0.96) 0%, rgba(11, 11, 13, 0.85) 38%, rgba(11, 11, 13, 0.3) 65%, rgba(11, 11, 13, 0.5) 100%),
-              linear-gradient(0deg, rgba(11, 11, 13, 1) 0%, rgba(11, 11, 13, 0.8) 25%, transparent 60%),
-              linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 20%)
+              linear-gradient(90deg, rgba(48, 56, 65, 0.96) 0%, rgba(48, 56, 65, 0.85) 38%, rgba(48, 56, 65, 0.3) 65%, rgba(48, 56, 65, 0.5) 100%),
+              linear-gradient(0deg, rgba(48, 56, 65, 1) 0%, rgba(48, 56, 65, 0.8) 25%, transparent 60%),
+              linear-gradient(180deg, rgba(33, 40, 48, 0.7) 0%, transparent 20%)
             `,
           }}
         />
