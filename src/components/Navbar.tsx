@@ -234,7 +234,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {/* Clerk User Button or Local Profile Menu */}
-            {import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ? (
+            {Boolean(
+              import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
+              import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+            ) ? (
               <div className="flex items-center">
                 <Show when="signed-in">
                   <UserButton />
