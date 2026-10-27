@@ -5,7 +5,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/((?!api/|assets/|@|.*\\..*).*)",
+      "source": "/(settings|login|movies|series|anime|manga|collection|4k|drama|live-tv|live-sports|radio|continue-watch|history|watchlist|addons|title/.*|watch/.*)",
       "destination": "/index.html"
     }
   ],
