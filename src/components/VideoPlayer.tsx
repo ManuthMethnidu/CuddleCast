@@ -178,7 +178,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             setStoreTime(payload.currentTime);
             if (payload.duration) {
               setStoreDuration(payload.duration);
-              authStorage.saveProgress(item.id, payload.currentTime, payload.duration);
+              authStorage.saveProgress(item.id, payload.currentTime, payload.duration, item);
             }
           }
         } else if (data.type === 'play' || data.event === 'play') {
@@ -193,7 +193,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     window.addEventListener('message', handlePostMessage);
     return () => window.removeEventListener('message', handlePostMessage);
-  }, [item.id, setStoreTime, setStoreDuration, setStorePlaying]);
+  }, [item, setStoreTime, setStoreDuration, setStorePlaying]);
+
+  // Ensure playback progress is recorded under the active user even for embed providers without postMessage
+  useEffect(() => {
+    const existing = authStorage.getProgress(item.id);
+    if (!existing) {
+      authStorage.saveProgress(item.id, 15, 7200, item);
+    }
+    const heartbeat = setInterval(() => {
+      authStorage.updateWatchHeartbeat(item.id, item);
+    }, 15000);
+    return () => clearInterval(heartbeat);
+  }, [item]);
 
   // Auto-hide top bar after mouse inactivity (ONLY when not loading and not in menus)
   const handleMouseMove = useCallback(() => {

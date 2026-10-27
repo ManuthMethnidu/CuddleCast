@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import Hls from 'hls.js';
 import { useAccent } from '../context/AccentContext';
+import { authStorage } from '../services/storage';
 
 export interface TvChannel {
   id: string;
@@ -782,15 +783,25 @@ type CategoryFilter =
 export const LiveTvView: React.FC = () => {
   const { accentHex } = useAccent();
 
-  // Load custom user channels from localStorage
-  const [customChannels, setCustomChannels] = useState<TvChannel[]>(() => {
-    try {
-      const stored = localStorage.getItem('echora_custom_tv_channels') || localStorage.getItem('cuddlecast_custom_tv_channels');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  // Load user-scoped custom channels from storage
+  const [customChannels, setCustomChannels] = useState<TvChannel[]>(() =>
+    authStorage.getCustomTvChannels()
+  );
+
+  // Favorites saved in user-scoped storage
+  const [favorites, setFavorites] = useState<string[]>(() =>
+    authStorage.getTvFavorites()
+  );
+
+  // Subscribe to authStorage user switches or updates
+  useEffect(() => {
+    const reload = () => {
+      setCustomChannels(authStorage.getCustomTvChannels());
+      setFavorites(authStorage.getTvFavorites());
+    };
+    const unsubscribe = authStorage.subscribe(reload);
+    return unsubscribe;
+  }, []);
 
   // Combine default and custom channels
   const allChannels = useMemo(() => {
@@ -816,18 +827,6 @@ export const LiveTvView: React.FC = () => {
   >('News');
   const [addError, setAddError] = useState('');
 
-  // Favorites saved in localStorage
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem('echora_tv_favorites') || localStorage.getItem('cuddlecast_tv_favorites');
-      return stored
-        ? JSON.parse(stored)
-        : ['yt-sky-news', 'bloomberg', 'yt-abc-news', 'yt-playlist-skynews', 'naruto'];
-    } catch {
-      return ['yt-sky-news', 'bloomberg', 'yt-abc-news', 'yt-playlist-skynews', 'naruto'];
-    }
-  });
-
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -835,13 +834,8 @@ export const LiveTvView: React.FC = () => {
   // Toggle favorite channel
   const toggleFavorite = (channelId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    setFavorites(prev => {
-      const updated = prev.includes(channelId)
-        ? prev.filter(id => id !== channelId)
-        : [...prev, channelId];
-      localStorage.setItem('echora_tv_favorites', JSON.stringify(updated));
-      return updated;
-    });
+    const updated = authStorage.toggleTvFavorite(channelId);
+    setFavorites(updated);
   };
 
   // Switch channel handler
@@ -908,7 +902,7 @@ export const LiveTvView: React.FC = () => {
 
     const updated = [newChan, ...customChannels];
     setCustomChannels(updated);
-    localStorage.setItem('echora_custom_tv_channels', JSON.stringify(updated));
+    authStorage.saveCustomTvChannels(updated);
 
     // Reset form and select new channel
     setInputYtUrl('');
@@ -922,7 +916,7 @@ export const LiveTvView: React.FC = () => {
     e.stopPropagation();
     const updated = customChannels.filter(c => c.id !== channelId);
     setCustomChannels(updated);
-    localStorage.setItem('echora_custom_tv_channels', JSON.stringify(updated));
+    authStorage.saveCustomTvChannels(updated);
     if (selectedChannel.id === channelId) {
       switchChannel(REAL_TV_CHANNELS[0]);
     }

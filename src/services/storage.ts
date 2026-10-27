@@ -1,11 +1,18 @@
-import { UserProfile, UserWatchProgress } from '../types/schema';
+import { MediaItem, UserProfile, UserWatchProgress } from '../types/schema';
 
 const STORAGE_KEYS = {
+  CURRENT_USER_ID: 'echora_current_user_id',
   PROFILES: 'echora_profiles',
   ACTIVE_PROFILE: 'echora_active_profile',
   WATCHLIST: 'echora_watchlist',
+  WATCHLIST_MEDIA: 'echora_watchlist_media',
   PROGRESS: 'echora_progress',
   LIKES: 'echora_likes',
+  LIKES_MEDIA: 'echora_likes_media',
+  CUSTOM_TV_CHANNELS: 'echora_custom_tv_channels',
+  TV_FAVORITES: 'echora_tv_favorites',
+  RADIO_FAVORITES: 'radio_atlas_favorites',
+  RADIO_RECENT: 'radio_atlas_recent',
 };
 
 const LEGACY_STORAGE_KEYS = {
@@ -14,6 +21,8 @@ const LEGACY_STORAGE_KEYS = {
   WATCHLIST: 'cuddlecast_watchlist',
   PROGRESS: 'cuddlecast_progress',
   LIKES: 'cuddlecast_likes',
+  CUSTOM_TV_CHANNELS: 'cuddlecast_custom_tv_channels',
+  TV_FAVORITES: 'cuddlecast_tv_favorites',
 };
 
 export const AVATAR_PRESETS = [
@@ -80,7 +89,76 @@ const DEFAULT_PROFILES: UserProfile[] = [
   },
 ];
 
+const DEFAULT_TV_FAVORITES = [
+  'yt-sky-news',
+  'bloomberg',
+  'yt-abc-news',
+  'yt-playlist-skynews',
+  'naruto',
+];
+
 class StorageService {
+  private activeUserId: string = 'guest';
+  private listeners: Set<() => void> = new Set();
+
+  constructor() {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
+        if (saved) {
+          this.activeUserId = saved;
+        }
+      }
+    } catch {}
+  }
+
+  // Active User Scope Management
+  getUserId(): string {
+    return this.activeUserId;
+  }
+
+  setUserId(userId?: string | null): void {
+    const nextId = userId && userId.trim() ? userId.trim() : 'guest';
+    if (this.activeUserId === nextId) return;
+    this.activeUserId = nextId;
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, nextId);
+      }
+    } catch {}
+    this.notify();
+  }
+
+  subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private notify(): void {
+    this.listeners.forEach((listener) => {
+      try {
+        listener();
+      } catch (err) {
+        console.error('Storage notify error:', err);
+      }
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('echora:storage-updated', {
+          detail: { userId: this.activeUserId },
+        })
+      );
+    }
+  }
+
+  private getKey(base: string, overrideUserId?: string): string {
+    const uid = overrideUserId || this.activeUserId || 'guest';
+    return `${base}_${uid}`;
+  }
+
+  // --- PROFILES (Preserved for compatibility) ---
   getProfiles(): UserProfile[] {
     const raw =
       localStorage.getItem(STORAGE_KEYS.PROFILES) ||
@@ -127,10 +205,9 @@ class StorageService {
 
   deleteProfile(id: string): UserProfile[] {
     const profiles = this.getProfiles().filter((p) => p.id !== id);
-    if (profiles.length === 0) return this.getProfiles(); // Protect against deleting the only profile
+    if (profiles.length === 0) return this.getProfiles();
     localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(profiles));
 
-    // If active profile was deleted, switch to the first remaining profile
     const active = this.getActiveProfile();
     if (active.id === id) {
       this.setActiveProfile(profiles[0]);
@@ -150,114 +227,398 @@ class StorageService {
     return updated;
   }
 
-  getWatchlist(): number[] {
-    const raw =
-      localStorage.getItem(STORAGE_KEYS.WATCHLIST) ||
-      localStorage.getItem(LEGACY_STORAGE_KEYS.WATCHLIST);
-    if (!raw) return [96677, 1400940];
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return [];
+  // --- WATCHLIST (User-Scoped) ---
+  getWatchlist(userId?: string): number[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.WATCHLIST, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
     }
+    // Guest fallback: legacy storage or initial demo IDs
+    if (uid === 'guest') {
+      const legacy =
+        localStorage.getItem(STORAGE_KEYS.WATCHLIST) ||
+        localStorage.getItem(LEGACY_STORAGE_KEYS.WATCHLIST);
+      if (legacy) {
+        try {
+          return JSON.parse(legacy);
+        } catch {}
+      }
+      return [96677, 1400940];
+    }
+    return [];
   }
 
-  toggleWatchlist(mediaId: number): boolean {
-    const list = this.getWatchlist();
+  getStoredWatchlistMedia(userId?: string): MediaItem[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.WATCHLIST_MEDIA, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  toggleWatchlist(mediaId: number, mediaItem?: MediaItem, userId?: string): boolean {
+    const uid = userId || this.activeUserId || 'guest';
+    const list = this.getWatchlist(uid);
+    const mediaList = this.getStoredWatchlistMedia(uid);
+
     const idx = list.indexOf(mediaId);
     let inList = false;
 
     if (idx >= 0) {
       list.splice(idx, 1);
+      const mediaIdx = mediaList.findIndex((m) => m.id === mediaId);
+      if (mediaIdx >= 0) mediaList.splice(mediaIdx, 1);
       inList = false;
     } else {
-      list.push(mediaId);
+      list.unshift(mediaId);
+      if (mediaItem) {
+        const mediaIdx = mediaList.findIndex((m) => m.id === mediaId);
+        if (mediaIdx >= 0) {
+          mediaList[mediaIdx] = mediaItem;
+        } else {
+          mediaList.unshift(mediaItem);
+        }
+      }
       inList = true;
     }
-    localStorage.setItem(STORAGE_KEYS.WATCHLIST, JSON.stringify(list));
+
+    const key = this.getKey(STORAGE_KEYS.WATCHLIST, uid);
+    localStorage.setItem(key, JSON.stringify(list));
+
+    const mediaKey = this.getKey(STORAGE_KEYS.WATCHLIST_MEDIA, uid);
+    localStorage.setItem(mediaKey, JSON.stringify(mediaList));
+
+    this.notify();
     return inList;
   }
 
-  isInWatchlist(mediaId: number): boolean {
-    return this.getWatchlist().includes(mediaId);
+  isInWatchlist(mediaId: number, userId?: string): boolean {
+    return this.getWatchlist(userId).includes(mediaId);
   }
 
-  getLikes(): number[] {
-    const raw =
-      localStorage.getItem(STORAGE_KEYS.LIKES) ||
-      localStorage.getItem(LEGACY_STORAGE_KEYS.LIKES);
-    if (!raw) return [];
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return [];
+  clearWatchlist(userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.WATCHLIST, uid);
+    localStorage.removeItem(key);
+
+    const mediaKey = this.getKey(STORAGE_KEYS.WATCHLIST_MEDIA, uid);
+    localStorage.removeItem(mediaKey);
+
+    if (uid === 'guest') {
+      localStorage.removeItem(STORAGE_KEYS.WATCHLIST);
+      localStorage.removeItem(LEGACY_STORAGE_KEYS.WATCHLIST);
     }
+    this.notify();
   }
 
-  toggleLike(mediaId: number): boolean {
-    const list = this.getLikes();
+  // --- LIKES & FAVORITES (User-Scoped) ---
+  getLikes(userId?: string): number[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.LIKES, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
+    }
+    if (uid === 'guest') {
+      const legacy =
+        localStorage.getItem(STORAGE_KEYS.LIKES) ||
+        localStorage.getItem(LEGACY_STORAGE_KEYS.LIKES);
+      if (legacy) {
+        try {
+          return JSON.parse(legacy);
+        } catch {}
+      }
+    }
+    return [];
+  }
+
+  getStoredLikesMedia(userId?: string): MediaItem[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.LIKES_MEDIA, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  toggleLike(mediaId: number, mediaItem?: MediaItem, userId?: string): boolean {
+    const uid = userId || this.activeUserId || 'guest';
+    const list = this.getLikes(uid);
+    const mediaList = this.getStoredLikesMedia(uid);
+
     const idx = list.indexOf(mediaId);
     let isLiked = false;
 
     if (idx >= 0) {
       list.splice(idx, 1);
+      const mIdx = mediaList.findIndex((m) => m.id === mediaId);
+      if (mIdx >= 0) mediaList.splice(mIdx, 1);
+      isLiked = false;
     } else {
-      list.push(mediaId);
+      list.unshift(mediaId);
+      if (mediaItem) {
+        const mIdx = mediaList.findIndex((m) => m.id === mediaId);
+        if (mIdx >= 0) {
+          mediaList[mIdx] = mediaItem;
+        } else {
+          mediaList.unshift(mediaItem);
+        }
+      }
       isLiked = true;
     }
-    localStorage.setItem(STORAGE_KEYS.LIKES, JSON.stringify(list));
+
+    const key = this.getKey(STORAGE_KEYS.LIKES, uid);
+    localStorage.setItem(key, JSON.stringify(list));
+
+    const mediaKey = this.getKey(STORAGE_KEYS.LIKES_MEDIA, uid);
+    localStorage.setItem(mediaKey, JSON.stringify(mediaList));
+
+    this.notify();
     return isLiked;
   }
 
-  isLiked(mediaId: number): boolean {
-    return this.getLikes().includes(mediaId);
+  isLiked(mediaId: number, userId?: string): boolean {
+    return this.getLikes(userId).includes(mediaId);
   }
 
-  getProgressList(): UserWatchProgress[] {
-    const raw =
-      localStorage.getItem(STORAGE_KEYS.PROGRESS) ||
-      localStorage.getItem(LEGACY_STORAGE_KEYS.PROGRESS);
-    if (!raw) return [];
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return [];
+  // --- CONTINUE WATCHING & PLAYBACK PROGRESS (User-Scoped) ---
+  getProgressList(userId?: string): UserWatchProgress[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.PROGRESS, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
     }
+    if (uid === 'guest') {
+      const legacy =
+        localStorage.getItem(STORAGE_KEYS.PROGRESS) ||
+        localStorage.getItem(LEGACY_STORAGE_KEYS.PROGRESS);
+      if (legacy) {
+        try {
+          return JSON.parse(legacy);
+        } catch {}
+      }
+    }
+    return [];
   }
 
-  saveProgress(mediaId: number, progressSeconds: number, totalSeconds: number): void {
-    const list = this.getProgressList();
-    const existing = list.findIndex((p) => p.media_id === mediaId);
+  saveProgress(
+    mediaId: number,
+    progressSeconds: number,
+    totalSeconds: number,
+    mediaItem?: MediaItem,
+    userId?: string
+  ): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const list = this.getProgressList(uid);
+    const existingIdx = list.findIndex((p) => p.media_id === mediaId);
+
+    const prevItem = existingIdx >= 0 ? list[existingIdx] : null;
+    const finalMediaItem = mediaItem || prevItem?.media_item;
 
     const item: UserWatchProgress = {
       id: mediaId,
       media_id: mediaId,
       progress_seconds: Math.floor(progressSeconds),
-      total_seconds: Math.floor(totalSeconds),
+      total_seconds: Math.max(1, Math.floor(totalSeconds)),
       last_watched: new Date().toISOString(),
+      ...(finalMediaItem ? { media_item: finalMediaItem } : {}),
     };
 
-    if (existing >= 0) {
-      list[existing] = item;
+    if (existingIdx >= 0) {
+      list[existingIdx] = item;
     } else {
       list.unshift(item);
     }
-    localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(list));
+
+    const key = this.getKey(STORAGE_KEYS.PROGRESS, uid);
+    localStorage.setItem(key, JSON.stringify(list));
+    this.notify();
   }
 
-  getProgress(mediaId: number): UserWatchProgress | null {
-    const list = this.getProgressList();
+  updateWatchHeartbeat(mediaId: number, mediaItem?: MediaItem, userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const existing = this.getProgress(mediaId, uid);
+    const curProg = existing ? existing.progress_seconds + 10 : 10;
+    const total = existing ? existing.total_seconds : 7200;
+    this.saveProgress(mediaId, curProg, total, mediaItem || existing?.media_item, uid);
+  }
+
+  getProgress(mediaId: number, userId?: string): UserWatchProgress | null {
+    const list = this.getProgressList(userId);
     return list.find((p) => p.media_id === mediaId) || null;
   }
 
-  clearWatchlist(): void {
-    localStorage.removeItem(STORAGE_KEYS.WATCHLIST);
-    localStorage.removeItem(LEGACY_STORAGE_KEYS.WATCHLIST);
+  removeProgress(mediaId: number, userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const list = this.getProgressList(uid).filter((p) => p.media_id !== mediaId);
+    const key = this.getKey(STORAGE_KEYS.PROGRESS, uid);
+    localStorage.setItem(key, JSON.stringify(list));
+    this.notify();
   }
 
-  clearProgress(): void {
-    localStorage.removeItem(STORAGE_KEYS.PROGRESS);
-    localStorage.removeItem(LEGACY_STORAGE_KEYS.PROGRESS);
+  clearProgress(userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.PROGRESS, uid);
+    localStorage.removeItem(key);
+    if (uid === 'guest') {
+      localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+      localStorage.removeItem(LEGACY_STORAGE_KEYS.PROGRESS);
+    }
+    this.notify();
+  }
+
+  // --- YOUTUBE PLAYLISTS & CUSTOM CHANNELS (User-Scoped) ---
+  getCustomTvChannels(userId?: string): any[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.CUSTOM_TV_CHANNELS, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
+    }
+    if (uid === 'guest') {
+      const legacy =
+        localStorage.getItem(STORAGE_KEYS.CUSTOM_TV_CHANNELS) ||
+        localStorage.getItem(LEGACY_STORAGE_KEYS.CUSTOM_TV_CHANNELS);
+      if (legacy) {
+        try {
+          return JSON.parse(legacy);
+        } catch {}
+      }
+    }
+    return [];
+  }
+
+  saveCustomTvChannels(channels: any[], userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.CUSTOM_TV_CHANNELS, uid);
+    localStorage.setItem(key, JSON.stringify(channels));
+    this.notify();
+  }
+
+  // --- TV & YOUTUBE FAVORITES (User-Scoped) ---
+  getTvFavorites(userId?: string): string[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.TV_FAVORITES, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return DEFAULT_TV_FAVORITES;
+      }
+    }
+    if (uid === 'guest') {
+      const legacy =
+        localStorage.getItem(STORAGE_KEYS.TV_FAVORITES) ||
+        localStorage.getItem(LEGACY_STORAGE_KEYS.TV_FAVORITES);
+      if (legacy) {
+        try {
+          return JSON.parse(legacy);
+        } catch {}
+      }
+    }
+    return DEFAULT_TV_FAVORITES;
+  }
+
+  saveTvFavorites(favorites: string[], userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.TV_FAVORITES, uid);
+    localStorage.setItem(key, JSON.stringify(favorites));
+    this.notify();
+  }
+
+  toggleTvFavorite(channelId: string, userId?: string): string[] {
+    const current = this.getTvFavorites(userId);
+    const updated = current.includes(channelId)
+      ? current.filter((id) => id !== channelId)
+      : [...current, channelId];
+    this.saveTvFavorites(updated, userId);
+    return updated;
+  }
+
+  // --- RADIO FAVORITES & RECENT (User-Scoped) ---
+  getRadioFavorites(userId?: string): string[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.RADIO_FAVORITES, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {}
+    }
+    if (uid === 'guest') {
+      const legacy = localStorage.getItem(STORAGE_KEYS.RADIO_FAVORITES);
+      if (legacy) {
+        try {
+          return JSON.parse(legacy);
+        } catch {}
+      }
+    }
+    return ['gl-nanoq'];
+  }
+
+  saveRadioFavorites(favorites: string[], userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.RADIO_FAVORITES, uid);
+    localStorage.setItem(key, JSON.stringify(favorites));
+    this.notify();
+  }
+
+  getRadioRecent(userId?: string): string[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.RADIO_RECENT, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {}
+    }
+    if (uid === 'guest') {
+      const legacy = localStorage.getItem(STORAGE_KEYS.RADIO_RECENT);
+      if (legacy) {
+        try {
+          return JSON.parse(legacy);
+        } catch {}
+      }
+    }
+    return [];
+  }
+
+  saveRadioRecent(recent: string[], userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.RADIO_RECENT, uid);
+    localStorage.setItem(key, JSON.stringify(recent));
+    this.notify();
   }
 }
 

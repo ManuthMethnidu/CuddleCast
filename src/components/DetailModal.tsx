@@ -85,14 +85,23 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   }, [isPartyOpen, onClose]);
 
   const toggleWatchlist = () => {
-    const state = authStorage.toggleWatchlist(item.id);
+    const state = authStorage.toggleWatchlist(item.id, item);
     setInWatchlist(state);
   };
 
   const toggleLike = () => {
-    const state = authStorage.toggleLike(item.id);
+    const state = authStorage.toggleLike(item.id, item);
     setIsLiked(state);
   };
+
+  useEffect(() => {
+    const reload = () => {
+      setInWatchlist(authStorage.isInWatchlist(item.id));
+      setIsLiked(authStorage.isLiked(item.id));
+    };
+    const unsubscribe = authStorage.subscribe(reload);
+    return unsubscribe;
+  }, [item.id]);
 
   const handleLaunchStream = (provId?: string, ep?: Episode) => {
     const chosenProvider = provId || selectedProviderId;

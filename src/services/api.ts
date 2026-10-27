@@ -104,7 +104,23 @@ class ApiService {
 
     // Continue Watching from local storage
     const continueWatchingItems = progressList.map((prog) => {
-      const match = staticAllItems.find((i) => i.id === prog.media_id) || staticAllItems[0];
+      const match =
+        prog.media_item ||
+        staticAllItems.find((i) => i.id === prog.media_id) || {
+          id: prog.media_id,
+          title: 'Watched Title',
+          name: 'Watched Title',
+          overview: '',
+          poster_path: '',
+          backdrop_path: '',
+          media_type: 'movie' as const,
+          release_date: '',
+          vote_average: 0,
+          vote_count: 0,
+          genre_ids: [],
+          popularity: 0,
+          adult: false,
+        };
       return {
         ...match,
         progress_seconds: prog.progress_seconds,
@@ -113,10 +129,13 @@ class ApiService {
       };
     });
 
+    const isGuest = authStorage.getUserId() === 'guest';
     const activeContinueWatching =
       continueWatchingItems.length > 0
         ? continueWatchingItems
-        : ((capturedData.continueWatching as any[]) || []).map(sanitizeStaticItem);
+        : isGuest
+        ? ((capturedData.continueWatching as any[]) || []).map(sanitizeStaticItem)
+        : [];
 
     if (DATA_MODE !== 'mock') {
       try {
@@ -358,8 +377,36 @@ class ApiService {
 
   async getWatchlistItems(): Promise<MediaItem[]> {
     const watchlistIds = authStorage.getWatchlist();
-    const allItems = (capturedData.allItems as any[]).map(sanitizeStaticItem);
-    return allItems.filter((i) => watchlistIds.includes(i.id));
+    const storedMedia = authStorage.getStoredWatchlistMedia();
+    const staticAllItems = (capturedData.allItems as any[]).map(sanitizeStaticItem);
+
+    const items: MediaItem[] = [];
+    const seen = new Set<number>();
+
+    for (const id of watchlistIds) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+
+      const fromStored = storedMedia.find((m) => m.id === id);
+      if (fromStored) {
+        items.push(fromStored);
+        continue;
+      }
+      const fromStatic = staticAllItems.find((m) => m.id === id);
+      if (fromStatic) {
+        items.push(fromStatic);
+        continue;
+      }
+      try {
+        const fetched = await this.getMediaDetails(id);
+        if (fetched) {
+          items.push(fetched);
+        }
+      } catch {
+        // Ignore details fetch failure
+      }
+    }
+    return items;
   }
 
   async getAllMedia(): Promise<MediaItem[]> {

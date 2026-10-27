@@ -76,6 +76,7 @@ export interface UserWatchProgress {
   progress_seconds: number;
   total_seconds: number;
   last_watched: string;
+  media_item?: MediaItem;
 }
 
 export interface UserProfile {

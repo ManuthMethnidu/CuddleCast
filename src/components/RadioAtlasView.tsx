@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
+import { authStorage } from '../services/storage';
 
 export interface RadioStation {
   uuid: string;
@@ -315,20 +316,22 @@ export const RadioAtlasView: React.FC<RadioAtlasViewProps> = ({ onBack }) => {
   // Tabs & Search State
   const [mode, setMode] = useState<'world' | 'favorites' | 'recent'>('world');
   const [searchQuery, setSearchQuery] = useState('');
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('radio_atlas_favorites') || '["gl-nanoq"]');
-    } catch {
-      return ['gl-nanoq'];
-    }
-  });
-  const [recent, setRecent] = useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('radio_atlas_recent') || '[]');
-    } catch {
-      return [];
-    }
-  });
+  const [favorites, setFavorites] = useState<string[]>(() =>
+    authStorage.getRadioFavorites()
+  );
+  const [recent, setRecent] = useState<string[]>(() =>
+    authStorage.getRadioRecent()
+  );
+
+  // Subscribe to authStorage user switches or updates
+  useEffect(() => {
+    const reload = () => {
+      setFavorites(authStorage.getRadioFavorites());
+      setRecent(authStorage.getRadioRecent());
+    };
+    const unsubscribe = authStorage.subscribe(reload);
+    return unsubscribe;
+  }, []);
 
   // 3D Globe Projection State
   const [centreLatitude, setCentreLatitude] = useState(selectedStation.latitude || 20);
@@ -412,7 +415,7 @@ export const RadioAtlasView: React.FC<RadioAtlasViewProps> = ({ onBack }) => {
     // Record in recent
     setRecent(prev => {
       const updated = [st.uuid, ...prev.filter(id => id !== st.uuid)].slice(0, 30);
-      localStorage.setItem('radio_atlas_recent', JSON.stringify(updated));
+      authStorage.saveRadioRecent(updated);
       return updated;
     });
   }, []);
@@ -422,7 +425,7 @@ export const RadioAtlasView: React.FC<RadioAtlasViewProps> = ({ onBack }) => {
     setFavorites(prev => {
       const exists = prev.includes(uuid);
       const updated = exists ? prev.filter(id => id !== uuid) : [...prev, uuid];
-      localStorage.setItem('radio_atlas_favorites', JSON.stringify(updated));
+      authStorage.saveRadioFavorites(updated);
       return updated;
     });
   };

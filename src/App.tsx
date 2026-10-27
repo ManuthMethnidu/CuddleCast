@@ -28,9 +28,12 @@ import { Footer } from './components/Footer';
 import { LoginView } from './components/LoginView';
 import { Episode, MediaItem } from './types/schema';
 import { api } from './services/api';
+import { authStorage } from './services/storage';
 import { AccentProvider, useAccent } from './context/AccentContext';
 import { usePlayerStore } from './store/playerStore';
 import { useSettingsStore } from './store/settingsStore';
+import { useUser } from '@clerk/react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useBillboardQuery,
   useRailsQuery,
@@ -44,6 +47,26 @@ const MainApp: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user, isLoaded } = useUser();
+  const queryClient = useQueryClient();
+
+  // Keep authStorage and query cache aligned with Clerk user
+  useEffect(() => {
+    if (isLoaded) {
+      const nextUserId = user ? user.id : 'guest';
+      authStorage.setUserId(nextUserId);
+      queryClient.invalidateQueries({ queryKey: ['catalog', 'rails'] });
+      api.getWatchlistItems().then(setLibraryItems);
+    }
+  }, [user?.id, isLoaded, queryClient]);
+
+  // Subscribe to storage updates (e.g. from DetailModal, VideoPlayer, or multi-session switch)
+  useEffect(() => {
+    const unsubscribe = authStorage.subscribe(() => {
+      api.getWatchlistItems().then(setLibraryItems);
+    });
+    return unsubscribe;
+  }, []);
 
   // Apply performance mode attribute to root element
   const { performanceMode } = useSettingsStore();
@@ -95,7 +118,7 @@ const MainApp: React.FC = () => {
 
   // TanStack Query: Cached Server States with 0 lag
   const { data: billboardItems = [], isLoading: isBillboardLoading } = useBillboardQuery();
-  const { data: rails = [], isLoading: isRailsLoading } = useRailsQuery();
+  const { data: rails = [], isLoading: isRailsLoading } = useRailsQuery(user?.id || 'guest');
   const { data: allMedia = [], isLoading: isAllMediaLoading } = useAllMediaQuery();
   const { data: searchResults = [] } = useSearchMediaQuery(searchQuery);
 
@@ -340,14 +363,16 @@ const MainApp: React.FC = () => {
           />
         ) : activeCategory === 'continue-watch' ? (
           <LibraryView
-            items={libraryItems.length > 0 ? libraryItems : allMedia.slice(0, 8)}
+            items={libraryItems}
+            initialFilter="continue"
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
             onNavigateDiscover={() => navigate('/discover')}
           />
         ) : activeCategory === 'watchlist' || activeCategory === 'library' ? (
           <LibraryView
-            items={libraryItems.length > 0 ? libraryItems : allMedia.slice(0, 10)}
+            items={libraryItems}
+            initialFilter="all"
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
             onNavigateDiscover={() => navigate('/discover')}

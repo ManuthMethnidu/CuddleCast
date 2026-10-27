@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { History, Play, Trash2 } from 'lucide-react';
 import { MediaItem } from '../types/schema';
 import { authStorage } from '../services/storage';
@@ -18,31 +18,60 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
   onNavigateHome,
 }) => {
   const { accentHex } = useAccent();
-  const [historyItems, setHistoryItems] = useState(() => {
+
+  const loadHistoryItems = (): MediaItem[] => {
     const progressList = authStorage.getProgressList();
-    return items
-      .map(item => {
-        const prog = progressList.find(p => p.media_id === item.id);
+    return progressList
+      .map((prog) => {
+        const match =
+          prog.media_item ||
+          items.find((i) => i.id === prog.media_id) || {
+            id: prog.media_id,
+            title: 'Watched Title',
+            name: 'Watched Title',
+            overview: '',
+            poster_path: '',
+            backdrop_path: '',
+            media_type: 'movie' as const,
+            release_date: '',
+            vote_average: 0,
+            vote_count: 0,
+            genre_ids: [],
+            popularity: 0,
+            adult: false,
+          };
         return {
-          ...item,
-          progress_seconds: prog?.progress_seconds || item.progress_seconds || 0,
-          total_seconds: prog?.total_seconds || item.total_seconds || 0,
-          last_watched: prog?.last_watched || 'Today',
+          ...match,
+          progress_seconds: prog.progress_seconds,
+          total_seconds: prog.total_seconds,
+          last_watched: prog.last_watched || 'Today',
         };
       })
-      .filter(i => (i.progress_seconds || 0) > 0 || Math.random() > 0.4); // enrich with active history
-  });
+      .filter((i) => (i.progress_seconds || 0) > 0);
+  };
+
+  const [historyItems, setHistoryItems] = useState<MediaItem[]>(loadHistoryItems);
+
+  // Subscribe to authStorage user switches or progress updates
+  useEffect(() => {
+    const reload = () => {
+      setHistoryItems(loadHistoryItems());
+    };
+    const unsubscribe = authStorage.subscribe(reload);
+    return unsubscribe;
+  }, [items]);
 
   const handleClearHistory = () => {
     if (window.confirm('Are you sure you want to clear your entire watch history?')) {
-      localStorage.removeItem('dxbi_progress');
+      authStorage.clearProgress();
       setHistoryItems([]);
     }
   };
 
   const handleRemoveSingle = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
-    setHistoryItems(prev => prev.filter(i => i.id !== id));
+    authStorage.removeProgress(id);
+    setHistoryItems((prev) => prev.filter((i) => i.id !== id));
   };
 
   return (
@@ -80,10 +109,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
       {/* History Items List */}
       {historyItems.length > 0 ? (
         <div className="space-y-3 pt-8">
-          {historyItems.map(item => {
-            const percent = item.progress_seconds && item.total_seconds
-              ? Math.min(100, Math.round((item.progress_seconds / item.total_seconds) * 100))
-              : 45;
+          {historyItems.map((item) => {
+            const percent =
+              item.progress_seconds && item.total_seconds
+                ? Math.min(100, Math.round((item.progress_seconds / item.total_seconds) * 100))
+                : 45;
 
             return (
               <div
@@ -100,7 +130,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                   />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={e => {
+                      onClick={(e) => {
                         e.stopPropagation();
                         onPlay(item);
                       }}
@@ -135,7 +165,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                 {/* Remove single action */}
                 <button
-                  onClick={e => handleRemoveSingle(e, item.id)}
+                  onClick={(e) => handleRemoveSingle(e, item.id)}
                   className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-white/5 transition-colors"
                   title="Remove from history"
                 >

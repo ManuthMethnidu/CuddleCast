@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api';
+import { authStorage } from '../services/storage';
 import { BillboardData, CarouselRail, CastMember, Episode, MediaItem } from '../types/schema';
 
 // Query Keys
 export const queryKeys = {
   billboard: ['catalog', 'billboard'] as const,
-  rails: ['catalog', 'rails'] as const,
+  rails: (userId?: string) => ['catalog', 'rails', userId || 'guest'] as const,
   allMedia: ['catalog', 'allMedia'] as const,
   mediaDetails: (id: number) => ['catalog', 'media', id] as const,
   episodes: (mediaId: number, season: number) =>
@@ -24,10 +25,11 @@ export const useBillboardQuery = () => {
   });
 };
 
-// 2. Carousel Rails Query (Cached for 5 minutes)
-export const useRailsQuery = () => {
+// 2. Carousel Rails Query (Cached per user for 5 minutes)
+export const useRailsQuery = (userId?: string) => {
+  const activeUser = userId || authStorage.getUserId();
   return useQuery<CarouselRail[]>({
-    queryKey: queryKeys.rails,
+    queryKey: queryKeys.rails(activeUser),
     queryFn: () => api.getRails(),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
