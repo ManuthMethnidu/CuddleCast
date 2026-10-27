@@ -6,13 +6,8 @@ import { ClerkProvider } from '@clerk/react';
 import { dark } from '@clerk/themes';
 import { App } from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { CLERK_PUBLISHABLE_KEY } from './config/clerk';
 import './index.css';
-
-// Clerk publishable key with fallback to ensure production never crashes even if Vercel env var is omitted
-const PUBLISHABLE_KEY =
-  (import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string) ||
-  (import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY as string) ||
-  'pk_test_Y3J1Y2lhbC1zdGlua2J1Zy0xNzQ4LmNsZXJrLmFjY291bnRzLmRldiQ';
 
 // TanStack Query Client for caching server state and avoiding React context repaint lag
 const queryClient = new QueryClient({
@@ -39,7 +34,7 @@ const AppRoot = () => (
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ClerkProvider
-      publishableKey={PUBLISHABLE_KEY}
+      publishableKey={CLERK_PUBLISHABLE_KEY}
       appearance={{
         theme: dark,
         variables: {

@@ -4,6 +4,7 @@ import { SignIn, SignUp } from '@clerk/react';
 import { dark } from '@clerk/themes';
 import { useAccent } from '../context/AccentContext';
 import { EchoraLogo } from './EchoraLogo';
+import { CLERK_PUBLISHABLE_KEY } from '../config/clerk';
 
 interface LoginViewProps {
   onBack: () => void;
@@ -13,10 +14,7 @@ interface LoginViewProps {
 export const LoginView: React.FC<LoginViewProps> = ({ onBack, onSuccess }) => {
   const { accentHex } = useAccent();
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
-  const hasClerkKey = Boolean(
-    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
-    import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-  );
+  const hasClerkKey = Boolean(CLERK_PUBLISHABLE_KEY);
 
   const clerkAppearance = {
     theme: dark,
