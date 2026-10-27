@@ -4,10 +4,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    {
-      "source": "/(settings|login|movies|series|anime|manga|collection|4k|drama|live-tv|live-sports|radio|continue-watch|history|watchlist|addons|title/.*|watch/.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
