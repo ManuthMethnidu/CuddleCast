@@ -26,6 +26,7 @@ import { RadioView } from './components/RadioView';
 import { FloatingPiP } from './components/FloatingPiP';
 import { Footer } from './components/Footer';
 import { LoginView } from './components/LoginView';
+import { M3DesignSystemShowcase } from './components/m3';
 import { Episode, MediaItem } from './types/schema';
 import { api } from './services/api';
 import { authStorage } from './services/storage';
@@ -404,6 +405,10 @@ const MainApp: React.FC = () => {
             onBack={() => navigate('/')}
             onNavigateLogin={() => navigate('/login')}
           />
+        ) : activeCategory === 'design-system' || activeCategory === 'm3' ? (
+          <div className="py-8">
+            <M3DesignSystemShowcase />
+          </div>
         ) : (
           <>
             {/* Hero Billboard */}

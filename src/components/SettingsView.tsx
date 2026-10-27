@@ -15,8 +15,12 @@ import {
   Sparkles,
   ArrowLeftRight,
   UserCog,
+  Palette,
+  ExternalLink,
 } from 'lucide-react';
-import { useAccent } from '../context/AccentContext';
+import { useAccent, ACCENT_OPTIONS } from '../context/AccentContext';
+import { M3Button, M3Badge } from './m3';
+import { useNavigate } from 'react-router-dom';
 import { useSettingsStore, PerformanceMode } from '../store/settingsStore';
 import { STREAM_PROVIDERS } from '../services/providers';
 import { authStorage } from '../services/storage';
@@ -31,7 +35,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onBack,
   onNavigateLogin,
 }) => {
-  const { accentHex } = useAccent();
+  const { accentHex, accent, setAccent } = useAccent();
+  const navigate = useNavigate();
   const settings = useSettingsStore();
   const { isSignedIn, user } = useUser();
   const { signOut, openUserProfile, openSignIn, setActive } = useClerk();
@@ -160,6 +165,95 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       <div className="space-y-10 pt-8">
+        {/* ========================================================
+            MATERIAL 3 EXPRESSIVE DESIGN SYSTEM & PALETTE
+           ======================================================== */}
+        <section className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 border border-white/10"
+                style={{ color: accentHex }}
+              >
+                <Palette className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-white tracking-tight">
+                    Material 3 Expressive Design System
+                  </h2>
+                  <M3Badge color="tertiary" pulse>
+                    M3 ACTIVE
+                  </M3Badge>
+                </div>
+                <p className="text-xs text-zinc-400">
+                  Google HCT dynamic color engine, 5-tier tonal surfaces, and spring physics
+                </p>
+              </div>
+            </div>
+
+            <M3Button
+              variant="tonal"
+              size="sm"
+              icon={<ExternalLink className="w-3.5 h-3.5" />}
+              onClick={() => navigate('/design-system')}
+            >
+              Open M3 Showcase
+            </M3Button>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-[#18181d] border border-white/10 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-white block uppercase tracking-wider">
+                HCT Dynamic Seed Accent
+              </label>
+              <span className="text-[10px] text-zinc-400 font-mono">
+                Auto-derives primary, tertiary & surface containers
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+              {ACCENT_OPTIONS.map((opt) => {
+                const isSelected = accent === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      setAccent(opt.id);
+                      showNotification(`Applied ${opt.label} M3 Expressive theme`);
+                    }}
+                    className={`
+                      flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all duration-200
+                      ${
+                        isSelected
+                          ? 'bg-white/15 border-white/40 ring-2 shadow-lg'
+                          : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/[0.08]'
+                      }
+                    `}
+                    style={{
+                      borderColor: isSelected ? accentHex : undefined,
+                    }}
+                  >
+                    <span
+                      className="w-4 h-4 rounded-full border border-black/30 shrink-0"
+                      style={{ backgroundColor: opt.hex }}
+                    />
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-white block truncate">
+                        {opt.label.split(' ')[0]}
+                      </span>
+                      <span className="text-[10px] text-zinc-400 font-mono block">
+                        {opt.hex}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
         {/* ========================================================
             1. SYSTEM PERFORMANCE SETTING (Low / Medium / High)
            ======================================================== */}

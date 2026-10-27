@@ -16,8 +16,6 @@ import {
   Layers,
   Type,
   Activity,
-  Maximize2,
-  Check,
   Search,
   Bell,
   Play,
@@ -26,7 +24,7 @@ import {
 } from 'lucide-react';
 
 export const M3DesignSystemShowcase: React.FC = () => {
-  const { accent, setAccent, accentHex, m3Scheme } = useAccent();
+  const { accent, setAccent } = useAccent();
   const [activeTab, setActiveTab] = useState<'overview' | 'colors' | 'typography' | 'components' | 'motion'>('overview');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [switchState, setSwitchState] = useState(true);

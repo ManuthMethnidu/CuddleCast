@@ -21,6 +21,7 @@ import {
   Blocks,
   ArrowLeftRight,
   UserCog,
+  Palette,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import { useUser, useClerk } from '@clerk/react';
@@ -41,6 +42,7 @@ export type NavViewId =
   | 'history'
   | 'watchlist'
   | 'settings'
+  | 'design-system'
   | 'addons'
   | 'login';
 
@@ -77,6 +79,7 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
     { id: 'history' as const, label: 'History', icon: History },
     { id: 'watchlist' as const, label: 'Watchlist', icon: Bookmark },
     { id: 'settings' as const, label: 'Settings', icon: Sliders },
+    { id: 'design-system' as const, label: 'M3 Expressive', icon: Palette },
     { id: 'addons' as const, label: 'Addons', icon: Blocks },
   ];
 

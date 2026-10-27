@@ -7,3 +7,4 @@ export * from './M3Dialog';
 export * from './M3TextField';
 export * from './M3Switch';
 export * from './M3NavigationRail';
+export * from './M3DesignSystemShowcase';

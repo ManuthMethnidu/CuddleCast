@@ -195,6 +195,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                   />
                 )}
               </button>
+
+              {/* M3 Expressive Design System Tab */}
+              <button
+                onClick={() => onCategoryChange('design-system')}
+                className={`relative py-1 font-medium transition-colors hover:text-white flex items-center gap-1.5 ${
+                  activeCategory === 'design-system' ? 'text-white font-bold' : 'text-[var(--dx-text-2)]'
+                }`}
+              >
+                <span>M3 Expressive</span>
+                <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full leading-none bg-[var(--md-sys-color-tertiary-container)] text-[var(--md-sys-color-on-tertiary-container)]">
+                  3.0
+                </span>
+                {activeCategory === 'design-system' && (
+                  <span
+                    className="absolute -bottom-1 left-0 right-0 h-[2px] rounded-full"
+                    style={{ background: accentHex }}
+                  />
+                )}
+              </button>
             </nav>
           </div>
 
