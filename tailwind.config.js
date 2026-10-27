@@ -1,3 +1,5 @@
+import tailwindcssAnimate from 'tailwindcss-animate';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ['class'],
@@ -28,8 +30,10 @@ export default {
           foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
+          DEFAULT: 'var(--dx-accent, #0070F3)',
+          glow: 'var(--dx-accent-glow, rgba(0, 112, 243, 0.4))',
+          soft: 'var(--dx-accent-soft, rgba(0, 112, 243, 0.15))',
+          foreground: '#ffffff',
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
@@ -37,7 +41,7 @@ export default {
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
+        ring: 'var(--dx-accent, #0070F3)',
         cuddle: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -70,6 +74,7 @@ export default {
         'blue-glow': '0 0 25px -5px rgba(37, 99, 235, 0.45)',
         'cyan-glow': '0 0 20px -3px rgba(6, 182, 212, 0.45)',
         'card-elevated': '0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(56, 189, 248, 0.15)',
+        'accent-glow': '0 0 25px -5px var(--dx-accent-glow, rgba(0, 112, 243, 0.45))',
       },
       keyframes: {
         shimmer: {
@@ -89,5 +94,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [tailwindcssAnimate],
 };

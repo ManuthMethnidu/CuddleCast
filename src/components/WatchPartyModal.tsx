@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Users, Copy, Check, Sparkles, Shield, Send } from 'lucide-react';
+import { X, Users, Copy, Check, Sparkles, Shield, Send, Radio } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
+import { usePlayerStore } from '../store/playerStore';
 
 interface WatchPartyModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface WatchPartyModalProps {
 
 export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClose }) => {
   const { accentHex } = useAccent();
+  const { timeDriftThreshold } = usePlayerStore();
   const [partyCode, setPartyCode] = useState('DX-7492-CUDDLE');
   const [copied, setCopied] = useState(false);
   const [inputCode, setInputCode] = useState('');
@@ -145,13 +147,20 @@ export const WatchPartyModal: React.FC<WatchPartyModalProps> = ({ isOpen, onClos
                 </button>
               </div>
 
-              {/* Active Participants */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-400">Watching together (3):</span>
-                <div className="flex -space-x-2 overflow-hidden">
-                  <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#131317] bg-blue-500 text-[10px] font-bold flex items-center justify-center">You</div>
-                  <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#131317] bg-purple-500 text-[10px] font-bold flex items-center justify-center">AL</div>
-                  <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#131317] bg-emerald-500 text-[10px] font-bold flex items-center justify-center">MY</div>
+              {/* Active Participants & Sync Telemetry */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-zinc-400">Watching together (3):</span>
+                  <div className="flex -space-x-2 overflow-hidden">
+                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#131317] bg-blue-500 text-[10px] font-bold flex items-center justify-center">You</div>
+                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#131317] bg-purple-500 text-[10px] font-bold flex items-center justify-center">AL</div>
+                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#131317] bg-emerald-500 text-[10px] font-bold flex items-center justify-center">MY</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400 font-mono">
+                  <Radio className="h-3 w-3 animate-pulse" />
+                  <span>±0.04s drift (&lt;{timeDriftThreshold}s threshold)</span>
                 </div>
               </div>
 

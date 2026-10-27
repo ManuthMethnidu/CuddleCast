@@ -13,12 +13,15 @@ import {
   FastForward,
   Sliders,
   Users,
+  PictureInPicture,
+  RefreshCw,
 } from 'lucide-react';
 import Hls from 'hls.js';
 import { Episode, MediaItem } from '../types/schema';
 import { authStorage } from '../services/supabase';
 import { DEFAULT_STREAM } from '../services/api';
 import { useAccent } from '../context/AccentContext';
+import { usePlayerStore } from '../store/playerStore';
 import { PictureSoundPanel } from './PictureSoundPanel';
 import { WatchPartyModal } from './WatchPartyModal';
 
@@ -40,6 +43,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
 
+  const {
+    setCurrentTime: setStoreTime,
+    setDuration: setStoreDuration,
+    setPlaying: setStorePlaying,
+  } = usePlayerStore();
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -55,11 +64,51 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverPosition, setHoverPosition] = useState<number>(0);
 
+  const [hasPlaybackError, setHasPlaybackError] = useState(false);
+  const [playbackErrorMessage, setPlaybackErrorMessage] = useState<string | null>(null);
+  const [isStalled, setIsStalled] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
   const inactivityTimerRef = useRef<number | null>(null);
 
   const streamUrl = episode?.streamUrl || item.streamUrl || DEFAULT_STREAM;
 
-  // Initialize HLS
+  // Manual retry handler
+  const handleRetryPlayback = () => {
+    setHasPlaybackError(false);
+    setPlaybackErrorMessage(null);
+    setIsStalled(false);
+    setRetryCount((c) => c + 1);
+
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (Hls.isSupported() && streamUrl.includes('.m3u8')) {
+      const hls = new Hls({
+        enableWorker: true,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 600,
+        backBufferLength: 90,
+      });
+      hlsRef.current = hls;
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {});
+        setIsPlaying(true);
+      });
+    } else {
+      video.src = streamUrl;
+      video.play().catch(() => {});
+    }
+  };
+
+  // Initialize HLS with lifecycle event listeners
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -74,14 +123,55 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         enableWorker: true,
         maxBufferLength: 30,
         maxMaxBufferLength: 600,
+        backBufferLength: 90,
       });
       hlsRef.current = hls;
       hls.loadSource(streamUrl);
       hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        setHasPlaybackError(false);
+        setIsStalled(false);
         video.play().catch(() => {});
         setIsPlaying(true);
+      });
+
+      // FRAG_CHANGED: Track fragment playback and clear any pending stall
+      hls.on(Hls.Events.FRAG_CHANGED, () => {
+        setHasPlaybackError(false);
+        setIsStalled(false);
+      });
+
+      // ERROR Lifecycle Handler: Automatic retry / recovery or user banner
+      hls.on(Hls.Events.ERROR, (_event, data) => {
+        console.warn('Hls error event:', data.type, data.details, data.fatal);
+
+        if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+          setIsStalled(true);
+          if (hls.levels && hls.levels.length > 1 && hls.currentLevel > 0) {
+            hls.currentLevel = Math.max(0, hls.currentLevel - 1);
+          }
+        }
+
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              hls.recoverMediaError();
+              break;
+            default:
+              if (hls.levels && hls.levels.length > 1 && hls.currentLevel > 0) {
+                hls.currentLevel = Math.max(0, hls.currentLevel - 1);
+                hls.startLoad();
+              } else {
+                setHasPlaybackError(true);
+                setPlaybackErrorMessage('Live stream connection interrupted. Click to retry.');
+              }
+              break;
+          }
+        }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = streamUrl;
@@ -95,7 +185,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         hlsRef.current = null;
       }
     };
-  }, [streamUrl, item.id]);
+  }, [streamUrl, item.id, retryCount]);
 
   // Periodic progress saving
   useEffect(() => {
@@ -189,9 +279,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (video.paused) {
       video.play();
       setIsPlaying(true);
+      setStorePlaying(true);
     } else {
       video.pause();
       setIsPlaying(false);
+      setStorePlaying(false);
     }
   };
 
@@ -206,6 +298,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (!video) return;
     setCurrentTime(video.currentTime);
     setDuration(video.duration || 0);
+    setStoreTime(video.currentTime);
+    setStoreDuration(video.duration || 0);
 
     if (video.buffered.length > 0) {
       setBufferedTime(video.buffered.end(video.buffered.length - 1));
@@ -272,6 +366,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     video.playbackRate = speed;
     setPlaybackSpeed(speed);
     setShowSpeedMenu(false);
+  };
+
+  const togglePiP = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (document.pictureInPictureEnabled) {
+        await video.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.warn('PiP not available:', err);
+    }
   };
 
   const remainingSeconds = duration - currentTime;
@@ -507,6 +615,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               )}
             </div>
 
+            {/* Picture-in-Picture Toggle */}
+            <button
+              onClick={togglePiP}
+              className="transition-transform hover:scale-110 active:scale-95 text-zinc-300 hover:text-white p-1"
+              title="Picture in Picture"
+              aria-label="Picture in Picture"
+            >
+              <PictureInPicture className="h-4 w-4 sm:h-5 sm:w-5" />
+            </button>
+
             {/* Fullscreen Toggle */}
             <button
               onClick={toggleFullscreen}
@@ -518,6 +636,45 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Stream Interruption / Rebuffering & Retry Banner */}
+      {(hasPlaybackError || isStalled) && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="max-w-md w-full bg-[#18181d] border border-white/10 rounded-2xl p-6 text-center shadow-2xl">
+            <div
+              className="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-3 bg-white/5 border"
+              style={{ borderColor: accentHex }}
+            >
+              <RefreshCw
+                className={`w-6 h-6 ${isStalled ? 'animate-spin' : ''}`}
+                style={{ color: accentHex }}
+              />
+            </div>
+            <h4 className="text-white font-bold text-base mb-1">
+              {hasPlaybackError ? 'Stream Interrupted' : 'Buffering Stream...'}
+            </h4>
+            <p className="text-zinc-400 text-xs mb-5">
+              {playbackErrorMessage ||
+                'Automatically optimizing adaptive bitrate (ABR) for connection stability.'}
+            </p>
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={handleRetryPlayback}
+                className="px-5 py-2 rounded-lg text-sm font-bold text-black bg-white hover:bg-zinc-200 transition-all active:scale-95 flex items-center gap-2 shadow"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Retry Stream</span>
+              </button>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-300 hover:text-white bg-white/10 hover:bg-white/15 transition-all"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

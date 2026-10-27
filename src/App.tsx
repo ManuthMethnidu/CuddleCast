@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { VidboxSidebar, NavViewId } from './components/VidboxSidebar';
 import { HeroBillboard } from './components/HeroBillboard';
@@ -22,136 +23,179 @@ import { RadioPlayer } from './components/RadioPlayer';
 import { RadioAtlasView } from './components/RadioAtlasView';
 import { AIAssistantBot } from './components/AIAssistantBot';
 import { ProfileGate } from './components/ProfileGate';
+import { FloatingPiP } from './components/FloatingPiP';
 import { Footer } from './components/Footer';
-import { BillboardData, CarouselRail, Episode, MediaItem, UserProfile } from './types/schema';
+import { Episode, MediaItem, UserProfile } from './types/schema';
 import { api } from './services/api';
 import { authStorage } from './services/supabase';
 import { AccentProvider, useAccent } from './context/AccentContext';
+import { usePlayerStore } from './store/playerStore';
+import {
+  useBillboardQuery,
+  useRailsQuery,
+  useAllMediaQuery,
+  useSearchMediaQuery,
+} from './hooks/useCatalogQuery';
+import { useGridKeyboardNav } from './hooks/useGridKeyboardNav';
 
 const MainApp: React.FC = () => {
   const { accentHex } = useAccent();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Profile management
   const [activeProfile, setActiveProfile] = useState<UserProfile | null>(() => {
     return authStorage.getActiveProfile();
   });
   const [showProfileGate, setShowProfileGate] = useState(false);
 
-  const [billboardItems, setBillboardItems] = useState<BillboardData[]>([]);
-  const [rails, setRails] = useState<CarouselRail[]>([]);
-  const [allMedia, setAllMedia] = useState<MediaItem[]>([]);
-  const [libraryItems, setLibraryItems] = useState<MediaItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
-  
-  // Navigation State
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  // Zustand Player State
+  const {
+    currentMedia,
+    playMedia,
+    closePlayer,
+    setPiP,
+    isPiP,
+  } = usePlayerStore();
+
+  // Active Category / Navigation synced with Route Path
+  const currentPath = location.pathname.replace(/^\//, '') || 'all';
+  const activeCategory = useMemo(() => {
+    if (currentPath === '' || currentPath === 'all') return 'all';
+    if (currentPath.startsWith('title/') || currentPath.startsWith('watch/')) {
+      return (location.state as { backgroundCategory?: string })?.backgroundCategory || 'all';
+    }
+    return currentPath;
+  }, [currentPath, location.state]);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRadioOpen, setIsRadioOpen] = useState(false);
+  const [libraryItems, setLibraryItems] = useState<MediaItem[]>([]);
 
+  // Search state synced with URL query (?q=)
+  const searchQuery = searchParams.get('q') || '';
+  const setSearchQuery = useCallback((q: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (q) {
+        next.set('q', q);
+      } else {
+        next.delete('q');
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // Selected item for modal overlay
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
-  const [playingItem, setPlayingItem] = useState<{ item: MediaItem; episode?: Episode } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [playingEpisode, setPlayingEpisode] = useState<Episode | undefined>();
 
-  // Initial load
-  useEffect(() => {
-    authStorage.initSync().then(() => {
-      Promise.all([
-        api.getBillboard(),
-        api.getRails(),
-        api.getAllMedia(),
-        api.getWatchlistItems(),
-      ]).then(([b, r, all, lib]) => {
-        setBillboardItems(b);
-        setRails(r);
-        setAllMedia(all);
-        setLibraryItems(lib);
-        setIsLoading(false);
-      });
-    });
-  }, []);
+  // TanStack Query: Cached Server States with 0 lag
+  const { data: billboardItems = [], isLoading: isBillboardLoading } = useBillboardQuery();
+  const { data: rails = [], isLoading: isRailsLoading } = useRailsQuery();
+  const { data: allMedia = [], isLoading: isAllMediaLoading } = useAllMediaQuery();
+  const { data: searchResults = [] } = useSearchMediaQuery(searchQuery);
+
+  const isLoading = isBillboardLoading && isRailsLoading && isAllMediaLoading;
+
+  // Spatial keyboard navigation for TV / remote control / arrow keys
+  useGridKeyboardNav({
+    containerSelector: '[data-grid-nav="true"], main',
+    columns: 4,
+    enabled: !selectedItem && !currentMedia && !showProfileGate,
+  });
 
   // Sync Library on tab visit
   useEffect(() => {
-    if (activeCategory === 'library' || activeCategory === 'watchlist' || activeCategory === 'continue-watch') {
+    if (
+      activeCategory === 'library' ||
+      activeCategory === 'watchlist' ||
+      activeCategory === 'continue-watch'
+    ) {
       api.getWatchlistItems().then(setLibraryItems);
     }
   }, [activeCategory]);
 
-  // URL Query Sync for search & title modal
+  // Deep-linking: Load title modal from /title/:id or ?titleId=
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get('q');
-    const titleId = params.get('titleId');
+    const titleMatch = location.pathname.match(/\/title\/(\d+)/);
+    const titleId = titleMatch ? titleMatch[1] : searchParams.get('titleId');
 
-    if (q) {
-      setSearchQuery(q);
-    }
-
-    if (titleId) {
-      api.getMediaDetails(Number(titleId)).then(found => {
+    if (titleId && (!selectedItem || selectedItem.id !== Number(titleId))) {
+      api.getMediaDetails(Number(titleId)).then((found) => {
         if (found) setSelectedItem(found);
       });
     }
-  }, []);
+  }, [location.pathname, searchParams, selectedItem]);
 
-  // Handle Search Input & URL update
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (searchQuery) {
-      params.set('q', searchQuery);
-      window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
-      api.searchMedia(searchQuery).then(setSearchResults);
-    } else {
-      params.delete('q');
-      const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-      setSearchResults([]);
-    }
-  }, [searchQuery]);
-
+  // Parallel / Nested Modal Route Handlers
   const handleOpenDetail = (item: MediaItem) => {
     setSelectedItem(item);
-    const params = new URLSearchParams(window.location.search);
-    params.set('titleId', String(item.id));
-    window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
+    navigate(`/title/${item.id}`, {
+      state: {
+        backgroundLocation: location,
+        backgroundCategory: activeCategory,
+      },
+    });
   };
 
   const handleCloseDetail = () => {
     setSelectedItem(null);
-    const params = new URLSearchParams(window.location.search);
-    params.delete('titleId');
-    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
-    window.history.pushState({}, '', newUrl);
+    if (location.pathname.startsWith('/title/')) {
+      navigate(-1);
+    } else {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('titleId');
+        return next;
+      });
+    }
   };
 
   const handlePlay = (item: MediaItem, episode?: Episode) => {
-    setPlayingItem({ item, episode });
+    setPlayingEpisode(episode);
+    playMedia(item);
+    navigate(`/watch/${item.id}`, {
+      state: {
+        backgroundLocation: location,
+        backgroundCategory: activeCategory,
+      },
+    });
+  };
+
+  const handleClosePlayer = () => {
+    closePlayer();
+    if (location.pathname.startsWith('/watch/')) {
+      navigate(-1);
+    }
   };
 
   const handleNextEpisode = () => {
-    if (!playingItem?.item) return;
-    api.getEpisodes(playingItem.item.id).then(eps => {
-      const currentEpIndex = eps.findIndex(e => e.id === playingItem.episode?.id);
+    if (!currentMedia) return;
+    api.getEpisodes(currentMedia.id).then((eps) => {
+      const currentEpIndex = eps.findIndex((e) => e.id === playingEpisode?.id);
       if (currentEpIndex >= 0 && currentEpIndex + 1 < eps.length) {
-        setPlayingItem({ item: playingItem.item, episode: eps[currentEpIndex + 1] });
+        setPlayingEpisode(eps[currentEpIndex + 1]);
       }
     });
   };
 
   // Sidebar selection handler
   const handleSelectNavView = (view: NavViewId) => {
+    if (searchQuery) setSearchQuery('');
     if (view === 'home') {
-      setActiveCategory('all');
-      if (searchQuery) setSearchQuery('');
+      navigate('/');
     } else {
-      setActiveCategory(view);
-      if (searchQuery) setSearchQuery('');
+      navigate(`/${view}`);
     }
+    setIsSidebarOpen(false);
   };
 
   if (showProfileGate || !activeProfile) {
     return (
       <ProfileGate
-        onSelectProfile={profile => {
+        onSelectProfile={(profile) => {
           setActiveProfile(profile);
           setShowProfileGate(false);
         }}
@@ -168,9 +212,9 @@ const MainApp: React.FC = () => {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         activeCategory={activeCategory}
-        onCategoryChange={cat => {
-          setActiveCategory(cat);
+        onCategoryChange={(cat) => {
           if (searchQuery) setSearchQuery('');
+          navigate(cat === 'all' ? '/' : `/${cat}`);
         }}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
       />
@@ -184,7 +228,7 @@ const MainApp: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 pb-16 md:pb-0">
+      <main className="flex-1 pb-16 md:pb-0" data-grid-nav="true">
         {isLoading ? (
           <div className="flex h-screen items-center justify-center bg-[#0b0b0d]">
             <div className="flex flex-col items-center gap-4">
@@ -193,7 +237,7 @@ const MainApp: React.FC = () => {
                 style={{ borderColor: accentHex, borderTopColor: 'transparent' }}
               />
               <span className="text-xs font-mono font-bold tracking-widest uppercase text-zinc-400">
-                DX.BI · Loading Cinema Experience...
+                CuddleCast · Loading Cinema Experience...
               </span>
             </div>
           </div>
@@ -203,7 +247,7 @@ const MainApp: React.FC = () => {
             category="Search"
             items={searchResults}
             onSelect={handleOpenDetail}
-            onSuggestionClick={sug => setSearchQuery(sug)}
+            onSuggestionClick={(sug) => setSearchQuery(sug)}
           />
         ) : activeCategory === 'anime' ? (
           <AnimeView
@@ -224,15 +268,15 @@ const MainApp: React.FC = () => {
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
           />
-        ) : activeCategory === 'drama' ? (
+        ) : activeCategory === 'drama' || activeCategory === 'asian-drama' ? (
           <DramaView
             items={allMedia}
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
           />
-        ) : activeCategory === 'live-tv' ? (
+        ) : activeCategory === 'live-tv' || activeCategory === 'tv' ? (
           <LiveTvView />
-        ) : activeCategory === 'live-sports' ? (
+        ) : activeCategory === 'live-sports' || activeCategory === 'sports' ? (
           <LiveSportsView
             onPlayStream={(url, title) => {
               handlePlay({
@@ -240,8 +284,10 @@ const MainApp: React.FC = () => {
                 title,
                 name: title,
                 overview: 'Live match broadcast',
-                poster_path: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80',
-                backdrop_path: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1280&q=80',
+                poster_path:
+                  'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80',
+                backdrop_path:
+                  'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1280&q=80',
                 media_type: 'tv',
                 release_date: '2026-10-26',
                 vote_average: 9.0,
@@ -254,37 +300,37 @@ const MainApp: React.FC = () => {
             }}
           />
         ) : activeCategory === 'radio' ? (
-          <RadioAtlasView onBack={() => setActiveCategory('all')} />
+          <RadioAtlasView onBack={() => navigate('/')} />
         ) : activeCategory === 'history' ? (
           <HistoryView
             items={allMedia}
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
-            onNavigateHome={() => setActiveCategory('all')}
+            onNavigateHome={() => navigate('/')}
           />
         ) : activeCategory === 'continue-watch' ? (
           <LibraryView
             items={libraryItems.length > 0 ? libraryItems : allMedia.slice(0, 8)}
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
-            onNavigateDiscover={() => setActiveCategory('discover')}
+            onNavigateDiscover={() => navigate('/discover')}
           />
         ) : activeCategory === 'watchlist' || activeCategory === 'library' ? (
           <LibraryView
             items={libraryItems.length > 0 ? libraryItems : allMedia.slice(0, 10)}
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
-            onNavigateDiscover={() => setActiveCategory('discover')}
+            onNavigateDiscover={() => navigate('/discover')}
           />
         ) : activeCategory === 'movies' ? (
           <DiscoverView
-            items={allMedia.filter(i => i.media_type === 'movie')}
+            items={allMedia.filter((i) => i.media_type === 'movie')}
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
           />
         ) : activeCategory === 'series' ? (
           <DiscoverView
-            items={allMedia.filter(i => i.media_type === 'tv')}
+            items={allMedia.filter((i) => i.media_type === 'tv')}
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
           />
@@ -295,10 +341,7 @@ const MainApp: React.FC = () => {
             onPlay={handlePlay}
           />
         ) : activeCategory === 'calendar' ? (
-          <CalendarView
-            items={allMedia}
-            onSelect={handleOpenDetail}
-          />
+          <CalendarView items={allMedia} onSelect={handleOpenDetail} />
         ) : activeCategory === 'addons' ? (
           <AddonsView />
         ) : (
@@ -314,7 +357,7 @@ const MainApp: React.FC = () => {
 
             {/* Carousel Rows Container */}
             <div className="relative z-10 pb-16 space-y-4">
-              {rails.map(rail => (
+              {rails.map((rail) => (
                 <CarouselRow
                   key={rail.id}
                   rail={rail}
@@ -333,19 +376,33 @@ const MainApp: React.FC = () => {
         onClose={() => setIsRadioOpen(false)}
       />
 
-      {/* Floating AI Assistant Bot Widget (Cyan robot circle from user screenshot) */}
-      {activeCategory !== 'radio' && activeCategory !== 'live-tv' && activeCategory !== 'live-sports' && !playingItem && (
-        <AIAssistantBot
-          items={allMedia}
-          onSelect={handleOpenDetail}
-          onPlay={handlePlay}
+      {/* Floating AI Assistant Bot Widget */}
+      {activeCategory !== 'radio' &&
+        activeCategory !== 'live-tv' &&
+        activeCategory !== 'tv' &&
+        activeCategory !== 'live-sports' &&
+        activeCategory !== 'sports' &&
+        !currentMedia && (
+          <AIAssistantBot
+            items={allMedia}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+          />
+        )}
+
+      {/* Floating Picture-in-Picture Mini Player */}
+      {isPiP && (
+        <FloatingPiP
+          onExpand={() => {
+            setPiP(false);
+          }}
         />
       )}
 
       {/* Footer */}
       <Footer />
 
-      {/* Title Detail Page View */}
+      {/* Title Detail Page View (Parallel / Modal Route) */}
       {selectedItem && (
         <DetailModal
           item={selectedItem}
@@ -355,12 +412,12 @@ const MainApp: React.FC = () => {
         />
       )}
 
-      {/* Fullscreen HLS Video Player */}
-      {playingItem && (
+      {/* Fullscreen HLS Video Player (Parallel / Modal Route) */}
+      {currentMedia && (
         <VideoPlayer
-          item={playingItem.item}
-          episode={playingItem.episode}
-          onClose={() => setPlayingItem(null)}
+          item={currentMedia}
+          episode={playingEpisode}
+          onClose={handleClosePlayer}
           onNextEpisode={handleNextEpisode}
         />
       )}

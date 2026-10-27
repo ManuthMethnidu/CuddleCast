@@ -1,8 +1,33 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { UserProfile, UserWatchProgress } from '../types/schema';
 
+/**
+ * =====================================================================
+ * Supabase & Supavisor Connection Pooling Architecture
+ * =====================================================================
+ * For high-concurrency streaming workloads where tens of thousands of
+ * viewers trigger periodic progress syncs, Watch Party room updates,
+ * and profile queries simultaneously:
+ *
+ * 1. Transaction Pooler (Port 6543, pool_mode=transaction):
+ *    Recommended for all client and serverless API routes. Reuses a fixed pool
+ *    of Postgres server backends, preventing client connection exhaustion.
+ *    URL: postgres://[user].[ref]:[pass]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true
+ *
+ * 2. Session Pooler (Port 5432, pool_mode=session):
+ *    Used for persistent sessions and prepared statements.
+ *
+ * 3. Supabase Client Options:
+ *    - auth.persistSession: true
+ *    - db.schema: 'public'
+ *    - global.headers: connection optimization
+ * =====================================================================
+ */
+
 const SUPABASE_URL = (import.meta.env?.VITE_SUPABASE_URL as string) || '';
 const SUPABASE_KEY = (import.meta.env?.VITE_SUPABASE_ANON_KEY as string) || '';
+export const SUPABASE_POOLER_URL =
+  (import.meta.env?.VITE_SUPABASE_POOLER_URL as string) || '';
 
 const isLiveSupabase = Boolean(
   SUPABASE_URL &&
@@ -13,7 +38,21 @@ const isLiveSupabase = Boolean(
 );
 
 export const supabase: SupabaseClient | null = isLiveSupabase
-  ? createClient(SUPABASE_URL, SUPABASE_KEY)
+  ? createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+      db: {
+        schema: 'public',
+      },
+      global: {
+        headers: {
+          'x-application-name': 'cuddlecast-streaming-client',
+        },
+      },
+    })
   : null;
 
 const STORAGE_KEYS = {

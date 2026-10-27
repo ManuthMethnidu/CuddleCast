@@ -977,6 +977,7 @@ export const LiveTvView: React.FC = () => {
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         setIsBuffering(false);
+        setStreamError(false);
         if (isPlaying) {
           video.play().catch(() => {
             video.muted = true;
@@ -986,7 +987,20 @@ export const LiveTvView: React.FC = () => {
         }
       });
 
+      // FRAG_CHANGED: Clear buffering indicator and log fragment transition
+      hls.on(Hls.Events.FRAG_CHANGED, () => {
+        setIsBuffering(false);
+        setStreamError(false);
+      });
+
       hls.on(Hls.Events.ERROR, (_event, data) => {
+        if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+          setIsBuffering(true);
+          if (hls.levels && hls.levels.length > 1 && hls.currentLevel > 0) {
+            hls.currentLevel = Math.max(0, hls.currentLevel - 1);
+          }
+        }
+
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
@@ -996,8 +1010,13 @@ export const LiveTvView: React.FC = () => {
               hls.recoverMediaError();
               break;
             default:
-              setStreamError(true);
-              setIsBuffering(false);
+              if (hls.levels && hls.levels.length > 1 && hls.currentLevel > 0) {
+                hls.currentLevel = Math.max(0, hls.currentLevel - 1);
+                hls.startLoad();
+              } else {
+                setStreamError(true);
+                setIsBuffering(false);
+              }
               break;
           }
         }
