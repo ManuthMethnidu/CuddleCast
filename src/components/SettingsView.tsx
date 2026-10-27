@@ -13,37 +13,29 @@ import {
   LogIn,
   RotateCcw,
   Sparkles,
-  Users,
-  Edit2,
-  Plus,
-  Baby,
+  ArrowLeftRight,
+  UserCog,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import { useSettingsStore, PerformanceMode } from '../store/settingsStore';
 import { STREAM_PROVIDERS } from '../services/providers';
 import { authStorage } from '../services/storage';
-import { useUser, useClerk } from '@clerk/react';
-import { UserProfile } from '../types/schema';
+import { useUser, useClerk, useSessionList } from '@clerk/react';
 
 interface SettingsViewProps {
   onBack?: () => void;
   onNavigateLogin?: () => void;
-  activeProfile?: UserProfile | null;
-  onSwitchProfile?: (initialManaging?: boolean) => void;
-  onSelectProfile?: (profile: UserProfile) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   onBack,
   onNavigateLogin,
-  activeProfile,
-  onSwitchProfile,
-  onSelectProfile,
 }) => {
   const { accentHex } = useAccent();
   const settings = useSettingsStore();
   const { isSignedIn, user } = useUser();
-  const { signOut, openUserProfile } = useClerk();
+  const { signOut, openUserProfile, openSignIn, setActive } = useClerk();
+  const { sessions } = useSessionList();
 
   const [notification, setNotification] = useState<string | null>(null);
 
@@ -522,190 +514,150 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </section>
 
         {/* ========================================================
-            4B. VIEWER PROFILES & FAMILY ACCOUNTS
+            5. ACCOUNT & CLERK AUTHENTICATION (SWITCH ACCOUNT)
            ======================================================== */}
         <section className="space-y-4 border-t border-white/10 pt-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div
                 className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 border border-white/10"
                 style={{ color: accentHex }}
               >
-                <Users className="h-4 w-4" />
+                <ShieldCheck className="h-4 w-4" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white tracking-tight">
-                  Viewer Profiles
+                  Account & Authentication
                 </h2>
                 <p className="text-xs text-zinc-400">
-                  Switch active viewing profile, manage kids protection, and customize avatars
+                  Manage your Clerk identity, linked devices, and switch accounts
                 </p>
               </div>
             </div>
 
-            {onSwitchProfile && (
-              <div className="flex items-center gap-2 self-start sm:self-auto">
-                <button
-                  onClick={() => onSwitchProfile(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white transition-all border border-white/10"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                  <span>Manage Profiles</span>
-                </button>
-                <button
-                  onClick={() => onSwitchProfile(false)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white shadow-sm transition-all hover:brightness-110 active:scale-95"
-                  style={{ background: accentHex }}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Add Profile</span>
-                </button>
-              </div>
+            {isSignedIn && (
+              <button
+                onClick={() => {
+                  if (openSignIn) openSignIn();
+                  else if (onNavigateLogin) onNavigateLogin();
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white transition-all border border-white/10"
+              >
+                <ArrowLeftRight className="h-3.5 w-3.5 text-[#2185D5]" />
+                <span>Switch / Add Account</span>
+              </button>
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-            {authStorage.getProfiles().map((p) => {
-              const isActive = activeProfile
-                ? p.id === activeProfile.id
-                : p.id === authStorage.getActiveProfile().id;
-              return (
-                <div
-                  key={p.id}
-                  className={`p-4 rounded-2xl border transition-all ${
-                    isActive
-                      ? 'bg-white/10 border-white/30 shadow-lg ring-1 ring-white/20'
-                      : 'bg-[#18181d] border-white/10 hover:border-white/20'
-                  }`}
-                >
+          <div className="p-5 rounded-2xl bg-[#18181d] border border-white/10 space-y-4">
+            {isSignedIn && user ? (
+              <>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
-                    <div className="relative flex-shrink-0">
-                      <img
-                        src={p.avatar_url}
-                        alt={p.name}
-                        className="h-12 w-12 rounded-xl object-cover border border-white/20 shadow-md"
-                      />
-                      {p.is_kids && (
-                        <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded bg-amber-500 text-black font-black text-[8px] uppercase shadow">
-                          Kids
+                    <img
+                      src={user.imageUrl}
+                      alt={user.fullName || 'User'}
+                      className="h-12 w-12 rounded-full object-cover border-2 border-white/20 shadow-md"
+                    />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-white">
+                          {user.fullName || user.username || 'Clerk User'}
+                        </h3>
+                        <span className="h-2 w-2 rounded-full bg-emerald-400" title="Active" />
+                        <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                          ACTIVE SESSION
                         </span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-sm font-bold text-white truncate">{p.name}</p>
-                        {p.is_kids && (
-                          <Baby className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                        )}
                       </div>
-                      <p className="text-[11px] text-zinc-400 mt-0.5">
-                        {p.is_kids ? 'Restricted Kids Library' : 'Full Catalog Access'}
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        {user.primaryEmailAddress?.emailAddress || 'Signed In'}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between">
-                    {isActive ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400">
-                        <Check className="h-3.5 w-3.5" /> Currently Active
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          authStorage.setActiveProfile(p);
-                          if (onSelectProfile) onSelectProfile(p);
-                          showNotification(`Switched to profile: ${p.name}`);
-                        }}
-                        className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors"
-                      >
-                        Switch to Profile
-                      </button>
-                    )}
+                  <div className="flex items-center gap-2.5 self-end sm:self-auto">
+                    <button
+                      onClick={() => {
+                        if (openSignIn) openSignIn();
+                        else if (onNavigateLogin) onNavigateLogin();
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-white/10 hover:bg-white/15 transition-all border border-white/10"
+                    >
+                      <ArrowLeftRight className="h-3.5 w-3.5 text-[#2185D5]" />
+                      <span>Switch Account</span>
+                    </button>
 
-                    {onSwitchProfile && (
-                      <button
-                        onClick={() => onSwitchProfile(true)}
-                        className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
-                        title="Edit Profile"
-                      >
-                        <Edit2 className="h-3.5 w-3.5" />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => {
+                        if (openUserProfile) openUserProfile();
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-white/10 hover:bg-white/15 transition-all border border-white/10"
+                    >
+                      <UserCog className="h-3.5 w-3.5 text-zinc-400" />
+                      <span>Manage Account</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        signOut();
+                        showNotification('Signed out successfully');
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                      <span>Sign Out</span>
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </section>
 
-        {/* ========================================================
-            5. ACCOUNT & CLERK AUTHENTICATION
-           ======================================================== */}
-        <section className="space-y-4 border-t border-white/10 pt-8">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 border border-white/10"
-              style={{ color: accentHex }}
-            >
-              <ShieldCheck className="h-4 w-4" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">
-                Account & Authentication
-              </h2>
-              <p className="text-xs text-zinc-400">
-                Manage your Clerk identity, linked devices, and security credentials
-              </p>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-[#18181d] border border-white/10">
-            {isSignedIn && user ? (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <img
-                    src={user.imageUrl}
-                    alt={user.fullName || 'User'}
-                    className="h-12 w-12 rounded-full object-cover border-2 border-white/20"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-white">
-                        {user.fullName || user.username || 'Echora Member'}
-                      </h3>
-                      <span className="h-2 w-2 rounded-full bg-emerald-400" title="Active" />
-                      <span className="text-[10px] font-mono text-emerald-400 font-bold">
-                        ACTIVE SESSION
-                      </span>
-                    </div>
-                    <p className="text-xs text-zinc-400 mt-0.5">
-                      {user.primaryEmailAddress?.emailAddress || 'Signed In'}
+                {/* Multi-Account Sessions (if multiple accounts are active) */}
+                {sessions && sessions.length > 1 && (
+                  <div className="pt-3 border-t border-white/10 space-y-2">
+                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                      Other Signed-in Accounts
                     </p>
+                    <div className="space-y-1.5">
+                      {sessions.map((s) => {
+                        const isCurrent = s.id === user.id || s.user?.id === user.id;
+                        if (isCurrent) return null;
+                        const sessionUser = s.user;
+                        return (
+                          <div
+                            key={s.id}
+                            className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/10"
+                          >
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={sessionUser?.imageUrl || user.imageUrl}
+                                alt="User"
+                                className="h-8 w-8 rounded-full object-cover border border-white/20"
+                              />
+                              <div>
+                                <p className="text-xs font-bold text-white">
+                                  {sessionUser?.fullName || sessionUser?.primaryEmailAddress?.emailAddress || 'Account'}
+                                </p>
+                                <p className="text-[10px] text-zinc-400">
+                                  {sessionUser?.primaryEmailAddress?.emailAddress}
+                                </p>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => {
+                                setActive({ session: s.id });
+                                showNotification('Switched active Clerk account');
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors"
+                            >
+                              Switch to this Account
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-2.5 self-end sm:self-auto">
-                  <button
-                    onClick={() => {
-                      if (openUserProfile) openUserProfile();
-                    }}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-white/10 hover:bg-white/15 transition-all border border-white/10"
-                  >
-                    Manage Clerk Account
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      signOut();
-                      showNotification('Signed out successfully');
-                    }}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all"
-                  >
-                    <LogOut className="h-3.5 w-3.5" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </div>
+                )}
+              </>
             ) : (
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>

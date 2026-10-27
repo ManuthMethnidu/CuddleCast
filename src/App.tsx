@@ -23,14 +23,11 @@ import { LiveSportsView } from './components/LiveSportsView';
 import { HistoryView } from './components/HistoryView';
 import { RadioPlayer } from './components/RadioPlayer';
 import { RadioAtlasView } from './components/RadioAtlasView';
-import { ProfileGate } from './components/ProfileGate';
 import { FloatingPiP } from './components/FloatingPiP';
 import { Footer } from './components/Footer';
 import { LoginView } from './components/LoginView';
-import { Episode, MediaItem, UserProfile } from './types/schema';
+import { Episode, MediaItem } from './types/schema';
 import { api } from './services/api';
-import { authStorage } from './services/storage';
-import { useUser } from '@clerk/react';
 import { AccentProvider, useAccent } from './context/AccentContext';
 import { usePlayerStore } from './store/playerStore';
 import { useSettingsStore } from './store/settingsStore';
@@ -53,22 +50,6 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-performance', performanceMode);
   }, [performanceMode]);
-
-  // Profile management
-  const [activeProfile, setActiveProfile] = useState<UserProfile | null>(() => {
-    return authStorage.getActiveProfile();
-  });
-  const [showProfileGate, setShowProfileGate] = useState(false);
-  const [isManagingProfiles, setIsManagingProfiles] = useState(false);
-
-  // Sync Clerk profile when logged in if current profile is default
-  const { user, isLoaded } = useUser();
-  useEffect(() => {
-    if (isLoaded && user && activeProfile && activeProfile.id === 'prof-1' && activeProfile.name === 'Echora Member') {
-      const updated = authStorage.syncClerkProfile(user.fullName || user.username, user.imageUrl);
-      setActiveProfile(updated);
-    }
-  }, [isLoaded, user, activeProfile]);
 
   // Zustand Player State
   const {
@@ -124,7 +105,7 @@ const MainApp: React.FC = () => {
   useGridKeyboardNav({
     containerSelector: '[data-grid-nav="true"], main',
     columns: 4,
-    enabled: !selectedItem && !currentMedia && !showProfileGate,
+    enabled: !selectedItem && !currentMedia,
   });
 
   // Sync Library on tab visit
@@ -248,30 +229,8 @@ const MainApp: React.FC = () => {
       <LoginView
         onBack={() => navigate('/')}
         onSuccess={() => {
-          setActiveProfile(authStorage.getActiveProfile());
           navigate('/');
         }}
-      />
-    );
-  }
-
-  if (showProfileGate || !activeProfile) {
-    return (
-      <ProfileGate
-        onSelectProfile={(profile) => {
-          setActiveProfile(profile);
-          setShowProfileGate(false);
-          setIsManagingProfiles(false);
-        }}
-        onClose={
-          activeProfile
-            ? () => {
-                setShowProfileGate(false);
-                setIsManagingProfiles(false);
-              }
-            : undefined
-        }
-        initialManaging={isManagingProfiles}
       />
     );
   }
@@ -280,14 +239,6 @@ const MainApp: React.FC = () => {
     <div className="min-h-screen bg-[#303841] text-[#F3F3F3] flex flex-col font-sans select-none">
       {/* Sticky Top Navigation Bar */}
       <Navbar
-        activeProfile={activeProfile}
-        onSwitchProfile={(managing) => {
-          setIsManagingProfiles(Boolean(managing));
-          setShowProfileGate(true);
-        }}
-        onSelectProfile={(profile) => {
-          setActiveProfile(profile);
-        }}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         activeCategory={activeCategory}
@@ -304,12 +255,6 @@ const MainApp: React.FC = () => {
         onClose={() => setIsSidebarOpen(false)}
         activeView={activeCategory as NavViewId}
         onSelectView={handleSelectNavView}
-        activeProfile={activeProfile}
-        onSwitchProfile={() => {
-          setIsSidebarOpen(false);
-          setIsManagingProfiles(false);
-          setShowProfileGate(true);
-        }}
       />
 
       {/* Main Content Area */}
@@ -433,14 +378,6 @@ const MainApp: React.FC = () => {
           <SettingsView
             onBack={() => navigate('/')}
             onNavigateLogin={() => navigate('/login')}
-            activeProfile={activeProfile}
-            onSwitchProfile={(managing) => {
-              setIsManagingProfiles(Boolean(managing));
-              setShowProfileGate(true);
-            }}
-            onSelectProfile={(profile) => {
-              setActiveProfile(profile);
-            }}
           />
         ) : (
           <>

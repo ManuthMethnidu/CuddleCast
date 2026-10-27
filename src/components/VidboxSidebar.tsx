@@ -19,10 +19,11 @@ import {
   LogOut,
   Sliders,
   Blocks,
+  ArrowLeftRight,
+  UserCog,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import { useUser, useClerk } from '@clerk/react';
-import { UserProfile } from '../types/schema';
 
 export type NavViewId =
   | 'home'
@@ -48,8 +49,6 @@ interface VidboxSidebarProps {
   onClose: () => void;
   activeView: NavViewId;
   onSelectView: (view: NavViewId) => void;
-  activeProfile?: UserProfile | null;
-  onSwitchProfile?: () => void;
 }
 
 export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
@@ -57,12 +56,10 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
   onClose,
   activeView,
   onSelectView,
-  activeProfile,
-  onSwitchProfile,
 }) => {
   const { accentHex } = useAccent();
   const { isSignedIn, user } = useUser();
-  const { signOut, openUserProfile } = useClerk();
+  const { signOut, openUserProfile, openSignIn } = useClerk();
 
   const navItems = [
     { id: 'home' as const, label: 'Home', icon: Home },
@@ -123,42 +120,6 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
           </button>
         </div>
 
-        {/* Active Viewer Profile Card */}
-        {activeProfile && (
-          <div className="px-3 pt-3 pb-1 border-b border-white/10 bg-white/[0.02]">
-            <div className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/10">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="relative flex-shrink-0">
-                  <img
-                    src={activeProfile.avatar_url}
-                    alt={activeProfile.name}
-                    className="h-8 w-8 rounded-lg object-cover border border-white/20"
-                  />
-                  {activeProfile.is_kids && (
-                    <span className="absolute -top-1 -right-1 px-1 py-0.2 rounded bg-amber-500 text-black font-black text-[7px] uppercase">
-                      Kids
-                    </span>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-white truncate">{activeProfile.name}</p>
-                  <p className="text-[10px] text-zinc-400">Viewer Profile</p>
-                </div>
-              </div>
-
-              {onSwitchProfile && (
-                <button
-                  onClick={onSwitchProfile}
-                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-[10px] font-semibold text-zinc-300 hover:text-white transition-colors border border-white/10"
-                  title="Switch Viewer Profile"
-                >
-                  Switch
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Navigation Items List (M3 Navigation Drawer items) */}
         <div className="flex-1 overflow-y-auto no-scrollbar py-3 px-3 space-y-1">
           {navItems.map(item => {
@@ -216,12 +177,12 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
         {/* Account / Authentication Status Area */}
         <div className="p-3 border-t border-white/10 bg-[#303841]">
           {isSignedIn && user ? (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div
                 onClick={() => {
                   if (openUserProfile) openUserProfile();
                 }}
-                className="flex items-center gap-3 p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer border border-white/10"
+                className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer border border-white/10"
                 title="Manage Account"
               >
                 <img
@@ -232,7 +193,7 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <p className="text-xs font-bold text-white truncate">
-                      {user.fullName || user.username || 'Echora Member'}
+                      {user.fullName || user.username || 'Clerk User'}
                     </p>
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" title="Active Session" />
                   </div>
@@ -240,6 +201,32 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
                     {user.primaryEmailAddress?.emailAddress || 'Signed In'}
                   </p>
                 </div>
+              </div>
+
+              {/* Action buttons: Switch Account & Manage */}
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  onClick={() => {
+                    if (openSignIn) openSignIn();
+                    else onSelectView('login');
+                    onClose();
+                  }}
+                  className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-semibold text-zinc-200 hover:text-white transition-colors border border-white/10"
+                >
+                  <ArrowLeftRight className="h-3.5 w-3.5 text-[#2185D5]" />
+                  <span>Switch Acc</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (openUserProfile) openUserProfile();
+                    onClose();
+                  }}
+                  className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-semibold text-zinc-200 hover:text-white transition-colors border border-white/10"
+                >
+                  <UserCog className="h-3.5 w-3.5 text-zinc-400" />
+                  <span>Manage</span>
+                </button>
               </div>
 
               <button
@@ -256,7 +243,8 @@ export const VidboxSidebar: React.FC<VidboxSidebarProps> = ({
           ) : (
             <button
               onClick={() => {
-                onSelectView('login');
+                if (openSignIn) openSignIn();
+                else onSelectView('login');
                 onClose();
               }}
               className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all active:scale-98 shadow-sm"

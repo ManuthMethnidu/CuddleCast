@@ -4,6 +4,7 @@ import {
   Users,
   X,
   LogIn,
+  LogOut,
   Settings as SettingsIcon,
   Home,
   Compass,
@@ -14,20 +15,16 @@ import {
   Tv2,
   Radio,
   ChevronDown,
-  Plus,
-  Edit2,
+  UserCog,
+  ArrowLeftRight,
+  UserCheck,
 } from 'lucide-react';
-import { UserProfile } from '../types/schema';
-import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
-import { Show, UserButton } from '@clerk/react';
+import { useUser, useClerk, useSessionList } from '@clerk/react';
 import { WatchPartyModal } from './WatchPartyModal';
 import { EchoraLogo } from './EchoraLogo';
 
 interface NavbarProps {
-  activeProfile: UserProfile;
-  onSwitchProfile: (initialManaging?: boolean) => void;
-  onSelectProfile?: (profile: UserProfile) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   activeCategory: string;
@@ -36,9 +33,6 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  activeProfile,
-  onSwitchProfile,
-  onSelectProfile,
   searchQuery,
   onSearchChange,
   activeCategory,
@@ -46,26 +40,30 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleSidebar,
 }) => {
   const { accentHex } = useAccent();
+  const { isSignedIn, user } = useUser();
+  const { openUserProfile, openSignIn, signOut, setActive } = useClerk();
+  const { sessions } = useSessionList();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isWatchPartyOpen, setIsWatchPartyOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-        setIsProfileMenuOpen(false);
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
+        setIsAccountMenuOpen(false);
       }
     };
-    if (isProfileMenuOpen) {
+    if (isAccountMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isProfileMenuOpen]);
+  }, [isAccountMenuOpen]);
 
   useEffect(() => {
     let ticking = false;
@@ -262,173 +260,178 @@ export const Navbar: React.FC<NavbarProps> = ({
               />
             </button>
 
-            {/* Clerk Authentication Controls */}
-            <div className="flex items-center">
-              <Show when="signed-in">
-                <div className="mr-1 sm:mr-2 flex items-center">
-                  <UserButton />
-                </div>
-              </Show>
-              <Show when="signed-out">
+            {/* Clerk Authentication & Switch Account Controls */}
+            {isSignedIn && user ? (
+              <div className="relative" ref={accountMenuRef}>
                 <button
-                  onClick={() => onCategoryChange('login')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition-all hover:brightness-110 active:scale-95 shadow-md mr-1 sm:mr-2"
-                  style={{ background: accentHex }}
+                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                  className="group flex items-center gap-2 rounded-xl p-1 bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:border-white/20 active:scale-95"
+                  title={`Signed in as ${user.fullName || user.username || 'User'}`}
                 >
-                  <LogIn className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Sign In</span>
-                </button>
-              </Show>
-            </div>
-
-            {/* Viewer Profile Switcher Button & Dropdown Menu */}
-            <div className="relative" ref={profileMenuRef}>
-              <button
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="group flex items-center gap-1.5 rounded-xl p-1 bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:border-white/20 active:scale-95"
-                title={`Watching as ${activeProfile.name}`}
-              >
-                <div className="relative">
-                  <img
-                    src={activeProfile.avatar_url}
-                    alt={activeProfile.name}
-                    className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg object-cover border border-white/20 shadow"
-                  />
-                  {activeProfile.is_kids && (
-                    <div className="absolute -top-1 -right-1 px-1 py-0.2 rounded bg-amber-500 text-black font-black text-[7px] uppercase shadow">
-                      Kids
-                    </div>
-                  )}
-                </div>
-                <span className="hidden md:inline text-xs font-semibold text-zinc-200 max-w-[85px] truncate">
-                  {activeProfile.name}
-                </span>
-                <ChevronDown
-                  className="h-3.5 w-3.5 text-zinc-400 group-hover:text-white transition-transform duration-200"
-                  style={{ transform: isProfileMenuOpen ? 'rotate(180deg)' : 'none' }}
-                />
-              </button>
-
-              {/* Profile Dropdown */}
-              {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-white/10 bg-[#303841] p-3 text-sm text-white shadow-2xl backdrop-blur-2xl animate-fadeIn z-50 space-y-3">
-                  {/* Current Active Profile Card */}
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10">
+                  <div className="relative">
                     <img
-                      src={activeProfile.avatar_url}
-                      alt={activeProfile.name}
-                      className="h-10 w-10 rounded-xl object-cover border border-white/20"
+                      src={user.imageUrl}
+                      alt={user.fullName || 'User'}
+                      className="h-8 w-8 rounded-lg object-cover border border-white/20 shadow"
                     />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className="font-bold text-white text-xs truncate">{activeProfile.name}</p>
-                        {activeProfile.is_kids && (
-                          <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-black text-[8px] uppercase">
-                            Kids
-                          </span>
-                        )}
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-[#303841]" />
+                  </div>
+                  <span className="hidden md:inline text-xs font-semibold text-zinc-200 max-w-[100px] truncate">
+                    {user.fullName || user.username || 'Account'}
+                  </span>
+                  <ChevronDown
+                    className="h-3.5 w-3.5 text-zinc-400 group-hover:text-white transition-transform duration-200"
+                    style={{ transform: isAccountMenuOpen ? 'rotate(180deg)' : 'none' }}
+                  />
+                </button>
+
+                {/* Clerk Account Dropdown Menu */}
+                {isAccountMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-white/10 bg-[#303841] p-3 text-sm text-white shadow-2xl backdrop-blur-2xl animate-fadeIn z-50 space-y-3">
+                    {/* Active Account Header */}
+                    <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10">
+                      <img
+                        src={user.imageUrl}
+                        alt={user.fullName || 'User'}
+                        className="h-10 w-10 rounded-xl object-cover border border-white/20"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-bold text-white text-xs truncate">
+                            {user.fullName || user.username || 'Clerk User'}
+                          </p>
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        </div>
+                        <p className="text-[10px] text-zinc-400 truncate">
+                          {user.primaryEmailAddress?.emailAddress || 'Signed In'}
+                        </p>
                       </div>
-                      <p className="text-[10px] text-zinc-400 flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                        Active Viewer
-                      </p>
+                    </div>
+
+                    {/* Multi-Account Sessions (if multiple accounts are active) */}
+                    {sessions && sessions.length > 1 && (
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-2">
+                          Switch Active Account
+                        </p>
+                        <div className="space-y-1">
+                          {sessions.map((s) => {
+                            const isCurrent = s.id === user.id || s.user?.id === user.id;
+                            const sessionUser = s.user;
+                            return (
+                              <button
+                                key={s.id}
+                                onClick={() => {
+                                  setActive({ session: s.id });
+                                  setIsAccountMenuOpen(false);
+                                }}
+                                className={`flex items-center justify-between w-full p-2 rounded-xl text-xs transition-colors ${
+                                  isCurrent
+                                    ? 'bg-white/15 text-white font-bold'
+                                    : 'hover:bg-white/5 text-zinc-300 hover:text-white'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <img
+                                    src={sessionUser?.imageUrl || user.imageUrl}
+                                    alt="Account"
+                                    className="h-6 w-6 rounded-md object-cover border border-white/20 flex-shrink-0"
+                                  />
+                                  <div className="min-w-0 text-left">
+                                    <p className="truncate text-xs">
+                                      {sessionUser?.fullName || sessionUser?.primaryEmailAddress?.emailAddress || 'User'}
+                                    </p>
+                                  </div>
+                                </div>
+                                {isCurrent ? (
+                                  <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                                    <UserCheck className="h-3 w-3" /> Active
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-zinc-400">Switch</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Switch / Add Another Account Action */}
+                    <div className="pt-1">
+                      <button
+                        onClick={() => {
+                          setIsAccountMenuOpen(false);
+                          if (openSignIn) {
+                            openSignIn();
+                          } else {
+                            onCategoryChange('login');
+                          }
+                        }}
+                        className="flex items-center gap-2 w-full p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-white transition-colors border border-white/5"
+                      >
+                        <ArrowLeftRight className="h-4 w-4" style={{ color: accentHex }} />
+                        <div className="text-left">
+                          <p className="font-bold">Switch Account</p>
+                          <p className="text-[10px] text-zinc-400">Sign in to another Clerk account</p>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Manage Account & Sign Out Controls */}
+                    <div className="pt-2 border-t border-white/10 space-y-1 text-xs">
+                      <button
+                        onClick={() => {
+                          setIsAccountMenuOpen(false);
+                          if (openUserProfile) openUserProfile();
+                        }}
+                        className="flex w-full items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-white/5 text-zinc-300 hover:text-white transition-colors"
+                      >
+                        <UserCog className="h-3.5 w-3.5" />
+                        <span>Manage Account & Security</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setIsAccountMenuOpen(false);
+                          onCategoryChange('settings');
+                        }}
+                        className="flex w-full items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-white/5 text-zinc-300 hover:text-white transition-colors"
+                      >
+                        <SettingsIcon className="h-3.5 w-3.5" />
+                        <span>System Settings</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setIsAccountMenuOpen(false);
+                          signOut();
+                        }}
+                        className="flex w-full items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-rose-950/30 text-rose-400 hover:text-rose-300 transition-colors"
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        <span>Sign Out</span>
+                      </button>
                     </div>
                   </div>
-
-                  {/* Switch to Other Profiles */}
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-2">
-                      Switch Profile
-                    </p>
-                    <div className="space-y-1">
-                      {authStorage.getProfiles().map((p) => {
-                        const isActive = p.id === activeProfile.id;
-                        return (
-                          <button
-                            key={p.id}
-                            onClick={() => {
-                              authStorage.setActiveProfile(p);
-                              if (onSelectProfile) onSelectProfile(p);
-                              setIsProfileMenuOpen(false);
-                            }}
-                            className={`flex items-center justify-between w-full p-2 rounded-xl text-xs transition-colors ${
-                              isActive
-                                ? 'bg-white/15 text-white font-bold'
-                                : 'hover:bg-white/5 text-zinc-300 hover:text-white'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <img
-                                src={p.avatar_url}
-                                alt={p.name}
-                                className="h-6 w-6 rounded-md object-cover border border-white/20 flex-shrink-0"
-                              />
-                              <span className="truncate">{p.name}</span>
-                              {p.is_kids && (
-                                <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[8px] font-black uppercase">
-                                  Kids
-                                </span>
-                              )}
-                            </div>
-                            {isActive && (
-                              <span className="text-[10px] text-emerald-400 font-semibold">Active</span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Profile Management Controls */}
-                  <div className="pt-2 border-t border-white/10 grid grid-cols-2 gap-1.5 text-xs">
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        onSwitchProfile(true);
-                      }}
-                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 hover:text-white transition-colors border border-white/5 text-[11px] font-medium"
-                    >
-                      <Edit2 className="h-3 w-3" />
-                      <span>Manage</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        onSwitchProfile(false);
-                      }}
-                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 hover:text-white transition-colors border border-white/5 text-[11px] font-medium"
-                    >
-                      <Plus className="h-3 w-3" />
-                      <span>Add New</span>
-                    </button>
-                  </div>
-
-                  {/* Quick System Links */}
-                  <div className="pt-2 border-t border-white/10 space-y-0.5 text-xs">
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        onCategoryChange('settings');
-                      }}
-                      className="flex w-full items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-white/5 text-zinc-300 hover:text-white"
-                    >
-                      <SettingsIcon className="h-3.5 w-3.5" />
-                      <span>System Settings</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false);
-                        onCategoryChange('login');
-                      }}
-                      className="flex w-full items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-white/5 text-[#2185D5] hover:text-[#2185D5]/90 font-medium"
-                    >
-                      <LogIn className="h-3.5 w-3.5" />
-                      <span>Clerk Account Portal</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  if (openSignIn) {
+                    openSignIn();
+                  } else {
+                    onCategoryChange('login');
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all hover:brightness-110 active:scale-95 shadow-md"
+                style={{ background: accentHex }}
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Sign In</span>
+              </button>
+            )}
           </div>
         </div>
       </header>
