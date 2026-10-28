@@ -730,7 +730,7 @@ class StorageService {
       isOnboardingCompleted: parsed.isOnboardingCompleted ?? onboarding.completed ?? false,
       volume: typeof parsed.volume === 'number' ? parsed.volume : 0.85,
       isMuted: parsed.isMuted ?? false,
-      screensaverTheme: parsed.screensaverTheme || 'crystalized-ball',
+      screensaverTheme: parsed.screensaverTheme || 'flux-lines',
       lastStation: parsed.lastStation || null,
       favoriteStations: parsed.favoriteStations || favoriteStations || [],
       recentStations: parsed.recentStations || recentStations || [],

@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { RadioBrowserStation, radioBrowserApi } from '../services/radioBrowser';
 import { authStorage } from '../services/storage';
 
-export type ScreensaverTheme = 'crystalized-ball' | 'microslats' | 'waviz-bars';
+export type ScreensaverTheme = 'flux-lines' | 'crystalized-ball' | 'microslats' | 'waviz-bars';
 
 export interface UserRadioPreferences {
   countryCode: string;
@@ -86,7 +86,7 @@ export const useRadioStore = create<RadioState>()(
       isMuted: false,
       isPillVisible: false,
       isScreensaverOpen: false,
-      screensaverTheme: 'crystalized-ball',
+      screensaverTheme: 'flux-lines',
       userPreferences: {
         countryCode: 'US',
         countryName: 'United States',

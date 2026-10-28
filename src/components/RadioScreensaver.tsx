@@ -14,12 +14,13 @@ import {
   Waves,
   Layers,
 } from 'lucide-react';
-import { useRadioStore, getGlobalRadioAudio } from '../store/radioStore';
+import { useRadioStore, getGlobalRadioAudio, ScreensaverTheme } from '../store/radioStore';
 import { useAccent } from '../context/AccentContext';
 import { authStorage } from '../services/storage';
 import { radioRecorder, ActiveRecordingState } from '../services/radioRecorder';
 import { MicroSlats, PresetKey as SlatsPreset } from './MicroSlats';
 import { CrystalizedBall, BallPreset } from './CrystalizedBall';
+import { FluxLines, FluxLinesPreset } from './FluxLines';
 
 // Global persistent Web Audio bridge for Radio stream analysis
 let sharedAudioCtx: AudioContext | null = null;
@@ -126,6 +127,7 @@ export const RadioScreensaver: React.FC = () => {
   }
 
   const [isFavorited, setIsFavorited] = useState(false);
+  const [activeFluxPreset, setActiveFluxPreset] = useState<FluxLinesPreset>('neon');
   const [activeBallPreset, setActiveBallPreset] = useState<BallPreset>('plasma');
   const [activeSlatsPreset, setActiveSlatsPreset] = useState<SlatsPreset>('storm');
   const [isIdle, setIsIdle] = useState(false);
@@ -225,15 +227,52 @@ export const RadioScreensaver: React.FC = () => {
     setIsFavorited(!isFav);
   };
 
-  const isBallMode = screensaverTheme !== 'microslats';
+  const THEMES: ScreensaverTheme[] = ['flux-lines', 'crystalized-ball', 'microslats'];
 
   const toggleVisualizerMode = () => {
-    const nextTheme = isBallMode ? 'microslats' : 'crystalized-ball';
-    setScreensaverTheme(nextTheme);
+    const currentIdx = THEMES.indexOf(screensaverTheme);
+    const nextIdx = (currentIdx + 1) % THEMES.length;
+    setScreensaverTheme(THEMES[nextIdx >= 0 ? nextIdx : 0]);
   };
 
+  const getThemeDetails = () => {
+    switch (screensaverTheme) {
+      case 'flux-lines':
+        return {
+          title: 'Flux Lines',
+          preset: activeFluxPreset,
+        };
+      case 'crystalized-ball':
+        return {
+          title: 'Crystalized Ball',
+          preset: activeBallPreset,
+        };
+      case 'microslats':
+      default:
+        return {
+          title: 'Sound MicroSlats',
+          preset: activeSlatsPreset,
+        };
+    }
+  };
+
+  const { title: themeTitle, preset: currentPresetName } = getThemeDetails();
+
   const cyclePreset = () => {
-    if (isBallMode) {
+    if (screensaverTheme === 'flux-lines') {
+      const presets: FluxLinesPreset[] = [
+        'neon',
+        'ember',
+        'glacier',
+        'aurora',
+        'storm',
+        'solar',
+        'classic',
+        'calm',
+      ];
+      const nextIdx = (presets.indexOf(activeFluxPreset) + 1) % presets.length;
+      setActiveFluxPreset(presets[nextIdx]);
+    } else if (screensaverTheme === 'crystalized-ball') {
       const presets: BallPreset[] = [
         'plasma',
         'aurora',
@@ -254,7 +293,6 @@ export const RadioScreensaver: React.FC = () => {
   };
 
   const isAudioActive = isPlaying && !isMuted && volume > 0;
-  const currentPresetName = isBallMode ? activeBallPreset : activeSlatsPreset;
 
   return (
     <div
@@ -268,7 +306,19 @@ export const RadioScreensaver: React.FC = () => {
     >
       {/* Sound-Reactive 3D Visualizer Canvas */}
       <div className="absolute inset-0 w-full h-full z-0 pointer-events-auto">
-        {isBallMode ? (
+        {screensaverTheme === 'flux-lines' && (
+          <FluxLines
+            preset={activeFluxPreset}
+            audioProvider={audioBridgeRef.current}
+            isAudioPlaying={isAudioActive}
+            mouseInteraction={true}
+            clickSwirl={true}
+            intro={false}
+            transparent={false}
+            backgroundColor="#030712"
+          />
+        )}
+        {screensaverTheme === 'crystalized-ball' && (
           <CrystalizedBall
             preset={activeBallPreset}
             color={accentHex}
@@ -281,7 +331,8 @@ export const RadioScreensaver: React.FC = () => {
             isAudioPlaying={isAudioActive}
             intro={false}
           />
-        ) : (
+        )}
+        {screensaverTheme === 'microslats' && (
           <MicroSlats
             preset={activeSlatsPreset}
             color={accentHex}
@@ -314,7 +365,7 @@ export const RadioScreensaver: React.FC = () => {
           >
             <Sparkles className="w-3.5 h-3.5 animate-pulse" style={{ color: accentHex }} />
             <span className="font-semibold tracking-wider uppercase">
-              {isBallMode ? 'Crystalized Ball' : 'Sound MicroSlats'}
+              {themeTitle}
             </span>
             <span className="text-[10px] text-zinc-400">• {currentPresetName}</span>
           </button>
@@ -433,13 +484,11 @@ export const RadioScreensaver: React.FC = () => {
               <Compass className="w-4 h-4" />
             </button>
 
-            {/* Switch Visualizer Mode: Crystalized Ball <-> MicroSlats */}
+            {/* Switch Visualizer Mode: Flux Lines <-> Crystalized Ball <-> MicroSlats */}
             <button
               onClick={toggleVisualizerMode}
               className="p-2 rounded-xl text-zinc-400 hover:text-purple-300 hover:bg-white/10 transition-all flex items-center gap-1"
-              title={`Switch Visualizer Mode (Active: ${
-                isBallMode ? 'Crystalized Ball' : 'MicroSlats'
-              })`}
+              title={`Switch Visualizer Mode (Active: ${themeTitle})`}
             >
               <Layers className="w-4 h-4 text-purple-400" />
             </button>
