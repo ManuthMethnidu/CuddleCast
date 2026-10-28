@@ -43,6 +43,7 @@ import {
   useSearchMediaQuery,
 } from './hooks/useCatalogQuery';
 import { useGridKeyboardNav } from './hooks/useGridKeyboardNav';
+import { Analytics } from '@vercel/analytics/react';
 
 const MainApp: React.FC = () => {
   const { accentHex } = useAccent();
@@ -515,6 +516,7 @@ export const App: React.FC = () => {
   return (
     <AccentProvider>
       <MainApp />
+      <Analytics />
     </AccentProvider>
   );
 };
