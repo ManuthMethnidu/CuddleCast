@@ -7,9 +7,13 @@ import { dark } from '@clerk/themes';
 import { App } from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { CLERK_PUBLISHABLE_KEY } from './config/clerk';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import './index.css';
 import '@material/web/all.js';
 import '@material/web/typography/md-typescale-styles.css';
+
+// Initialize Vercel Speed Insights
+injectSpeedInsights();
 
 // TanStack Query Client for caching server state and avoiding React context repaint lag
 const queryClient = new QueryClient({
