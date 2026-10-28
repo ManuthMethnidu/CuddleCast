@@ -21,6 +21,7 @@ import { radioRecorder, ActiveRecordingState } from '../services/radioRecorder';
 import { MicroSlats, PresetKey as SlatsPreset } from './MicroSlats';
 import { CrystalizedBall, BallPreset } from './CrystalizedBall';
 import { FluxLines, FluxLinesPreset } from './FluxLines';
+import { SpectrumBars, SpectrumPreset } from './SpectrumBars';
 
 // Global persistent Web Audio bridge for Radio stream analysis
 let sharedAudioCtx: AudioContext | null = null;
@@ -127,6 +128,7 @@ export const RadioScreensaver: React.FC = () => {
   }
 
   const [isFavorited, setIsFavorited] = useState(false);
+  const [activeSpectrumPreset, setActiveSpectrumPreset] = useState<SpectrumPreset>('cyber-neon');
   const [activeFluxPreset, setActiveFluxPreset] = useState<FluxLinesPreset>('neon');
   const [activeBallPreset, setActiveBallPreset] = useState<BallPreset>('plasma');
   const [activeSlatsPreset, setActiveSlatsPreset] = useState<SlatsPreset>('storm');
@@ -227,7 +229,12 @@ export const RadioScreensaver: React.FC = () => {
     setIsFavorited(!isFav);
   };
 
-  const THEMES: ScreensaverTheme[] = ['flux-lines', 'crystalized-ball', 'microslats'];
+  const THEMES: ScreensaverTheme[] = [
+    'spectrum-bars',
+    'flux-lines',
+    'crystalized-ball',
+    'microslats',
+  ];
 
   const toggleVisualizerMode = () => {
     const currentIdx = THEMES.indexOf(screensaverTheme);
@@ -237,6 +244,11 @@ export const RadioScreensaver: React.FC = () => {
 
   const getThemeDetails = () => {
     switch (screensaverTheme) {
+      case 'spectrum-bars':
+        return {
+          title: 'Neon Spectrum',
+          preset: activeSpectrumPreset,
+        };
       case 'flux-lines':
         return {
           title: 'Flux Lines',
@@ -259,7 +271,21 @@ export const RadioScreensaver: React.FC = () => {
   const { title: themeTitle, preset: currentPresetName } = getThemeDetails();
 
   const cyclePreset = () => {
-    if (screensaverTheme === 'flux-lines') {
+    if (screensaverTheme === 'spectrum-bars') {
+      const presets: SpectrumPreset[] = [
+        'cyber-neon',
+        'synth-sunset',
+        'matrix-acid',
+        'glacial-ice',
+        'studio-white',
+        'violet-pulse',
+        'golden-hour',
+        'electric-ember',
+      ];
+      const nextIdx =
+        (presets.indexOf(activeSpectrumPreset) + 1) % presets.length;
+      setActiveSpectrumPreset(presets[nextIdx]);
+    } else if (screensaverTheme === 'flux-lines') {
       const presets: FluxLinesPreset[] = [
         'neon',
         'ember',
@@ -306,6 +332,18 @@ export const RadioScreensaver: React.FC = () => {
     >
       {/* Sound-Reactive 3D Visualizer Canvas */}
       <div className="absolute inset-0 w-full h-full z-0 pointer-events-auto">
+        {screensaverTheme === 'spectrum-bars' && (
+          <SpectrumBars
+            preset={activeSpectrumPreset}
+            barCount={64}
+            reflection={true}
+            peaks={true}
+            glow={0.16}
+            audioProvider={audioBridgeRef.current}
+            isAudioPlaying={isAudioActive}
+            bgColor="#030712"
+          />
+        )}
         {screensaverTheme === 'flux-lines' && (
           <FluxLines
             preset={activeFluxPreset}
