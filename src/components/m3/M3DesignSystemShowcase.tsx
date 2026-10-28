@@ -9,7 +9,7 @@ import {
   M3TextField,
   M3Switch,
 } from './index';
-import { useAccent, ACCENT_OPTIONS } from '../../context/AccentContext';
+import { useAccent } from '../../context/AccentContext';
 import {
   Sparkles,
   Palette,
@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 export const M3DesignSystemShowcase: React.FC = () => {
-  const { accent, setAccent } = useAccent();
+  const { accentHex } = useAccent();
   const [activeTab, setActiveTab] = useState<'overview' | 'colors' | 'typography' | 'components' | 'motion'>('overview');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [switchState, setSwitchState] = useState(true);
@@ -146,31 +146,18 @@ export const M3DesignSystemShowcase: React.FC = () => {
       {activeTab === 'colors' && (
         <div className="space-y-6">
           <div className="bg-[var(--md-sys-color-surface-container)] rounded-m3-xl p-6 border border-[var(--md-sys-color-outline-variant)]">
-            <h3 className="font-m3-title-lg-emphasized mb-2">Dynamic Accent Palette Generator</h3>
+            <h3 className="font-m3-title-lg-emphasized mb-2">Echora Brand Palette</h3>
             <p className="font-m3-body-md text-[var(--md-sys-color-on-surface-variant)] mb-4">
-              Select an accent to test Google Design HCT algorithm runtime generation:
+              Material 3 Cinema Dark design tokens with Echora Cerulean Blue accent:
             </p>
             <div className="flex flex-wrap gap-2.5">
-              {ACCENT_OPTIONS.map((opt) => (
-                <button
-                  key={opt.id}
-                  onClick={() => setAccent(opt.id)}
-                  className={`
-                    flex items-center gap-2 px-3.5 py-2 rounded-m3-full border transition-all duration-m3-short ease-spring-snappy
-                    ${
-                      accent === opt.id
-                        ? 'border-[var(--md-sys-color-primary)] bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] font-bold shadow-m3-1 scale-105'
-                        : 'border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container-low)] text-[var(--md-sys-color-on-surface)] hover:bg-[var(--md-sys-color-surface-container-high)]'
-                    }
-                  `}
-                >
-                  <span
-                    className="w-3.5 h-3.5 rounded-full border border-black/20"
-                    style={{ backgroundColor: opt.hex }}
-                  />
-                  <span className="font-m3-label-md">{opt.label}</span>
-                </button>
-              ))}
+              <div className="flex items-center gap-2 px-3.5 py-2 rounded-m3-full border border-[var(--md-sys-color-primary)] bg-[var(--md-sys-color-primary-container)] text-[var(--md-sys-color-on-primary-container)] font-bold shadow-m3-1">
+                <span
+                  className="w-3.5 h-3.5 rounded-full border border-black/20"
+                  style={{ backgroundColor: accentHex }}
+                />
+                <span className="font-m3-label-md">Cerulean Blue (Echora Default #2185D5)</span>
+              </div>
             </div>
           </div>
 

@@ -216,34 +216,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </button>
                 );
               })}
-
-              {/* Settings Tab */}
-              <button
-                onClick={() => onCategoryChange('settings')}
-                className="relative py-1 font-medium transition-colors hover:text-white shrink-0"
-                style={{
-                  color: activeCategory === 'settings' ? '#ffffff' : 'var(--dx-text-2)',
-                  fontWeight: activeCategory === 'settings' ? 700 : 500,
-                }}
-              >
-                <span>Settings</span>
-                {activeCategory === 'settings' && (
-                  <span
-                    className="absolute -bottom-1 left-0 right-0 h-[2px] rounded-full transition-transform duration-300"
-                    style={{ background: accentHex }}
-                  />
-                )}
-              </button>
-
-              {/* Quick Customize Navigation button */}
-              <button
-                onClick={() => setIsNavbarCustomizerOpen(true)}
-                title="Customize Navigation Categories"
-                aria-label="Customize Navigation Categories"
-                className="p-1 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-              >
-                <Sliders className="h-3.5 w-3.5" />
-              </button>
             </nav>
           </div>
 
