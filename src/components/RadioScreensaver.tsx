@@ -18,6 +18,7 @@ import { useRadioStore, getGlobalRadioAudio, ScreensaverTheme } from '../store/r
 import { useAccent } from '../context/AccentContext';
 import { authStorage } from '../services/storage';
 import { radioRecorder, ActiveRecordingState } from '../services/radioRecorder';
+import { getCountryFlag } from '../services/radioBrowser';
 import { MicroSlats, PresetKey as SlatsPreset } from './MicroSlats';
 import { CrystalizedBall, BallPreset } from './CrystalizedBall';
 import { FluxLines, FluxLinesPreset } from './FluxLines';
@@ -134,6 +135,27 @@ export const RadioScreensaver: React.FC = () => {
   const [activeSlatsPreset, setActiveSlatsPreset] = useState<SlatsPreset>('storm');
   const [isIdle, setIsIdle] = useState(false);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Time & Date state (updates every second based on user locale)
+  const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const timeFormatted = currentTime.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const secondsFormatted = String(currentTime.getSeconds()).padStart(2, '0');
+  const dateFormatted = currentTime.toLocaleDateString([], {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+  const timeZoneName = Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_/g, ' ');
 
   const [recordingState, setRecordingState] = useState<ActiveRecordingState>(
     radioRecorder.getState()
@@ -389,33 +411,164 @@ export const RadioScreensaver: React.FC = () => {
         )}
       </div>
 
-      {/* Top subtle controls: Visualizer Badge & Exit button (Auto-hides on idle) */}
-      <div
-        className={`absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-none transition-all duration-500 ease-out ${
-          isIdle ? 'opacity-0 -translate-y-2' : 'opacity-100 translate-y-0'
-        }`}
-      >
-        <div className="flex items-center gap-2 pointer-events-auto">
+      {/* Top Header: Ambient Time & Date, Mini Vinyl Now-Playing, and Controls */}
+      <div className="absolute top-4 sm:top-5 left-4 sm:left-6 right-4 sm:right-6 z-30 flex items-start justify-between gap-3 pointer-events-none">
+        {/* Left: Time & Date + Visualizer Preset Badge */}
+        <div className="flex flex-col gap-2 pointer-events-auto">
+          {/* Ambient Time & Date Card */}
+          <div
+            className={`flex flex-col px-3.5 sm:px-4 py-2.5 rounded-2xl bg-black/45 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] transition-all duration-700 ${
+              isIdle ? 'opacity-85 translate-y-0' : 'opacity-100'
+            }`}
+          >
+            <div className="flex items-baseline gap-1.5 leading-none">
+              <span className="text-2xl sm:text-3xl font-light tracking-tight text-white font-mono drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+                {timeFormatted}
+              </span>
+              <span className="text-xs font-mono text-zinc-400 font-normal">
+                :{secondsFormatted}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-1 text-[11px] sm:text-xs font-medium text-zinc-300 tracking-wide">
+              <span>{dateFormatted}</span>
+              <span className="text-zinc-600">•</span>
+              <span className="text-[10px] text-zinc-400 truncate max-w-[100px] sm:max-w-none">
+                {timeZoneName}
+              </span>
+            </div>
+          </div>
+
+          {/* Visualizer Preset Badge (fades to subtle on idle, fully visible on active) */}
           <button
             onClick={cyclePreset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-white/10 backdrop-blur-xl border border-white/10 text-xs font-mono text-zinc-300 shadow-lg transition-colors cursor-pointer"
-            title="Click to cycle color preset"
+            className={`flex items-center gap-1.5 self-start px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-black/50 hover:bg-white/10 backdrop-blur-xl border border-white/10 text-[11px] sm:text-xs font-mono text-zinc-300 shadow-lg transition-all duration-500 cursor-pointer ${
+              isIdle ? 'opacity-35 hover:opacity-100' : 'opacity-100'
+            }`}
+            title="Click to cycle visualizer color preset"
           >
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" style={{ color: accentHex }} />
-            <span className="font-semibold tracking-wider uppercase">
-              {themeTitle}
-            </span>
+            <Sparkles className="w-3 h-3 animate-pulse" style={{ color: accentHex }} />
+            <span className="font-semibold tracking-wider uppercase">{themeTitle}</span>
             <span className="text-[10px] text-zinc-400">• {currentPresetName}</span>
           </button>
         </div>
 
-        <button
-          onClick={() => setScreensaverOpen(false)}
-          className="pointer-events-auto p-2 rounded-full bg-black/60 hover:bg-white/20 text-zinc-300 hover:text-white backdrop-blur-xl border border-white/10 transition-all active:scale-95 shadow-xl"
-          title="Exit Screensaver (Esc)"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        {/* Right: Mini Vinyl Station Now-Playing Card & Exit Button */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {/* Mini Vinyl Card */}
+          <div
+            className={`flex items-center gap-3 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-black/45 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)] transition-all duration-700 max-w-[240px] xs:max-w-[280px] sm:max-w-[340px] ${
+              isIdle ? 'opacity-90' : 'opacity-100'
+            }`}
+          >
+            {/* Realistic Mini Vinyl Record with Tonearm */}
+            <div className="relative w-11 h-11 sm:w-13 sm:h-13 shrink-0 flex items-center justify-center">
+              {/* Spinning Disc */}
+              <div
+                className={`w-full h-full rounded-full bg-zinc-950 border border-white/20 relative flex items-center justify-center overflow-hidden transition-transform duration-700 ${
+                  isPlaying ? 'animate-spin' : ''
+                }`}
+                style={{
+                  animationDuration: '3.6s',
+                  animationTimingFunction: 'linear',
+                  animationIterationCount: 'infinite',
+                  animationPlayState: isPlaying ? 'running' : 'paused',
+                  boxShadow:
+                    '0 4px 16px rgba(0,0,0,0.9), inset 0 0 0 2px #18181b, inset 0 0 0 5px #09090b, inset 0 0 0 8px #18181b, inset 0 0 0 11px #09090b',
+                }}
+              >
+                {/* Concentric Vinyl Grooves Texture */}
+                <div
+                  className="absolute inset-0 rounded-full opacity-35 pointer-events-none"
+                  style={{
+                    background:
+                      'repeating-radial-gradient(circle at 50% 50%, transparent, transparent 1.5px, rgba(255,255,255,0.08) 2px, transparent 3px)',
+                  }}
+                />
+
+                {/* Surface Reflection Sheen */}
+                <div
+                  className="absolute inset-0 rounded-full pointer-events-none opacity-25"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.2) 100%)',
+                  }}
+                />
+
+                {/* Center Label: Station Artwork / Favicon */}
+                <div className="relative w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full overflow-hidden bg-zinc-800 border border-white/30 shadow-inner flex items-center justify-center z-10 shrink-0">
+                  {currentStation?.favicon ? (
+                    <img
+                      src={currentStation.favicon}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <Radio className="w-2.5 h-2.5 text-white/90" />
+                  )}
+                  {/* Spindle hole */}
+                  <div className="absolute w-1.5 h-1.5 rounded-full bg-black border border-white/20" />
+                </div>
+              </div>
+
+              {/* Tonearm */}
+              <div
+                className={`absolute -top-1 -right-0.5 w-4 h-6 pointer-events-none transition-transform duration-500 origin-top-right ${
+                  isPlaying ? 'rotate-3' : '-rotate-18 opacity-50'
+                }`}
+              >
+                <div className="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-zinc-400 border border-zinc-600 shadow-sm" />
+                <div className="absolute top-1 right-0.5 w-0.5 h-4.5 bg-gradient-to-b from-zinc-300 to-zinc-500 origin-top rotate-[-12deg]" />
+                <div className="absolute bottom-0 left-0 w-1 h-1.5 bg-amber-400 rounded-[1px] shadow-sm" />
+              </div>
+            </div>
+
+            {/* Station details */}
+            <div className="flex flex-col min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                {currentStation?.countrycode && (
+                  <span className="text-xs shrink-0 select-none">
+                    {getCountryFlag(currentStation.countrycode)}
+                  </span>
+                )}
+                <span className="text-xs sm:text-sm font-semibold text-white truncate leading-tight drop-shadow">
+                  {currentStation ? currentStation.name : 'No Station'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                {isPlaying ? (
+                  <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-mono tracking-wider font-semibold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span>ON AIR</span>
+                    <div className="flex items-end gap-0.5 h-2.5 ml-0.5">
+                      <span className="w-0.5 bg-emerald-400 rounded-full animate-[bounce_0.8s_infinite] h-2" />
+                      <span className="w-0.5 bg-emerald-400 rounded-full animate-[bounce_0.6s_infinite_0.2s] h-2.5" />
+                      <span className="w-0.5 bg-emerald-400 rounded-full animate-[bounce_1s_infinite_0.4s] h-1.5" />
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-[10px] text-zinc-400 font-mono">
+                    {currentStation ? 'PAUSED' : 'Press wander to start'}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Exit Button */}
+          <button
+            onClick={() => setScreensaverOpen(false)}
+            className={`p-2 sm:p-2.5 rounded-full bg-black/50 hover:bg-white/20 text-zinc-300 hover:text-white backdrop-blur-xl border border-white/10 transition-all duration-500 active:scale-95 shadow-xl ${
+              isIdle ? 'opacity-35 hover:opacity-100' : 'opacity-100'
+            }`}
+            title="Exit Screensaver (Esc)"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Minimized Floating Bottom Player Dock (Auto-hides on idle) */}
