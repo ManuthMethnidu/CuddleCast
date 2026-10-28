@@ -177,8 +177,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <EchoraLogo size="md" />
             </a>
 
-            {/* Desktop Nav Tabs (Old classic nav links, dynamically driven by user selection) */}
-            <nav className="hidden md:flex items-center gap-5 lg:gap-6 text-sm font-medium overflow-x-auto no-scrollbar py-0.5">
+            {/* Desktop Nav Tabs (Classic nav links, dynamically driven by user selection) */}
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
               {visibleNavCategories.map((cat) => {
                 const isSelected =
                   activeCategory === cat.id ||
@@ -187,7 +187,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     key={cat.id}
                     onClick={() => onCategoryChange(cat.id)}
-                    className="relative py-1 font-medium transition-colors hover:text-white flex items-center gap-1.5 shrink-0"
+                    className="relative py-1 font-medium transition-colors hover:text-white flex items-center gap-1.5"
                     style={{
                       color: isSelected ? '#ffffff' : 'var(--dx-text-2)',
                       fontWeight: isSelected ? 700 : 500,

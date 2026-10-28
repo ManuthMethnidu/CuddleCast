@@ -13,12 +13,11 @@ import {
   Heart,
   Clock,
   Layers,
-  Zap,
   Check,
   RotateCcw,
   Sliders,
 } from 'lucide-react';
-import { useSettingsStore, PerformanceMode, DEFAULT_NAV_ITEMS } from '../store/settingsStore';
+import { useSettingsStore, DEFAULT_NAV_ITEMS } from '../store/settingsStore';
 import { useAccent } from '../context/AccentContext';
 
 export interface NavbarItemDef {
@@ -122,8 +121,6 @@ export const NavbarCustomizerModal: React.FC<NavbarCustomizerModalProps> = ({
     enabledNavItems = DEFAULT_NAV_ITEMS,
     toggleNavItem,
     setEnabledNavItems,
-    performanceMode,
-    setPerformanceMode,
   } = useSettingsStore();
 
   if (!isOpen) return null;
@@ -148,7 +145,7 @@ export const NavbarCustomizerModal: React.FC<NavbarCustomizerModalProps> = ({
                 <span>Navbar Settings & Customizer</span>
               </h2>
               <p className="text-xs text-zinc-400">
-                Choose which categories appear in your top bar and toggle swipe performance.
+                Choose which categories appear in your top navigation bar.
               </p>
             </div>
           </div>
@@ -179,62 +176,6 @@ export const NavbarCustomizerModal: React.FC<NavbarCustomizerModalProps> = ({
               <RotateCcw className="size-3" />
               Reset Defaults
             </button>
-          </div>
-
-          {/* Performance Mode & Swipe Tabs Toggle */}
-          <div className="rounded-2xl bg-black/30 border border-white/10 p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Zap className="size-4 text-amber-400" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">
-                  Top Bar Swipe Animation Performance
-                </span>
-              </div>
-              <span
-                className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full uppercase ${
-                  performanceMode === 'high'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-white/10 text-zinc-300'
-                }`}
-              >
-                {performanceMode === 'high' ? 'Swipe Physics Active' : 'Lightweight Tabs'}
-              </span>
-            </div>
-
-            <p className="text-xs text-zinc-300 leading-relaxed">
-              When <strong>High Performance</strong> is active, the top bar enables physics-based touch/pointer swipe gestures with sub-pixel rubber-banding and spring velocity. On lower power, it reverts to instant click tabs.
-            </p>
-
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              {(
-                [
-                  { id: 'high', label: 'High (Swipe)', desc: 'Full Gesture Physics' },
-                  { id: 'medium', label: 'Medium', desc: 'Balanced Animations' },
-                  { id: 'low', label: 'Low Power', desc: 'Instant & Battery Saver' },
-                ] as const
-              ).map((mode) => {
-                const isSelected = performanceMode === mode.id;
-                return (
-                  <button
-                    key={mode.id}
-                    onClick={() => setPerformanceMode(mode.id as PerformanceMode)}
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
-                      isSelected
-                        ? 'border-transparent text-white shadow-lg'
-                        : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'
-                    }`}
-                    style={{
-                      backgroundColor: isSelected ? accentHex : undefined,
-                    }}
-                  >
-                    <p className="text-xs font-bold">{mode.label}</p>
-                    <p className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-zinc-500'}`}>
-                      {mode.desc}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           {/* Nav Items Checkbox Grid */}

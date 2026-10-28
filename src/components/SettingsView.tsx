@@ -442,7 +442,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </section>
 
         {/* ========================================================
-            TOP NAVIGATION BAR & SWIPE TABS CUSTOMIZATION
+            TOP NAVIGATION BAR & CATEGORIES CUSTOMIZATION
            ======================================================== */}
         <section className="space-y-4 border-t border-white/10 pt-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -475,41 +475,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </button>
           </div>
 
-          {/* Swipe gesture physics note based on performanceMode */}
-          <div className="rounded-2xl bg-[#18181d] border border-white/10 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2.5">
-              <div
-                className={`p-1.5 rounded-lg ${
-                  settings.performanceMode === 'high'
-                    ? 'bg-emerald-500/20 text-emerald-400'
-                    : 'bg-white/10 text-zinc-400'
-                }`}
-              >
-                <Zap className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="font-bold text-white">
-                  Swipe Navigation Physics:{' '}
-                  <span
-                    className={
-                      settings.performanceMode === 'high'
-                        ? 'text-emerald-400 font-extrabold'
-                        : 'text-zinc-400 font-normal'
-                    }
-                  >
-                    {settings.performanceMode === 'high'
-                      ? 'Active (Spring & Rubber-Band Flick)'
-                      : 'Standard (Instant Switch)'}
-                  </span>
-                </p>
-                <p className="text-[11px] text-zinc-400 mt-0.5">
-                  {settings.performanceMode === 'high'
-                    ? 'Physics-based touch & pointer swipe gestures enabled across top bar categories.'
-                    : 'Set Performance Mode above to "High" to enable continuous spring swipe gestures.'}
-                </p>
-              </div>
-            </div>
-
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+              Category Visibility
+            </span>
             <span className="font-mono text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300">
               {settings.enabledNavItems.length} of {ALL_NAV_ITEMS.length} Tabs Visible
             </span>
