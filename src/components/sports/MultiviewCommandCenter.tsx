@@ -119,6 +119,10 @@ export const MultiviewCommandCenter: React.FC<MultiviewCommandCenterProps> = ({
       circuitSimulator.setCircuit('spa');
     else if (lower.includes('cota') || lower.includes('americas'))
       circuitSimulator.setCircuit('cota');
+    else if (lower.includes('mexico') || lower.includes('hermanos') || lower.includes('rodriguez'))
+      circuitSimulator.setCircuit('mexico');
+    else if (lower.includes('sepang') || lower.includes('malaysia'))
+      circuitSimulator.setCircuit('sepang');
   }, [session.circuit]);
 
   // 6. Simulator vs OpenF1 Real-time Sync Loop (T-03-02)

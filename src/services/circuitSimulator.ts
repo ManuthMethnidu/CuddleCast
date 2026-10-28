@@ -89,6 +89,30 @@ export const CIRCUITS: Record<string, CircuitConfig> = {
     drsZones: 2,
     sectorSplits: [0.29, 0.41, 0.30],
   },
+  mexico: {
+    id: 'mexico',
+    name: 'Autódromo Hermanos Rodríguez',
+    country: 'Mexico',
+    laps: 71,
+    lengthKm: '4.304 km',
+    baseLapTimeSeconds: 77.774,
+    lapRecord: '1:17.774',
+    recordHolder: 'Valtteri Bottas',
+    drsZones: 3,
+    sectorSplits: [0.32, 0.38, 0.30],
+  },
+  sepang: {
+    id: 'sepang',
+    name: 'Petronas Sepang International Circuit',
+    country: 'Malaysia',
+    laps: 20,
+    lengthKm: '5.543 km',
+    baseLapTimeSeconds: 117.491,
+    lapRecord: '1:57.491',
+    recordHolder: 'Francesco Bagnaia',
+    drsZones: 2,
+    sectorSplits: [0.33, 0.36, 0.31],
+  },
 };
 
 interface DriverInitState {

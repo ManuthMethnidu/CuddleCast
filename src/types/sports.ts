@@ -11,6 +11,7 @@ export type SessionState =
   | 'upcoming'
   | 'live'
   | 'ended'
+  | 'finished'
   | 'interrupted'
   | 'postponed'
   | 'cancelled';

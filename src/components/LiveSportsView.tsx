@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Play,
   Flag,
@@ -11,6 +11,7 @@ import {
   Sparkles,
   RefreshCw,
   X,
+  AlertCircle,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import {
@@ -18,9 +19,12 @@ import {
   SERIES_COLORS,
   JolpicaDriverStanding,
   JolpicaConstructorStanding,
+  DriverTiming,
+  StreamChannel,
 } from '../types/sports';
 import { jolpicaService } from '../services/jolpica';
 import { circuitSimulator } from '../services/circuitSimulator';
+import { raceTimetableService } from '../services/raceTimetable';
 import { MultiviewCommandCenter } from './sports/MultiviewCommandCenter';
 import { SessionScheduleCard } from './sports/SessionScheduleCard';
 import { GlobalSportsGrid } from './sports/GlobalSportsGrid';
@@ -121,240 +125,6 @@ const MOTORSPORT_CHANNELS: MotorsportChannel[] = [
   },
 ];
 
-// Curated Multi-Series Weekend Timetable (F1, F2, F3, MotoGP)
-const MOTORSPORT_SESSIONS: MotorsportSession[] = [
-  // 1. Monaco Grand Prix 2026 - Main Race (Live)
-  {
-    id: 'f1-2026-monaco-race',
-    name: 'Main Grand Prix',
-    category: 'race',
-    event: 'Monaco Grand Prix 2026',
-    circuit: 'Circuit de Monaco',
-    country: 'Monte Carlo, Monaco',
-    cover_image_url:
-      'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1280&q=80',
-    starts_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // currently in progress
-    state: 'live',
-    series: {
-      id: 'f1',
-      name: 'Formula 1',
-      slug: 'f1',
-      color: '#FF1801',
-    },
-    circuitSpecs: {
-      lengthKm: '3.337 km',
-      laps: 78,
-      lapRecord: '1:12.909',
-      recordHolder: 'L. Hamilton',
-      drsZones: 1,
-    },
-    channels: [
-      {
-        id: 'sky-uk',
-        name: 'Sky Sports F1 [ENG]',
-        available: true,
-        playlist:
-          'https://amg00378-mavtv-amg00378c2-rakuten-us-1048.playouts.now.amagi.tv/playlist/amg00378-mavtvfast-motorsportsnetwork-rakutenus/playlist.m3u8',
-        player: 'https://live.watchitbetter.com/embed/watch/f1-sky-uk',
-        bitrate: '1080p 60fps',
-        type: 'hls',
-      },
-      {
-        id: 'sky-it',
-        name: 'Sky Sports F1 [IT]',
-        available: true,
-        player: 'https://live.watchitbetter.com/embed/watch/f1-sky-it',
-        bitrate: '1080p 60fps',
-        type: 'embed',
-      },
-      {
-        id: 'onboard-ver',
-        name: 'Onboard Cam: Max Verstappen',
-        available: true,
-        playlist:
-          'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
-        player: 'https://live.watchitbetter.com/embed/watch/f1-onboard-ver',
-        bitrate: '1080p 60fps',
-        type: 'hls',
-      },
-    ],
-  },
-
-  // 2. Mexico Grand Prix - Qualifying (Upcoming)
-  {
-    id: 'f1-2026-mexico-quali',
-    name: 'Qualifying',
-    category: 'qualifying',
-    event: 'Mexico Grand Prix',
-    circuit: 'Autódromo Hermanos Rodríguez',
-    country: 'Mexico City, Mexico',
-    cover_image_url:
-      'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1280&q=80',
-    starts_at: new Date(Date.now() + 4 * 3600 * 1000).toISOString(),
-    state: 'upcoming',
-    series: {
-      id: 'f1',
-      name: 'Formula 1',
-      slug: 'f1',
-      color: '#FF1801',
-    },
-    circuitSpecs: {
-      lengthKm: '4.304 km',
-      laps: 71,
-      lapRecord: '1:17.774',
-      recordHolder: 'V. Bottas',
-      drsZones: 3,
-    },
-    channels: [
-      {
-        id: 'sky-uk',
-        name: 'Sky Sports F1 [ENG]',
-        available: true,
-        playlist:
-          'https://amg00378-mavtv-amg00378c2-rakuten-us-1048.playouts.now.amagi.tv/playlist/amg00378-mavtvfast-motorsportsnetwork-rakutenus/playlist.m3u8',
-        player: 'https://live.watchitbetter.com/embed/watch/f1-sky-uk',
-        bitrate: '1080p 60fps',
-        type: 'hls',
-      },
-    ],
-  },
-
-  // 3. Silverstone British Grand Prix - Feature (Upcoming)
-  {
-    id: 'f1-2026-silverstone-race',
-    name: 'Grand Prix Race',
-    category: 'race',
-    event: 'British Grand Prix',
-    circuit: 'Silverstone Circuit',
-    country: 'Silverstone, Great Britain',
-    cover_image_url:
-      'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1280&q=80',
-    starts_at: new Date(Date.now() + 28 * 3600 * 1000).toISOString(),
-    state: 'upcoming',
-    series: {
-      id: 'f1',
-      name: 'Formula 1',
-      slug: 'f1',
-      color: '#FF1801',
-    },
-    circuitSpecs: {
-      lengthKm: '5.891 km',
-      laps: 52,
-      lapRecord: '1:27.097',
-      recordHolder: 'M. Verstappen',
-      drsZones: 2,
-    },
-    channels: [
-      {
-        id: 'sky-uk',
-        name: 'Sky Sports F1 [ENG]',
-        available: true,
-        playlist:
-          'https://amg00378-mavtv-amg00378c2-rakuten-us-1048.playouts.now.amagi.tv/playlist/amg00378-mavtvfast-motorsportsnetwork-rakutenus/playlist.m3u8',
-        player: 'https://live.watchitbetter.com/embed/watch/f1-sky-uk',
-        bitrate: '1080p 60fps',
-        type: 'hls',
-      },
-    ],
-  },
-
-  // 4. Formula 2 - Feature Race (Upcoming)
-  {
-    id: 'f2-2026-monaco-feature',
-    name: 'Feature Race',
-    category: 'race',
-    event: 'FIA Formula 2 Monaco',
-    circuit: 'Circuit de Monaco',
-    country: 'Monte Carlo, Monaco',
-    cover_image_url:
-      'https://images.unsplash.com/photo-1541348263662-e0c8de4259ba?auto=format&fit=crop&w=1280&q=80',
-    starts_at: new Date(Date.now() + 8 * 3600 * 1000).toISOString(),
-    state: 'upcoming',
-    series: {
-      id: 'f2',
-      name: 'Formula 2',
-      slug: 'f2',
-      color: '#1C78FB',
-    },
-    channels: [
-      {
-        id: 'f2-feed',
-        name: 'F2 International Feed',
-        available: true,
-        playlist:
-          'https://amg02278-amg02278c1-flosports-worldwide-7592.playouts.now.amagi.tv/playlist.m3u8',
-        player: 'https://live.watchitbetter.com/embed/watch/f2-monaco',
-        bitrate: '1080p HD',
-        type: 'hls',
-      },
-    ],
-  },
-
-  // 5. Formula 3 - Sprint Race (Upcoming)
-  {
-    id: 'f3-2026-silverstone-sprint',
-    name: 'Sprint Race',
-    category: 'sprint',
-    event: 'FIA Formula 3 Silverstone',
-    circuit: 'Silverstone Circuit',
-    country: 'Silverstone, Great Britain',
-    cover_image_url:
-      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1280&q=80',
-    starts_at: new Date(Date.now() + 18 * 3600 * 1000).toISOString(),
-    state: 'upcoming',
-    series: {
-      id: 'f3',
-      name: 'Formula 3',
-      slug: 'f3',
-      color: '#102D5C',
-    },
-    channels: [
-      {
-        id: 'f3-feed',
-        name: 'F3 International Feed',
-        available: true,
-        playlist:
-          'https://amg01258-raycomsports-powernationau-samsungau-18bwc.amagi.tv/playlist.m3u8',
-        player: 'https://live.watchitbetter.com/embed/watch/f3-silverstone',
-        bitrate: '1080p HD',
-        type: 'hls',
-      },
-    ],
-  },
-
-  // 6. MotoGP Qatar Grand Prix - Main Race (Live)
-  {
-    id: 'motogp-2026-qatar-race',
-    name: 'Grand Prix Race',
-    category: 'race',
-    event: 'MotoGP Grand Prix of Qatar',
-    circuit: 'Lusail International Circuit',
-    country: 'Doha, Qatar',
-    cover_image_url:
-      'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1280&q=80',
-    starts_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    state: 'live',
-    series: {
-      id: 'motogp',
-      name: 'MotoGP',
-      slug: 'motogp',
-      color: '#EF0000',
-    },
-    channels: [
-      {
-        id: 'motogp-feed',
-        name: 'MotoGP Live World Feed',
-        available: true,
-        playlist:
-          'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8',
-        player: 'https://live.watchitbetter.com/embed/watch/motogp-qatar',
-        bitrate: '1080p 60fps',
-        type: 'hls',
-      },
-    ],
-  },
-];
-
 const TEAM_COLORS: Record<string, string> = {
   'red bull': '#3671C6',
   'mclaren': '#FF8000',
@@ -378,27 +148,52 @@ export const LiveSportsView: React.FC<LiveSportsViewProps> = ({ onPlayStream }) 
     null
   );
 
-  // 2. Series Filter State: All, F1, F2/F3, MotoGP, Global
+  // 2. Real Dynamic Session State (Sourced from racetimetable.com / watchitbetter.com)
+  const [sessions, setSessions] = useState<MotorsportSession[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState<boolean>(true);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+
+  // 3. Series Filter State: All, F1, F2/F3, MotoGP, Global
   const [selectedSeries, setSelectedSeries] = useState<
     'ALL' | 'f1' | 'f2' | 'f3' | 'motogp' | 'global'
   >('ALL');
 
-  // 3. Sub Tabs: SCHEDULE, STANDINGS, CHANNELS, GLOBAL
+  // 4. Sub Tabs: SCHEDULE, STANDINGS, CHANNELS, GLOBAL
   const [hubTab, setHubTab] = useState<'SCHEDULE' | 'STANDINGS' | 'CHANNELS' | 'GLOBAL'>(
     'SCHEDULE'
   );
 
-  // 4. Standings Sub-Tab (Drivers vs Constructors)
+  // 5. Standings Sub-Tab (Drivers vs Constructors)
   const [standingsMode, setStandingsMode] = useState<'DRIVERS' | 'CONSTRUCTORS'>('DRIVERS');
   const [driverStandings, setDriverStandings] = useState<JolpicaDriverStanding[]>([]);
   const [constructorStandings, setConstructorStandings] = useState<JolpicaConstructorStanding[]>([]);
   const [loadingStandings, setLoadingStandings] = useState(false);
 
-  // 5. Simulator Toggle
+  // 6. Simulator Toggle & Live Simulated Driver State
   const [simulatorActive, setSimulatorActive] = useState(true);
+  const [simDrivers, setSimDrivers] = useState<DriverTiming[]>([]);
 
-  // 6. Search query
+  // 7. Search query
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch real sessions from racetimetable.com service
+  const fetchSessions = useCallback(async (force = false) => {
+    setLoadingSessions(true);
+    setSessionError(null);
+    try {
+      const realSessions = await raceTimetableService.getSessions(force);
+      setSessions(realSessions);
+    } catch (err: any) {
+      console.error('Failed to load real sessions from racetimetable:', err);
+      setSessionError(err?.message || 'Failed to load timetable');
+    } finally {
+      setLoadingSessions(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
   // Load real Jolpica 2026 Standings on mount
   useEffect(() => {
@@ -427,27 +222,95 @@ export const LiveSportsView: React.FC<LiveSportsViewProps> = ({ onPlayStream }) 
     };
   }, []);
 
-  // Filter motorsport sessions
-  const filteredSessions = MOTORSPORT_SESSIONS.filter((s) => {
-    if (selectedSeries !== 'ALL' && selectedSeries !== 'global') {
-      if (selectedSeries === 'f2' || selectedSeries === 'f3') {
-        if (s.series.slug !== 'f2' && s.series.slug !== 'f3') return false;
-      } else if (s.series.slug !== selectedSeries) {
-        return false;
+  // Subscribe to circuit simulator for real-time leaderboard updates
+  useEffect(() => {
+    const unsub = circuitSimulator.subscribe((snap) => {
+      setSimDrivers(snap.timing.slice(0, 5));
+    });
+    return unsub;
+  }, []);
+
+  // Filter motorsport sessions dynamically
+  const filteredSessions = useMemo(() => {
+    return sessions.filter((s) => {
+      if (selectedSeries !== 'ALL' && selectedSeries !== 'global') {
+        if (selectedSeries === 'f2' || selectedSeries === 'f3') {
+          if (s.series?.slug !== 'f2' && s.series?.slug !== 'f3') return false;
+        } else if (s.series?.slug !== selectedSeries) {
+          return false;
+        }
       }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return (
+          s.name.toLowerCase().includes(q) ||
+          s.event.toLowerCase().includes(q) ||
+          s.circuit.toLowerCase().includes(q) ||
+          s.country.toLowerCase().includes(q) ||
+          s.series?.name?.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [sessions, selectedSeries, searchQuery]);
+
+  // Featured Session: Dynamically pick live session, or next upcoming F1 session, or first session
+  const featuredSession = useMemo<MotorsportSession | null>(() => {
+    if (sessions.length === 0) return null;
+    const live = sessions.find((s) => s.state === 'live');
+    if (live) return live;
+    const f1Upcoming = sessions.find(
+      (s) => s.series?.slug === 'f1' && s.state === 'upcoming'
+    );
+    if (f1Upcoming) return f1Upcoming;
+    const anyUpcoming = sessions.find((s) => s.state === 'upcoming');
+    return anyUpcoming || sessions[0];
+  }, [sessions]);
+
+  // Sync simulator circuit with current featured session
+  useEffect(() => {
+    if (!featuredSession?.circuit) return;
+    const lower = `${featuredSession.circuit} ${featuredSession.event}`.toLowerCase();
+    if (lower.includes('mexico') || lower.includes('hermanos') || lower.includes('rodriguez')) {
+      circuitSimulator.setCircuit('mexico');
+    } else if (lower.includes('sepang') || lower.includes('malaysia')) {
+      circuitSimulator.setCircuit('sepang');
+    } else if (lower.includes('monaco')) {
+      circuitSimulator.setCircuit('monaco');
+    } else if (lower.includes('silverstone')) {
+      circuitSimulator.setCircuit('silverstone');
+    } else if (lower.includes('monza')) {
+      circuitSimulator.setCircuit('monza');
+    } else if (lower.includes('spa')) {
+      circuitSimulator.setCircuit('spa');
     }
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return (
-        s.name.toLowerCase().includes(q) ||
-        s.event.toLowerCase().includes(q) ||
-        s.circuit.toLowerCase().includes(q) ||
-        s.country.toLowerCase().includes(q) ||
-        s.series.name.toLowerCase().includes(q)
+  }, [featuredSession]);
+
+  const handleWatchSession = async (
+    session: MotorsportSession,
+    channel?: StreamChannel
+  ) => {
+    setActiveTheaterSession(session);
+    if (channel?.playlist) {
+      onPlayStream(
+        channel.playlist,
+        `${session.series?.name || 'Motorsport'}: ${session.name} - ${session.event}`
       );
     }
-    return true;
-  });
+    // Asynchronously enrich with live stream channels from racetimetable / watchitbetter
+    try {
+      const dynamicChannels = await raceTimetableService.getSessionChannels(session.id);
+      if (dynamicChannels.length > 0) {
+        setActiveTheaterSession((prev) =>
+          prev && prev.id === session.id
+            ? { ...prev, channels: dynamicChannels }
+            : prev
+        );
+      }
+    } catch (e) {
+      console.warn('Failed to fetch session channels:', e);
+    }
+  };
 
   const getTeamColor = (teamName: string = ''): string => {
     const clean = teamName.toLowerCase();
@@ -456,8 +319,6 @@ export const LiveSportsView: React.FC<LiveSportsViewProps> = ({ onPlayStream }) 
     }
     return '#A1A1AA';
   };
-
-  const featuredSession = MOTORSPORT_SESSIONS[0]; // Monaco Grand Prix 2026 Live
 
   return (
     <div className="mx-auto max-w-[1560px] px-3.5 sm:px-12 pt-16 sm:pt-20 pb-24 select-none animate-fadeIn space-y-8 bg-[#303841] text-zinc-100 min-h-screen">
@@ -475,6 +336,12 @@ export const LiveSportsView: React.FC<LiveSportsViewProps> = ({ onPlayStream }) 
             >
               <span className="h-1.5 w-1.5 rounded-full animate-ping" style={{ background: accentHex }} />
               CuddleCast Sports Center
+            </span>
+
+            {/* Live Data Badge */}
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+              Live Timetable: racetimetable.com
             </span>
 
             {/* 24/7 Simulator Status Badge */}
@@ -571,155 +438,197 @@ export const LiveSportsView: React.FC<LiveSportsViewProps> = ({ onPlayStream }) 
         </section>
       ) : (
         /* 3. HERO GRAND PRIX WEEKEND BILLBOARD (When Theater Mode is Closed) */
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e242a] via-[#242b32] to-[#171b1f] border border-white/15 p-6 sm:p-8 shadow-2xl group">
-          {/* Ambient racing glow */}
-          <div
-            className="absolute -right-20 -top-20 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none"
-            style={{ background: '#FF1801' }}
-          />
-          <div
-            className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full blur-3xl opacity-15 pointer-events-none"
-            style={{ background: accentHex }}
-          />
+        featuredSession && (
+          <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e242a] via-[#242b32] to-[#171b1f] border border-white/15 p-6 sm:p-8 shadow-2xl group">
+            {/* Ambient racing glow */}
+            <div
+              className="absolute -right-20 -top-20 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none"
+              style={{
+                background:
+                  SERIES_COLORS[featuredSession.series?.slug || 'f1'] || '#FF1801',
+              }}
+            />
+            <div
+              className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full blur-3xl opacity-15 pointer-events-none"
+              style={{ background: accentHex }}
+            />
 
-          <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-8">
-            {/* Left: Featured Session Meta & Telemetry */}
-            <div className="space-y-4 max-w-2xl">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF1801] text-white text-[11px] font-black uppercase tracking-wider shadow">
-                  <span className="h-2 w-2 rounded-full bg-white animate-ping" />
-                  Formula 1 Grand Prix
-                </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-zinc-300 text-xs font-mono">
-                  Round 8 • Monte Carlo 🇲🇨
-                </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold border border-emerald-500/30">
-                  Track Status: GREEN
-                </span>
-              </div>
-
-              <div>
-                <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase font-display">
-                  Monaco Grand Prix 2026
-                </h2>
-                <p className="text-sm sm:text-base text-zinc-300 mt-1 font-medium leading-relaxed">
-                  Circuit de Monaco • Lap 52 of 78. Battle for P1: Max Verstappen leading Lando Norris with pit stops underway.
-                </p>
-              </div>
-
-              {/* Race Telemetry Specs */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                    <Gauge className="h-3.5 w-3.5 text-red-400" />
-                    <span>Lap Record</span>
-                  </div>
-                  <p className="text-base font-bold text-white font-mono mt-0.5">1:12.909</p>
-                  <span className="text-[10px] text-zinc-400">L. Hamilton</span>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                    <Flag className="h-3.5 w-3.5 text-amber-400" />
-                    <span>Distance</span>
-                  </div>
-                  <p className="text-base font-bold text-white font-mono mt-0.5">260.28 km</p>
-                  <span className="text-[10px] text-zinc-400">78 Laps</span>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                    <Zap className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>DRS Zones</span>
-                  </div>
-                  <p className="text-base font-bold text-white font-mono mt-0.5">1 Detection</p>
-                  <span className="text-[10px] text-zinc-400">Pit Straight</span>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                    <Radio className="h-3.5 w-3.5 text-cyan-400" />
-                    <span>Air / Track</span>
-                  </div>
-                  <p className="text-base font-bold text-white font-mono mt-0.5">24°C / 38°C</p>
-                  <span className="text-[10px] text-zinc-400">Dry / Clear</span>
-                </div>
-              </div>
-
-              {/* Action Buttons using Material 3 Expressive */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <md-filled-button
-                  onClick={() => setActiveTheaterSession(featuredSession)}
-                  className="h-12 px-6 text-sm font-bold shadow-lg"
-                  style={{
-                    '--md-filled-button-container-color': '#FF1801',
-                    '--md-filled-button-label-text-color': '#FFFFFF',
-                    '--md-filled-button-icon-color': '#FFFFFF',
-                  }}
-                >
-                  <Play className="h-4 w-4 fill-current" slot="icon" />
-                  Watch Live Grand Prix
-                </md-filled-button>
-
-                <md-filled-tonal-button
-                  onClick={() => {
-                    setActiveTheaterSession(featuredSession);
-                  }}
-                  className="h-12 px-5 text-sm font-semibold"
-                  style={{
-                    '--md-filled-tonal-button-container-color': 'rgba(255, 255, 255, 0.1)',
-                    '--md-filled-tonal-button-label-text-color': '#FFFFFF',
-                    '--md-filled-tonal-button-icon-color': '#FFFFFF',
-                  }}
-                >
-                  <Radio className="h-4 w-4" slot="icon" />
-                  Pit Wall & Onboard Feed
-                </md-filled-tonal-button>
-              </div>
-            </div>
-
-            {/* Right: Live Top 5 Leaderboard Snapshot */}
-            <div className="w-full xl:w-96 rounded-2xl bg-black/40 border border-white/10 p-5 backdrop-blur-md space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                  <Flag className="h-3.5 w-3.5 text-red-500" />
-                  Race Leaderboard (Top 5)
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-zinc-300">
-                  Live Interval
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                {[
-                  { pos: 'P1', name: 'M. Verstappen', team: 'Red Bull', gap: 'LEADER', color: '#3671C6', tires: 'H' },
-                  { pos: 'P2', name: 'L. Norris', team: 'McLaren', gap: '+2.418s', color: '#FF8000', tires: 'H' },
-                  { pos: 'P3', name: 'C. Leclerc', team: 'Ferrari', gap: '+5.102s', color: '#E8002D', tires: 'M' },
-                  { pos: 'P4', name: 'O. Piastri', team: 'McLaren', gap: '+8.390s', color: '#FF8000', tires: 'H' },
-                  { pos: 'P5', name: 'C. Sainz', team: 'Ferrari', gap: '+12.441s', color: '#E8002D', tires: 'M' },
-                ].map((driver) => (
-                  <div
-                    key={driver.pos}
-                    className="flex items-center justify-between p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors font-mono text-xs"
+            <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-8">
+              {/* Left: Featured Session Meta & Telemetry */}
+              <div className="space-y-4 max-w-2xl">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full text-white text-[11px] font-black uppercase tracking-wider shadow"
+                    style={{
+                      backgroundColor:
+                        SERIES_COLORS[featuredSession.series?.slug || 'f1'] ||
+                        featuredSession.series?.color ||
+                        '#FF1801',
+                    }}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <span className="font-black text-white w-5">{driver.pos}</span>
-                      <span className="w-1 h-3.5 rounded-full" style={{ background: driver.color }} />
-                      <span className="font-semibold text-zinc-200">{driver.name}</span>
-                    </div>
+                    <span className="h-2 w-2 rounded-full bg-white animate-ping" />
+                    {featuredSession.series?.name || 'Motorsport'} Grand Prix
+                  </span>
 
-                    <div className="flex items-center gap-3">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/10 text-amber-300">
-                        {driver.tires}
-                      </span>
-                      <span className="text-zinc-400 font-bold">{driver.gap}</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-zinc-300 text-xs font-mono">
+                    {featuredSession.circuit} • {featuredSession.country}
+                  </span>
+
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border ${
+                      featuredSession.state === 'live'
+                        ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                        : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                    }`}
+                  >
+                    {featuredSession.state === 'live' ? 'LIVE ON TRACK' : 'UPCOMING SESSION'}
+                  </span>
+                </div>
+
+                <div>
+                  <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase font-display">
+                    {featuredSession.event}
+                  </h2>
+                  <p className="text-sm sm:text-base text-zinc-300 mt-1 font-medium leading-relaxed">
+                    {featuredSession.name} • Scheduled for{' '}
+                    {new Date(featuredSession.starts_at).toLocaleDateString(undefined, {
+                      weekday: 'long',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}{' '}
+                    local time. Full telemetry, onboard camera, and timing active.
+                  </p>
+                </div>
+
+                {/* Race Telemetry Specs */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                      <Gauge className="h-3.5 w-3.5 text-red-400" />
+                      <span>Lap Record</span>
                     </div>
+                    <p className="text-base font-bold text-white font-mono mt-0.5">
+                      {featuredSession.circuitSpecs?.lapRecord || '1:17.774'}
+                    </p>
+                    <span className="text-[10px] text-zinc-400 truncate block">
+                      {featuredSession.circuitSpecs?.recordHolder || 'Official Record'}
+                    </span>
                   </div>
-                ))}
+
+                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                      <Flag className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Distance</span>
+                    </div>
+                    <p className="text-base font-bold text-white font-mono mt-0.5">
+                      {featuredSession.circuitSpecs?.lengthKm || '4.304 km'}
+                    </p>
+                    <span className="text-[10px] text-zinc-400">
+                      {featuredSession.circuitSpecs?.laps || 71} Laps
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                      <Zap className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>DRS Zones</span>
+                    </div>
+                    <p className="text-base font-bold text-white font-mono mt-0.5">
+                      {featuredSession.circuitSpecs?.drsZones || 2} Detection
+                    </p>
+                    <span className="text-[10px] text-zinc-400">Straight Zones</span>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                      <Radio className="h-3.5 w-3.5 text-cyan-400" />
+                      <span>Status</span>
+                    </div>
+                    <p className="text-base font-bold text-white font-mono mt-0.5">
+                      {featuredSession.state === 'live' ? 'Green Flag' : 'Scheduled'}
+                    </p>
+                    <span className="text-[10px] text-zinc-400">
+                      {featuredSession.state === 'live' ? 'Broadcast Active' : 'Countdown Active'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Buttons using Material 3 Expressive */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <md-filled-button
+                    onClick={() => handleWatchSession(featuredSession)}
+                    className="h-12 px-6 text-sm font-bold shadow-lg"
+                    style={{
+                      '--md-filled-button-container-color':
+                        SERIES_COLORS[featuredSession.series?.slug || 'f1'] || '#FF1801',
+                      '--md-filled-button-label-text-color': '#FFFFFF',
+                      '--md-filled-button-icon-color': '#FFFFFF',
+                    }}
+                  >
+                    <Play className="h-4 w-4 fill-current" slot="icon" />
+                    {featuredSession.state === 'live' ? 'Watch Live Stream' : 'Open Command Center'}
+                  </md-filled-button>
+
+                  <md-filled-tonal-button
+                    onClick={() => handleWatchSession(featuredSession)}
+                    className="h-12 px-5 text-sm font-semibold"
+                    style={{
+                      '--md-filled-tonal-button-container-color': 'rgba(255, 255, 255, 0.1)',
+                      '--md-filled-tonal-button-label-text-color': '#FFFFFF',
+                      '--md-filled-tonal-button-icon-color': '#FFFFFF',
+                    }}
+                  >
+                    <Radio className="h-4 w-4" slot="icon" />
+                    Pit Wall & Telemetry
+                  </md-filled-tonal-button>
+                </div>
+              </div>
+
+              {/* Right: Live Top 5 Track Leaderboard Snapshot */}
+              <div className="w-full xl:w-96 rounded-2xl bg-black/40 border border-white/10 p-5 backdrop-blur-md space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+                    <Flag className="h-3.5 w-3.5 text-red-500" />
+                    Track Leaderboard (Top 5)
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-zinc-300">
+                    Live Interval
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {(simDrivers.length > 0 ? simDrivers : [
+                    { position: 1, fullName: 'Max Verstappen', team: 'Red Bull Racing', gapToLeader: 'LEADER', teamColor: '#3671C6', tyreCompound: 'HARD' as const },
+                    { position: 2, fullName: 'Lando Norris', team: 'McLaren', gapToLeader: '+1.418', teamColor: '#FF8000', tyreCompound: 'MEDIUM' as const },
+                    { position: 3, fullName: 'Charles Leclerc', team: 'Ferrari', gapToLeader: '+3.102', teamColor: '#E8002D', tyreCompound: 'MEDIUM' as const },
+                    { position: 4, fullName: 'Oscar Piastri', team: 'McLaren', gapToLeader: '+5.390', teamColor: '#FF8000', tyreCompound: 'HARD' as const },
+                    { position: 5, fullName: 'George Russell', team: 'Mercedes', gapToLeader: '+8.441', teamColor: '#27F4D2', tyreCompound: 'SOFT' as const },
+                  ]).map((driver, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors font-mono text-xs"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="font-black text-white w-5">P{driver.position}</span>
+                        <span className="w-1 h-3.5 rounded-full" style={{ background: driver.teamColor || '#A1A1AA' }} />
+                        <span className="font-semibold text-zinc-200 truncate max-w-[140px]">{driver.fullName}</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/10 text-amber-300">
+                          {driver.tyreCompound?.[0] || 'M'}
+                        </span>
+                        <span className="text-zinc-400 font-bold">{driver.gapToLeader}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )
       )}
 
       {/* 4. MULTI-SERIES FILTER STRIP & NAVIGATION TABS */}
@@ -813,26 +722,75 @@ export const LiveSportsView: React.FC<LiveSportsViewProps> = ({ onPlayStream }) 
       {/* 5. TAB VIEW 1: WEEKEND TIMETABLE (SessionScheduleCard Grid) */}
       {hubTab === 'SCHEDULE' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-zinc-400">
-              Showing {filteredSessions.length} weekend sessions with automatic timezone conversion
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-xs font-mono text-zinc-300">
+                Showing {filteredSessions.length} weekend sessions with automatic timezone conversion
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                Live: racetimetable.com
+              </span>
+            </div>
+
+            <md-filled-tonal-button
+              onClick={() => fetchSessions(true)}
+              disabled={loadingSessions}
+              className="text-xs font-semibold"
+              style={{
+                '--md-filled-tonal-button-container-color': 'rgba(255, 255, 255, 0.08)',
+                '--md-filled-tonal-button-label-text-color': '#FFFFFF',
+              }}
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${loadingSessions ? 'animate-spin' : ''}`}
+                slot="icon"
+              />
+              {loadingSessions ? 'Syncing...' : 'Refresh Timetable'}
+            </md-filled-tonal-button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredSessions.map((session) => (
-              <SessionScheduleCard
-                key={session.id}
-                session={session}
-                onWatchStream={(s, ch) => {
-                  setActiveTheaterSession(s);
-                  if (ch?.playlist) {
-                    onPlayStream(ch.playlist, `${s.series.name}: ${s.name} - ${s.event}`);
-                  }
+          {loadingSessions && sessions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-16 space-y-4 rounded-2xl bg-white/[0.02] border border-white/10">
+              <md-circular-progress indeterminate />
+              <p className="text-sm text-zinc-300 font-mono">
+                Syncing live session schedules from racetimetable.com...
+              </p>
+            </div>
+          ) : sessionError && sessions.length === 0 ? (
+            <div className="p-8 rounded-2xl bg-red-500/10 border border-red-500/30 text-center space-y-3">
+              <div className="flex items-center justify-center gap-2 text-red-400">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-bold text-sm">Failed to Load Timetable</span>
+              </div>
+              <p className="text-xs text-red-300 font-mono">{sessionError}</p>
+              <md-filled-button onClick={() => fetchSessions(true)}>
+                Retry Timetable Sync
+              </md-filled-button>
+            </div>
+          ) : filteredSessions.length === 0 ? (
+            <div className="p-12 rounded-2xl bg-white/[0.02] border border-white/10 text-center space-y-3">
+              <p className="text-sm text-zinc-400">No sessions found matching your filter or search query.</p>
+              <md-outlined-button
+                onClick={() => {
+                  setSelectedSeries('ALL');
+                  setSearchQuery('');
                 }}
-              />
-            ))}
-          </div>
+              >
+                Reset Filters
+              </md-outlined-button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredSessions.map((session) => (
+                <SessionScheduleCard
+                  key={session.id}
+                  session={session}
+                  onWatchStream={(s, ch) => handleWatchSession(s, ch)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
