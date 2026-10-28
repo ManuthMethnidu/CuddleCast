@@ -55,6 +55,49 @@ export default defineConfig(({ mode }) => {
                 return;
               }
             }
+            // Radio Audio Stream proxy for recording and CORS bypass
+            if (req.url && req.url.startsWith('/api/radio-stream')) {
+              try {
+                const reqUrl = new URL(req.url, 'http://localhost:5173');
+                const streamUrl = reqUrl.searchParams.get('url');
+                if (!streamUrl) {
+                  res.statusCode = 400;
+                  res.end('Missing url');
+                  return;
+                }
+                const response = await fetch(streamUrl, {
+                  headers: {
+                    'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
+                    'Icy-MetaData': '1',
+                  },
+                });
+                res.statusCode = response.status;
+                const contentType = response.headers.get('content-type') || 'audio/mpeg';
+                res.setHeader('Content-Type', contentType);
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+
+                if (response.body) {
+                  const reader = response.body.getReader();
+                  req.on('close', () => {
+                    reader.cancel().catch(() => {});
+                  });
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    if (value) res.write(value);
+                  }
+                  res.end();
+                } else {
+                  res.end();
+                }
+                return;
+              } catch (err: any) {
+                res.statusCode = 502;
+                res.end(err?.message || 'Radio stream proxy error');
+                return;
+              }
+            }
             if (req.url && req.url.startsWith('/api/timetable')) {
               try {
                 const reqUrl = new URL(req.url, 'http://localhost:5173');

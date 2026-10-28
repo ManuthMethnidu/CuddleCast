@@ -9,93 +9,14 @@ import {
   Radio,
   Heart,
   BarChart3,
-  Sun,
-  Activity,
-  Sparkles,
-  Grid3X3,
-  Disc3,
+  CircleDot,
+  Square,
 } from 'lucide-react';
-import * as THREE from 'three';
 import { Visualizer, AudioAnalyzer } from 'waviz';
-import { useRadioStore, ScreensaverTheme, getGlobalRadioAudio } from '../store/radioStore';
-import { useSettingsStore } from '../store/settingsStore';
+import { useRadioStore, getGlobalRadioAudio } from '../store/radioStore';
 import { useAccent } from '../context/AccentContext';
 import { authStorage } from '../services/storage';
-
-interface VisualizerVariant {
-  id: ScreensaverTheme;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-const VISUALIZER_VARIANTS: VisualizerVariant[] = [
-  { id: 'particula', label: 'Particula 3D', icon: Sparkles },
-  { id: 'waviz-bars', label: 'Waviz Bars', icon: BarChart3 },
-  { id: 'waviz-waves', label: 'Waviz Waves', icon: Activity },
-  { id: 'waviz-polar', label: 'Waviz Polar', icon: Sun },
-  { id: 'waviz-dots', label: 'Waviz Dots', icon: Grid3X3 },
-  { id: 'waviz-mixed', label: 'Waviz Mixed', icon: Disc3 },
-];
-
-// Perlin / Simplex 3D Noise generator adapted from Humprt/particula
-function createParticulaNoise() {
-  const p = new Array(256).fill(0).map((_, i) => i);
-  const perm = new Array(512);
-
-  for (let i = p.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [p[i], p[j]] = [p[j], p[i]];
-  }
-  for (let i = 0; i < 512; i++) {
-    perm[i] = p[i & 255];
-  }
-
-  const fade = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
-  const lerp = (t: number, a: number, b: number) => a + t * (b - a);
-  const grad = (hash: number, x: number, y: number, z: number) => {
-    const h = hash & 15;
-    const u = h < 8 ? x : y;
-    const v = h < 4 ? y : h === 12 || h === 14 ? x : z;
-    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
-  };
-
-  return {
-    noise3D(x: number, y: number, z: number) {
-      const X = Math.floor(x) & 255;
-      const Y = Math.floor(y) & 255;
-      const Z = Math.floor(z) & 255;
-
-      x -= Math.floor(x);
-      y -= Math.floor(y);
-      z -= Math.floor(z);
-
-      const u = fade(x);
-      const v = fade(y);
-      const w = fade(z);
-
-      const A = perm[X] + Y;
-      const AA = perm[A] + Z;
-      const AB = perm[A + 1] + Z;
-      const B = perm[X + 1] + Y;
-      const BA = perm[B] + Z;
-      const BB = perm[B + 1] + Z;
-
-      return lerp(
-        w,
-        lerp(
-          v,
-          lerp(u, grad(perm[AA], x, y, z), grad(perm[BA], x - 1, y, z)),
-          lerp(u, grad(perm[AB], x, y - 1, z), grad(perm[BB], x - 1, y - 1, z))
-        ),
-        lerp(
-          v,
-          lerp(u, grad(perm[AA + 1], x, y, z - 1), grad(perm[BA + 1], x - 1, y, z - 1)),
-          lerp(u, grad(perm[AB + 1], x, y - 1, z - 1), grad(perm[BB + 1], x - 1, y - 1, z - 1))
-        )
-      );
-    },
-  };
-}
+import { radioRecorder, ActiveRecordingState } from '../services/radioRecorder';
 
 // Global persistent Web Audio bridge for Radio stream analysis
 let sharedAudioCtx: AudioContext | null = null;
@@ -149,7 +70,8 @@ class ResilientAudioBridge extends AudioAnalyzer {
 
   override getFrequencyData(): any {
     const radio = useRadioStore.getState();
-    const isPlaying = radio.isPlaying && !radio.isLoadingStream && !radio.isMuted && radio.volume > 0;
+    const isPlaying =
+      radio.isPlaying && !radio.isLoadingStream && !radio.isMuted && radio.volume > 0;
     const vol = isPlaying ? radio.volume : 0;
 
     let hasRealAudio = false;
@@ -188,7 +110,8 @@ class ResilientAudioBridge extends AudioAnalyzer {
 
   override getTimeDomainData(): any {
     const radio = useRadioStore.getState();
-    const isPlaying = radio.isPlaying && !radio.isLoadingStream && !radio.isMuted && radio.volume > 0;
+    const isPlaying =
+      radio.isPlaying && !radio.isLoadingStream && !radio.isMuted && radio.volume > 0;
     const vol = isPlaying ? radio.volume : 0;
 
     let hasRealAudio = false;
@@ -227,26 +150,28 @@ export const RadioScreensaver: React.FC = () => {
     currentStation,
     isPlaying,
     isScreensaverOpen,
-    screensaverTheme,
     volume,
     isMuted,
     setScreensaverOpen,
-    setScreensaverTheme,
     togglePlay,
     wander,
     setVolume,
     toggleMute,
   } = useRadioStore();
 
-  const performanceMode = useSettingsStore((s) => s.performanceMode);
   const { accentHex } = useAccent();
-
-  const particulaCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const wavizCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [isFavorited, setIsFavorited] = useState(false);
   const [clock, setClock] = useState('');
-  const [currentFps, setCurrentFps] = useState(60);
+  const [recordingState, setRecordingState] = useState<ActiveRecordingState>(
+    radioRecorder.getState()
+  );
+
+  useEffect(() => {
+    const unsub = radioRecorder.subscribe(setRecordingState);
+    return () => unsub();
+  }, []);
 
   // Initialize Audio Bridge
   useEffect(() => {
@@ -260,574 +185,46 @@ export const RadioScreensaver: React.FC = () => {
   // Live Clock
   useEffect(() => {
     const updateTime = () => {
-      const now = new Date();
+      const d = new Date();
       setClock(
-        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       );
     };
     updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Sync favorites
+  // Check if current station is favorited
   useEffect(() => {
-    if (!currentStation) return;
+    if (!currentStation) {
+      setIsFavorited(false);
+      return;
+    }
     const favs = authStorage.getRadioFavorites();
     setIsFavorited(favs.includes(currentStation.stationuuid));
   }, [currentStation]);
 
-  // Keyboard shortcut (ESC to exit)
+  // Keyboard navigation (Esc to exit screensaver)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isScreensaverOpen) {
+      if (e.key === 'Escape') {
         setScreensaverOpen(false);
+      } else if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlay();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
+    if (isScreensaverOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isScreensaverOpen, setScreensaverOpen]);
+  }, [isScreensaverOpen, setScreensaverOpen, togglePlay]);
 
-  // ==========================================
-  // 1. PARTICULA 3D SCREENSAVER
-  // (Humprt/particula 5-Sphere Turbulence Engine)
-  // Supports WebGL (Three.js) + Universal 2D Canvas Projection Fallback
-  // ==========================================
+  // Waviz Frequency Bars Visualizer Render Loop (Only bar visualizer)
   useEffect(() => {
-    if (!isScreensaverOpen || screensaverTheme !== 'particula') return;
-    const canvas = particulaCanvasRef.current;
-    if (!canvas) return;
-
-    let animId: number;
-    let isDisposed = false;
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const noise = createParticulaNoise();
-    const audioBridge = new ResilientAudioBridge();
-
-    // Check if WebGL context can be initialized
-    let gl: WebGLRenderingContext | WebGL2RenderingContext | null = null;
-    try {
-      gl = (canvas.getContext('webgl2') || canvas.getContext('webgl')) as
-        | WebGLRenderingContext
-        | WebGL2RenderingContext
-        | null;
-    } catch {
-      gl = null;
-    }
-
-    const sphereConfigs = [
-      {
-        minFreq: 20,
-        maxFreq: 80,
-        radius: 1.05,
-        inner: 0.28,
-        colorStart: '#ff0077',
-        colorEnd: '#7928ca',
-        particleCount: performanceMode === 'low' ? 2500 : performanceMode === 'medium' ? 4500 : 7500,
-        particleSize: 0.0045,
-        turbulence: 0.005,
-        noiseScale: 3.5,
-        speed: 0.1,
-        beatThreshold: 170,
-        beatStrength: 0.016,
-        enabled: true,
-      },
-      {
-        minFreq: 120,
-        maxFreq: 250,
-        radius: 1.35,
-        inner: 0.35,
-        colorStart: '#ff5e00',
-        colorEnd: '#ff0077',
-        particleCount: performanceMode === 'low' ? 1800 : performanceMode === 'medium' ? 3200 : 5500,
-        particleSize: 0.004,
-        turbulence: 0.006,
-        noiseScale: 4.2,
-        speed: 0.12,
-        beatThreshold: 180,
-        beatStrength: 0.014,
-        enabled: true,
-      },
-      {
-        minFreq: 250,
-        maxFreq: 800,
-        radius: 1.65,
-        inner: 0.42,
-        colorStart: '#00e5ff',
-        colorEnd: '#7928ca',
-        particleCount: performanceMode === 'low' ? 1200 : performanceMode === 'medium' ? 2200 : 4000,
-        particleSize: 0.0035,
-        turbulence: 0.007,
-        noiseScale: 4.8,
-        speed: 0.14,
-        beatThreshold: 190,
-        beatStrength: 0.012,
-        enabled: true,
-      },
-      {
-        minFreq: 1000,
-        maxFreq: 4000,
-        radius: 1.95,
-        inner: 0.5,
-        colorStart: '#00ff88',
-        colorEnd: '#00b4d8',
-        particleCount: performanceMode === 'low' ? 0 : performanceMode === 'medium' ? 1500 : 3000,
-        particleSize: 0.003,
-        turbulence: 0.008,
-        noiseScale: 5.6,
-        speed: 0.16,
-        beatThreshold: 200,
-        beatStrength: 0.01,
-        enabled: performanceMode !== 'low',
-      },
-      {
-        minFreq: 5000,
-        maxFreq: 10000,
-        radius: 2.25,
-        inner: 0.58,
-        colorStart: '#ffea00',
-        colorEnd: '#ff0055',
-        particleCount: performanceMode === 'low' ? 0 : performanceMode === 'medium' ? 1000 : 2500,
-        particleSize: 0.0028,
-        turbulence: 0.009,
-        noiseScale: 6.4,
-        speed: 0.18,
-        beatThreshold: 210,
-        beatStrength: 0.008,
-        enabled: performanceMode === 'high',
-      },
-    ];
-
-    const beatManager = {
-      currentWaveRadius: 0,
-      waveStrength: 0,
-      isWaveActive: false,
-      triggerWave(energy: number) {
-        const energyExcess = Math.max(0, energy - 170);
-        this.waveStrength = (energyExcess / 85) * 16.0;
-        this.currentWaveRadius = 0.05;
-        this.isWaveActive = true;
-      },
-      update(deltaTime: number) {
-        if (this.isWaveActive) {
-          this.currentWaveRadius += deltaTime * 1.6;
-          this.waveStrength *= 0.95;
-          if (this.currentWaveRadius > 2.6 || this.waveStrength < 0.08) {
-            this.isWaveActive = false;
-          }
-        }
-      },
-    };
-
-    if (gl) {
-      // ==========================================
-      // PATH A: FULL THREE.JS WEBGL RENDERER
-      // ==========================================
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x030712);
-      scene.fog = new THREE.Fog(new THREE.Color(0x030712), 2.2, 4.2);
-
-      const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.z = 2.45;
-
-      let renderer: THREE.WebGLRenderer | null = null;
-      try {
-        renderer = new THREE.WebGLRenderer({
-          canvas,
-          context: gl,
-          antialias: performanceMode !== 'low',
-          alpha: false,
-        });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x030712, 1);
-      } catch {
-        // Fallback handled below
-      }
-
-      if (renderer) {
-        const handleResize = () => {
-          if (!renderer || isDisposed) return;
-          const w = window.innerWidth;
-          const h = window.innerHeight;
-          camera.aspect = w / h;
-          camera.updateProjectionMatrix();
-          renderer.setSize(w, h);
-        };
-        window.addEventListener('resize', handleResize);
-
-        interface ParticulaSphere {
-          geometry: THREE.BufferGeometry;
-          material: THREE.PointsMaterial;
-          particleSystem: THREE.Points;
-          positions: Float32Array;
-          colors: Float32Array;
-          velocities: Float32Array;
-          lifetimes: Float32Array;
-          beatEffects: Float32Array;
-          config: (typeof sphereConfigs)[0];
-          energyHistory: number[];
-          lastPeakTime: number;
-        }
-
-        const spheres: ParticulaSphere[] = [];
-
-        sphereConfigs.forEach((cfg) => {
-          if (!cfg.enabled || cfg.particleCount <= 0) return;
-
-          const pc = cfg.particleCount;
-          const geometry = new THREE.BufferGeometry();
-          const positions = new Float32Array(pc * 3);
-          const colors = new Float32Array(pc * 3);
-          const velocities = new Float32Array(pc * 3);
-          const lifetimes = new Float32Array(pc);
-          const beatEffects = new Float32Array(pc);
-
-          const color1 = new THREE.Color(cfg.colorStart);
-          const color2 = new THREE.Color(cfg.colorEnd);
-
-          for (let i = 0; i < pc; i++) {
-            const i3 = i * 3;
-            const radius = THREE.MathUtils.lerp(0, cfg.radius, cfg.inner);
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
-            const r = Math.cbrt(Math.random()) * radius;
-
-            positions[i3] = r * Math.sin(phi) * Math.cos(theta);
-            positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-            positions[i3 + 2] = r * Math.cos(phi);
-
-            velocities[i3] = 0;
-            velocities[i3 + 1] = 0;
-            velocities[i3 + 2] = 0;
-
-            lifetimes[i] = Math.random() * 3.5;
-            beatEffects[i] = 0;
-
-            const t = i / pc;
-            colors[i3] = color1.r * (1 - t) + color2.r * t;
-            colors[i3 + 1] = color1.g * (1 - t) + color2.g * t;
-            colors[i3 + 2] = color1.b * (1 - t) + color2.b * t;
-          }
-
-          geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-          geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-          const material = new THREE.PointsMaterial({
-            size: cfg.particleSize,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.85,
-            blending: THREE.AdditiveBlending,
-            fog: true,
-          });
-
-          const particleSystem = new THREE.Points(geometry, material);
-          scene.add(particleSystem);
-
-          spheres.push({
-            geometry,
-            material,
-            particleSystem,
-            positions,
-            colors,
-            velocities,
-            lifetimes,
-            beatEffects,
-            config: cfg,
-            energyHistory: [],
-            lastPeakTime: 0,
-          });
-        });
-
-        let lastTime = performance.now();
-        let frameCount = 0;
-        let fpsTimer = performance.now();
-
-        const animateParticula = (now: number) => {
-          if (isDisposed || !renderer) return;
-          animId = requestAnimationFrame(animateParticula);
-
-          const deltaTime = Math.min(0.06, (now - lastTime) / 1000);
-          lastTime = now;
-
-          frameCount++;
-          if (now - fpsTimer >= 1000) {
-            setCurrentFps(Math.round((frameCount * 1000) / (now - fpsTimer)));
-            frameCount = 0;
-            fpsTimer = now;
-          }
-
-          beatManager.update(deltaTime);
-
-          const frequencies = audioBridge.getFrequencyData();
-          const binCount = frequencies.length;
-          const sampleRate = 44100;
-
-          spheres.forEach((sphere) => {
-            const { geometry, positions, velocities, lifetimes, beatEffects, config } = sphere;
-            const pc = config.particleCount;
-
-            const minBin = Math.max(0, Math.floor((config.minFreq / (sampleRate / 2)) * binCount));
-            const maxBin = Math.min(binCount - 1, Math.ceil((config.maxFreq / (sampleRate / 2)) * binCount));
-            let bandSum = 0;
-            let count = 0;
-            for (let b = minBin; b <= maxBin; b++) {
-              bandSum += frequencies[b];
-              count++;
-            }
-            const bandEnergy = count > 0 ? bandSum / count : 0;
-
-            sphere.energyHistory.push(bandEnergy);
-            if (sphere.energyHistory.length > 30) {
-              sphere.energyHistory.shift();
-            }
-            const avgEnergy =
-              sphere.energyHistory.reduce((a, b) => a + b, 0) / sphere.energyHistory.length;
-            const isPeak = bandEnergy > avgEnergy * 1.15 && now - sphere.lastPeakTime > 180;
-            if (isPeak) {
-              sphere.lastPeakTime = now;
-            }
-
-            const isBeat = bandEnergy > config.beatThreshold;
-            if (isBeat && !beatManager.isWaveActive && config.beatStrength > 0) {
-              beatManager.triggerWave(bandEnergy);
-            }
-
-            const ns = config.noiseScale;
-            const speed = config.speed;
-            const timeFactor = now * 0.001;
-
-            for (let i = 0; i < pc; i++) {
-              const i3 = i * 3;
-              let x = positions[i3];
-              let y = positions[i3 + 1];
-              let z = positions[i3 + 2];
-
-              let vx = velocities[i3];
-              let vy = velocities[i3 + 1];
-              let vz = velocities[i3 + 2];
-
-              let lt = lifetimes[i] - deltaTime;
-              let be = beatEffects[i];
-
-              const nx = noise.noise3D(x * ns + timeFactor * speed, y * ns, z * ns);
-              const ny = noise.noise3D(x * ns, y * ns + timeFactor * speed, z * ns);
-              const nz = noise.noise3D(x * ns, y * ns, z * ns + timeFactor * speed);
-
-              vx += nx * config.turbulence;
-              vy += ny * config.turbulence;
-              vz += nz * config.turbulence;
-
-              if (isBeat) {
-                be = 1.0;
-              }
-              be *= 0.94;
-
-              if (be > 0.02) {
-                const dist = Math.sqrt(x * x + y * y + z * z);
-                if (dist > 0.001) {
-                  const push = be * config.beatStrength;
-                  vx += (x / dist) * push;
-                  vy += (y / dist) * push;
-                  vz += (z / dist) * push;
-                }
-              }
-
-              x += vx;
-              y += vy;
-              z += vz;
-
-              vx *= 0.98;
-              vy *= 0.98;
-              vz *= 0.98;
-
-              const currentDist = Math.sqrt(x * x + y * y + z * z);
-              if (currentDist > config.radius) {
-                const overflow = currentDist - config.radius;
-                const pull = overflow * 0.12;
-                x -= (x / currentDist) * pull;
-                y -= (y / currentDist) * pull;
-                z -= (z / currentDist) * pull;
-                vx *= 0.9;
-                vy *= 0.9;
-                vz *= 0.9;
-              }
-
-              if (lt <= 0) {
-                const radius = THREE.MathUtils.lerp(0, config.radius, config.inner);
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos(2 * Math.random() - 1);
-                const r = Math.cbrt(Math.random()) * radius;
-
-                x = r * Math.sin(phi) * Math.cos(theta);
-                y = r * Math.sin(phi) * Math.sin(theta);
-                z = r * Math.cos(phi);
-
-                vx = 0;
-                vy = 0;
-                vz = 0;
-                lt = Math.random() * 3.5;
-                be = 0;
-              }
-
-              positions[i3] = x;
-              positions[i3 + 1] = y;
-              positions[i3 + 2] = z;
-
-              velocities[i3] = vx;
-              velocities[i3 + 1] = vy;
-              velocities[i3 + 2] = vz;
-
-              lifetimes[i] = lt;
-              beatEffects[i] = be;
-            }
-
-            geometry.attributes.position.needsUpdate = true;
-
-            const rotSpeed = 0.002 + (bandEnergy / 255) * 0.015;
-            sphere.particleSystem.rotation.y += rotSpeed;
-            sphere.particleSystem.rotation.x += rotSpeed * 0.35;
-          });
-
-          camera.position.x = Math.sin(now * 0.0004) * 0.15;
-          camera.position.y = Math.cos(now * 0.0005) * 0.12;
-          camera.lookAt(0, 0, 0);
-
-          renderer.render(scene, camera);
-        };
-
-        animId = requestAnimationFrame(animateParticula);
-
-        return () => {
-          isDisposed = true;
-          cancelAnimationFrame(animId);
-          window.removeEventListener('resize', handleResize);
-
-          spheres.forEach((s) => {
-            scene.remove(s.particleSystem);
-            s.geometry.dispose();
-            s.material.dispose();
-          });
-
-          if (renderer) {
-            renderer.dispose();
-          }
-        };
-      }
-    }
-
-    // ==========================================
-    // PATH B: 2D CANVAS 3D PROJECTION FALLBACK
-    // (Used if WebGL unavailable in headless or environment)
-    // ==========================================
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    interface FallbackParticle {
-      x: number;
-      y: number;
-      z: number;
-      vx: number;
-      vy: number;
-      vz: number;
-      lt: number;
-      color: string;
-      radius: number;
-      inner: number;
-    }
-
-    const fallbackParticles: FallbackParticle[] = [];
-    sphereConfigs.forEach((cfg) => {
-      if (!cfg.enabled) return;
-      const count = Math.min(cfg.particleCount, 800);
-      for (let i = 0; i < count; i++) {
-        const radius = cfg.radius * cfg.inner;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
-        const r = Math.cbrt(Math.random()) * radius;
-        fallbackParticles.push({
-          x: r * Math.sin(phi) * Math.cos(theta),
-          y: r * Math.sin(phi) * Math.sin(theta),
-          z: r * Math.cos(phi),
-          vx: 0,
-          vy: 0,
-          vz: 0,
-          lt: Math.random() * 3.5,
-          color: i % 2 === 0 ? cfg.colorStart : cfg.colorEnd,
-          radius: cfg.radius,
-          inner: cfg.inner,
-        });
-      }
-    });
-
-    let angleY = 0;
-    const render2DFallback = () => {
-      if (isDisposed) return;
-      animId = requestAnimationFrame(render2DFallback);
-
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.fillStyle = '#030712';
-      ctx.fillRect(0, 0, w, h);
-
-      angleY += 0.008;
-      const cosA = Math.cos(angleY);
-      const sinA = Math.sin(angleY);
-
-      fallbackParticles.forEach((p) => {
-        p.lt -= 0.016;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.z += p.vz;
-
-        if (p.lt <= 0) {
-          const r = Math.random() * p.radius * p.inner;
-          const theta = Math.random() * Math.PI * 2;
-          p.x = r * Math.cos(theta);
-          p.y = r * Math.sin(theta);
-          p.z = (Math.random() - 0.5) * p.radius;
-          p.lt = Math.random() * 3.5;
-        }
-
-        // Rotate around Y axis
-        const rx = p.x * cosA - p.z * sinA;
-        const rz = p.x * sinA + p.z * cosA;
-
-        // Perspective projection
-        const cameraZ = 2.4;
-        const fov = 420;
-        const scale = fov / (rz + cameraZ);
-        if (scale > 0) {
-          const px = w / 2 + rx * scale;
-          const py = h / 2 + p.y * scale;
-          const size = Math.max(1.2, scale * 0.012);
-
-          ctx.fillStyle = p.color;
-          ctx.beginPath();
-          ctx.arc(px, py, size, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      });
-    };
-
-    animId = requestAnimationFrame(render2DFallback);
-
-    return () => {
-      isDisposed = true;
-      cancelAnimationFrame(animId);
-    };
-  }, [isScreensaverOpen, screensaverTheme, performanceMode]);
-
-  // ==========================================
-  // 2. WAVIZ AUDIO VISUALIZERS (npm install waviz)
-  // (Bars, Waves, Polar, Dots, Mixed)
-  // ==========================================
-  useEffect(() => {
-    if (!isScreensaverOpen || screensaverTheme === 'particula') return;
-    const canvas = wavizCanvasRef.current;
+    if (!isScreensaverOpen) return;
+    const canvas = canvasRef.current;
     if (!canvas) return;
 
     canvas.width = window.innerWidth;
@@ -841,96 +238,24 @@ export const RadioScreensaver: React.FC = () => {
     window.addEventListener('resize', handleResize);
 
     const audioBridge = new ResilientAudioBridge();
-    // Instantiate Waviz Visualizer with our resilient audio bridge subclass
     const visualizer = new Visualizer(canvas, audioBridge as any);
 
-    let options: any;
-    if (screensaverTheme === 'waviz-bars') {
-      const barWidth = Math.max(6, Math.floor(canvas.width / 54));
-      options = {
-        domain: ['freq', 240, 128],
-        coord: ['rect'],
-        viz: ['bars', 54],
-        color: ['linearGradient', accentHex, '#38bdf8', 'horizontal'],
-        stroke: [barWidth],
-      };
-    } else if (screensaverTheme === 'waviz-waves') {
-      options = [
-        {
-          domain: ['time', 220, 512, 'hann'],
-          coord: ['rect'],
-          viz: ['line', 256],
-          color: ['linearGradient', accentHex, '#c084fc', 'horizontal'],
-          stroke: [4],
-        },
-        {
-          domain: ['time', 140, 512, 'hamming'],
-          coord: ['rect'],
-          viz: ['line', 128],
-          color: ['#38bdf8'],
-          stroke: [2, 'dashes'],
-        },
-      ];
-    } else if (screensaverTheme === 'waviz-polar') {
-      const radius = Math.min(canvas.width, canvas.height) * 0.22;
-      options = [
-        {
-          domain: ['freq', 180, 256],
-          coord: ['polar', radius, 0, 0.4],
-          viz: ['bars', 72],
-          color: ['radialGradient', accentHex, '#ec4899', radius * 0.6, radius * 1.8],
-          stroke: [4],
-        },
-        {
-          domain: ['time', 90, 256],
-          coord: ['polar', radius, 0, -0.25],
-          viz: ['line', 160],
-          color: ['#38bdf8'],
-          stroke: [2],
-        },
-      ];
-    } else if (screensaverTheme === 'waviz-dots') {
-      options = {
-        domain: ['time', 180, 512, 'bharris'],
-        coord: ['rect'],
-        viz: ['dots', 110],
-        color: ['randomPalette', [accentHex, '#38bdf8', '#a855f7', '#ec4899', '#10b981']],
-        stroke: [5],
-      };
-    } else if (screensaverTheme === 'waviz-mixed') {
-      const radius = Math.min(canvas.width, canvas.height) * 0.2;
-      options = [
-        {
-          domain: ['time', 200, 256],
-          coord: ['polar', radius, 0, 0.35],
-          viz: ['bars', 90],
-          color: ['randomPalette', [accentHex, '#38bdf8', '#a855f7', '#06b6d4']],
-          stroke: [3, 'dashes'],
-        },
-        {
-          domain: ['time', 100, 256],
-          coord: ['polar', radius * 0.6, 0, -0.4],
-          viz: ['particles', [1.4, 1.4], 0, 30, 3, 60],
-          color: ['randomPalette', ['#ec4899', '#f43f5e', '#8b5cf6', accentHex]],
-          stroke: [2],
-        },
-        {
-          domain: ['freq', 130, 128],
-          coord: ['polar', radius * 1.25, 0, 0.15],
-          viz: ['line', 96],
-          color: ['#06b6d4'],
-          stroke: [2],
-        },
-      ];
-    }
+    const barWidth = Math.max(6, Math.floor(canvas.width / 54));
+    const options = {
+      domain: ['freq', 240, 128],
+      coord: ['rect'],
+      viz: ['bars', 54],
+      color: ['linearGradient', accentHex, '#38bdf8', 'horizontal'],
+      stroke: [barWidth],
+    };
 
-    visualizer.render(options);
+    visualizer.render(options as any);
 
     return () => {
       visualizer.stop();
       window.removeEventListener('resize', handleResize);
     };
-  }, [isScreensaverOpen, screensaverTheme, accentHex]);
+  }, [isScreensaverOpen, accentHex]);
 
   if (!isScreensaverOpen) return null;
 
@@ -947,62 +272,24 @@ export const RadioScreensaver: React.FC = () => {
 
   return (
     <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          setScreensaverOpen(false);
+        }
+      }}
       className="fixed inset-0 z-[1000] text-white select-none flex flex-col justify-between overflow-hidden animate-in fade-in duration-300"
       style={{ backgroundColor: '#030712' }}
     >
-      {/* 1. Particula 3D WebGL Canvas */}
-      <canvas
-        ref={particulaCanvasRef}
-        className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-500 ${
-          screensaverTheme === 'particula' ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-      />
+      {/* Audio Frequency Bars Canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
 
-      {/* 2. Waviz Canvas */}
-      <canvas
-        ref={wavizCanvasRef}
-        className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-500 ${
-          screensaverTheme !== 'particula' ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-      />
-
-      {/* Top Bar: Visualizer Switcher & Controls */}
+      {/* Top Bar: Visualizer Badge, Clock & Exit Controls */}
       <div className="relative z-10 flex flex-wrap items-center justify-between p-4 sm:p-6 bg-gradient-to-b from-black/85 via-black/40 to-transparent gap-3">
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-mono text-zinc-300">
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span className="hidden sm:inline">AUDIO SCREENSAVER</span>
+            <BarChart3 className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            <span>WAVIZ AUDIO BARS</span>
           </div>
-
-          {/* Visualizer Theme Switcher */}
-          <div className="flex items-center p-1 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/15 shadow-xl text-xs overflow-x-auto no-scrollbar">
-            {VISUALIZER_VARIANTS.map((v) => {
-              const Icon = v.icon;
-              const isActive = screensaverTheme === v.id;
-              return (
-                <button
-                  key={v.id}
-                  onClick={() => setScreensaverTheme(v.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-xl transition-all whitespace-nowrap ${
-                    isActive
-                      ? 'bg-white/20 text-white font-semibold shadow-md'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                  style={isActive ? { borderColor: `${accentHex}60` } : {}}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{v.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Performance tag & FPS */}
-          <span className="hidden lg:inline-block px-2.5 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider bg-white/5 text-zinc-400 border border-white/10">
-            {screensaverTheme === 'particula'
-              ? `Particula 3D • ${currentFps} FPS`
-              : `Waviz Engine • ${performanceMode}`}
-          </span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -1048,7 +335,8 @@ export const RadioScreensaver: React.FC = () => {
                 {currentStation.state && <span>• {currentStation.state}</span>}
                 {currentStation.codec && (
                   <span className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[11px] text-zinc-300">
-                    {currentStation.codec} {currentStation.bitrate > 0 ? `${currentStation.bitrate}k` : ''}
+                    {currentStation.codec}{' '}
+                    {currentStation.bitrate > 0 ? `${currentStation.bitrate}k` : ''}
                   </span>
                 )}
               </div>
@@ -1080,6 +368,29 @@ export const RadioScreensaver: React.FC = () => {
                   <Play className="w-6 h-6 text-white fill-white ml-1" />
                 )}
               </button>
+
+              {/* Record Button in Screensaver */}
+              {recordingState.isRecording ? (
+                <button
+                  onClick={() => radioRecorder.stop()}
+                  className="px-4 py-3 rounded-full bg-rose-500/20 border border-rose-500/50 text-rose-300 hover:text-rose-200 text-xs font-semibold shadow-lg transition-all flex items-center gap-2 animate-pulse"
+                  title="Stop recording and download MP3"
+                >
+                  <Square className="w-4 h-4 fill-rose-500 text-rose-500" />
+                  <span className="font-mono">
+                    REC {Math.floor(recordingState.durationSeconds / 60)}:
+                    {(recordingState.durationSeconds % 60).toString().padStart(2, '0')}
+                  </span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => currentStation && radioRecorder.start(currentStation)}
+                  className="p-3 rounded-full bg-white/10 border border-white/10 text-zinc-300 hover:text-rose-400 hover:bg-white/20 transition-all"
+                  title="Record Station locally (Download MP3)"
+                >
+                  <CircleDot className="w-5 h-5 text-rose-400" />
+                </button>
+              )}
 
               <button
                 onClick={wander}
@@ -1132,7 +443,7 @@ export const RadioScreensaver: React.FC = () => {
         </div>
 
         <div className="text-xs text-zinc-400 flex items-center gap-2">
-          <span>Particula 3D & Waviz Screensavers</span>
+          <span>Waviz Frequency Bars</span>
           <span className="hidden sm:inline text-zinc-500">
             • Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">Esc</kbd> to return
           </span>

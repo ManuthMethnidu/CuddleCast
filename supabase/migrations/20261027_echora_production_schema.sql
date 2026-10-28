@@ -299,6 +299,37 @@ CREATE TABLE IF NOT EXISTS public.provider_telemetry (
 );
 
 -- ==============================================================================
+-- 11b. RADIO USER PREFERENCES
+-- Stores all radio settings, location, favorite genres, volume, mute,
+-- screensaver theme, last station, and favorite/recent stations per profile.
+-- (Audio recordings remain stored locally on device and are excluded).
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS public.radio_preferences (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  profile_id TEXT NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  country_code VARCHAR(8) NOT NULL DEFAULT 'US',
+  country_name VARCHAR(100) NOT NULL DEFAULT 'United States',
+  favorite_genres JSONB NOT NULL DEFAULT '["lofi", "chillout", "electronic"]'::jsonb,
+  is_onboarding_completed BOOLEAN NOT NULL DEFAULT FALSE,
+  volume NUMERIC(3, 2) NOT NULL DEFAULT 0.85,
+  is_muted BOOLEAN NOT NULL DEFAULT FALSE,
+  screensaver_theme VARCHAR(40) NOT NULL DEFAULT 'waviz-bars',
+  last_station JSONB NULL,
+  favorite_stations JSONB NOT NULL DEFAULT '[]'::jsonb,
+  recent_stations JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_radio_preferences_profile UNIQUE (profile_id)
+);
+
+DROP TRIGGER IF EXISTS set_radio_preferences_updated_at ON public.radio_preferences;
+CREATE TRIGGER set_radio_preferences_updated_at
+  BEFORE UPDATE ON public.radio_preferences
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_updated_at();
+
+-- ==============================================================================
 -- 12. HIGH-PERFORMANCE INDEXES
 -- ==============================================================================
 
@@ -315,6 +346,7 @@ CREATE INDEX IF NOT EXISTS idx_party_messages_room ON public.watch_party_message
 CREATE INDEX IF NOT EXISTS idx_party_members_ping ON public.watch_party_members(room_code, last_ping_at);
 CREATE INDEX IF NOT EXISTS idx_reviews_media ON public.media_reviews(media_id, rating DESC);
 CREATE INDEX IF NOT EXISTS idx_telemetry_provider ON public.provider_telemetry(provider_name, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_radio_preferences_profile ON public.radio_preferences(profile_id);
 
 -- ==============================================================================
 -- 13. ROW LEVEL SECURITY (RLS) POLICIES
@@ -337,6 +369,7 @@ ALTER TABLE public.watch_party_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.watch_party_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.media_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.provider_telemetry ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.radio_preferences ENABLE ROW LEVEL SECURITY;
 
 -- Catalog tables: Public read access
 CREATE POLICY "Public read media_items" ON public.media_items FOR SELECT USING (true);
@@ -359,6 +392,7 @@ CREATE POLICY "Allow all party rooms access" ON public.watch_party_rooms FOR ALL
 CREATE POLICY "Allow all party members access" ON public.watch_party_members FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all party messages access" ON public.watch_party_messages FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all reviews access" ON public.media_reviews FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all radio_preferences access" ON public.radio_preferences FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow telemetry inserts" ON public.provider_telemetry FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow telemetry read" ON public.provider_telemetry FOR SELECT USING (true);
 
@@ -374,6 +408,7 @@ BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.watch_party_members;
     ALTER PUBLICATION supabase_realtime ADD TABLE public.watch_party_messages;
     ALTER PUBLICATION supabase_realtime ADD TABLE public.watch_progress;
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.radio_preferences;
   END IF;
 EXCEPTION
   WHEN duplicate_object THEN NULL;
@@ -392,3 +427,10 @@ ON CONFLICT (id) DO UPDATE
 SET name = EXCLUDED.name,
     avatar_url = EXCLUDED.avatar_url,
     accent_color = EXCLUDED.accent_color;
+
+INSERT INTO public.radio_preferences (profile_id, country_code, country_name, favorite_genres, is_onboarding_completed, volume, is_muted, screensaver_theme)
+VALUES 
+  ('prof-1', 'US', 'United States', '["lofi", "chillout", "electronic"]'::jsonb, true, 0.85, false, 'waviz-bars'),
+  ('prof-2', 'US', 'United States', '["lofi", "chillout"]'::jsonb, true, 0.85, false, 'waviz-bars'),
+  ('prof-3', 'US', 'United States', '["animation", "soundtrack"]'::jsonb, true, 0.70, false, 'waviz-bars')
+ON CONFLICT (profile_id) DO NOTHING;

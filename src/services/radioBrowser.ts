@@ -15,6 +15,7 @@ export interface RadioBrowserStation {
   bitrate: number;
   geo_lat?: number | null;
   geo_long?: number | null;
+  hasGeo: boolean;
   clickcount?: number;
   latitude: number;
   longitude: number;
@@ -22,8 +23,7 @@ export interface RadioBrowserStation {
 
 const API_SERVERS = [
   'https://de1.api.radio-browser.info/json',
-  'https://at1.api.radio-browser.info/json',
-  'https://nl1.api.radio-browser.info/json',
+  'https://all.api.radio-browser.info/json',
 ];
 
 export const COUNTRY_COORDS: Record<string, [number, number]> = {
@@ -81,7 +81,72 @@ export const COUNTRY_COORDS: Record<string, [number, number]> = {
   JM: [18.1096, -77.2975],
   CU: [21.5218, -77.7812],
   GL: [71.7069, -42.6043],
+  LK: [7.8731, 80.7718],
+  VN: [14.0583, 108.2772],
+  PK: [30.3753, 69.3451],
+  BD: [23.685, 90.3563],
+  RS: [44.0165, 21.0059],
+  HR: [45.1, 15.2],
+  SK: [48.669, 19.699],
+  BG: [42.7339, 25.4858],
+  SI: [46.1512, 14.9955],
+  EE: [58.5953, 25.0136],
+  LV: [56.8796, 24.6032],
+  LT: [55.1694, 23.8813],
+  UY: [-32.5228, -55.7658],
+  EC: [-1.8312, -78.1834],
+  VE: [6.4238, -66.5897],
+  CR: [9.7489, -83.7534],
+  PA: [8.5379, -80.7821],
+  DO: [18.7357, -70.1627],
+  PR: [18.2208, -66.5901],
+  DZ: [28.0339, 1.6596],
+  MA: [31.7917, -7.0926],
+  TN: [33.8869, 9.5375],
+  GH: [7.9465, -1.0232],
+  SN: [14.4974, -14.4524],
+  CI: [7.54, -5.5471],
+  CM: [7.3697, 12.3547],
+  ET: [9.145, 40.4897],
+  TZ: [-6.369, 34.8888],
+  UG: [1.3733, 32.2903],
+  AO: [-11.2027, 17.8739],
+  ZW: [-19.0154, 29.1549],
+  MZ: [-18.6657, 35.5296],
+  MG: [-18.7669, 46.8691],
+  IR: [32.4279, 53.688],
+  IQ: [33.2232, 43.6793],
+  JO: [30.5852, 36.2384],
+  LB: [33.8547, 35.8623],
+  QA: [25.3548, 51.1839],
+  KW: [29.3117, 47.4818],
+  OM: [21.4735, 55.9754],
+  GT: [15.7835, -90.2308],
+  HN: [15.2, -86.2419],
+  SV: [13.7942, -88.8965],
+  NI: [12.8654, -85.2072],
+  BO: [-16.2902, -63.5887],
+  PY: [-23.4425, -58.4438],
+  TW: [23.6978, 120.9605],
+  HK: [22.3193, 114.1694],
+  NP: [28.3949, 84.124],
+  KZ: [48.0196, 66.9237],
+  LU: [49.8153, 6.1296],
+  MT: [35.9375, 14.3754],
+  CY: [35.1264, 33.4299],
+  AL: [41.1533, 20.1683],
+  BA: [43.9159, 17.6791],
+  BY: [53.7098, 27.9534],
+  MD: [47.4116, 28.3699],
+  FJ: [-17.7134, 178.065],
+  PG: [-6.315, 143.9555],
 };
+
+export interface RadioCountry {
+  name: string;
+  iso_3166_1: string;
+  stationcount: number;
+}
 
 export const POPULAR_GENRES = [
   { id: 'all', label: 'All Radio' },
@@ -117,6 +182,45 @@ export const FEATURED_COUNTRIES = [
   { code: 'CH', name: 'Switzerland' },
 ];
 
+export function getCountryFlag(countryCode: string): string {
+  if (!countryCode || countryCode === 'GLOBAL' || countryCode.length !== 2) return '🌐';
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map((char) => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
+export function detectUserCountryCode(): string {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    if (tz.includes('Europe/Berlin') || tz.includes('Europe/Vienna')) return 'DE';
+    if (tz.includes('Europe/London')) return 'GB';
+    if (tz.includes('Europe/Paris')) return 'FR';
+    if (tz.includes('Asia/Kolkata') || tz.includes('Calcutta')) return 'IN';
+    if (tz.includes('Asia/Tokyo')) return 'JP';
+    if (tz.includes('America/Sao_Paulo')) return 'BR';
+    if (tz.includes('Australia/')) return 'AU';
+    if (tz.includes('America/Toronto') || tz.includes('America/Vancouver')) return 'CA';
+    if (tz.includes('America/Mexico_City')) return 'MX';
+    if (tz.includes('America/')) return 'US';
+    if (tz.includes('Europe/Madrid')) return 'ES';
+    if (tz.includes('Europe/Rome')) return 'IT';
+    if (tz.includes('Europe/Amsterdam')) return 'NL';
+    if (tz.includes('Europe/Stockholm')) return 'SE';
+    if (tz.includes('Europe/')) return 'DE';
+  } catch {}
+
+  if (typeof navigator !== 'undefined' && navigator.language) {
+    const lang = navigator.language;
+    if (lang.includes('-')) {
+      const code = lang.split('-')[1].toUpperCase();
+      if (code.length === 2) return code;
+    }
+  }
+  return 'US';
+}
+
 export const INITIAL_CURATED_STATIONS: RadioBrowserStation[] = [
   {
     stationuuid: 'lofi-girl',
@@ -131,6 +235,7 @@ export const INITIAL_CURATED_STATIONS: RadioBrowserStation[] = [
     votes: 9850,
     codec: 'MP3',
     bitrate: 192,
+    hasGeo: true,
     latitude: 48.8566,
     longitude: 2.3522,
   },
@@ -147,6 +252,7 @@ export const INITIAL_CURATED_STATIONS: RadioBrowserStation[] = [
     votes: 8420,
     codec: 'AAC',
     bitrate: 320,
+    hasGeo: true,
     latitude: 34.0522,
     longitude: -118.2437,
   },
@@ -163,6 +269,7 @@ export const INITIAL_CURATED_STATIONS: RadioBrowserStation[] = [
     votes: 12450,
     codec: 'AAC',
     bitrate: 320,
+    hasGeo: true,
     latitude: 51.5074,
     longitude: -0.1278,
   },
@@ -179,6 +286,7 @@ export const INITIAL_CURATED_STATIONS: RadioBrowserStation[] = [
     votes: 9140,
     codec: 'MP3',
     bitrate: 192,
+    hasGeo: true,
     latitude: 48.8566,
     longitude: 2.3522,
   },
@@ -195,6 +303,7 @@ export const INITIAL_CURATED_STATIONS: RadioBrowserStation[] = [
     votes: 6730,
     codec: 'AAC',
     bitrate: 256,
+    hasGeo: true,
     latitude: 35.6762,
     longitude: 139.6503,
   },
@@ -211,6 +320,7 @@ export const INITIAL_CURATED_STATIONS: RadioBrowserStation[] = [
     votes: 11200,
     codec: 'MP3',
     bitrate: 192,
+    hasGeo: true,
     latitude: 38.9067,
     longitude: 1.4206,
   },
@@ -227,6 +337,7 @@ export const INITIAL_CURATED_STATIONS: RadioBrowserStation[] = [
     votes: 7920,
     codec: 'MP3',
     bitrate: 128,
+    hasGeo: true,
     latitude: 51.5074,
     longitude: -0.1278,
   },
@@ -243,32 +354,84 @@ export const INITIAL_CURATED_STATIONS: RadioBrowserStation[] = [
     votes: 8900,
     codec: 'MP3',
     bitrate: 128,
+    hasGeo: true,
     latitude: -33.8688,
     longitude: 151.2093,
   },
 ];
 
-// Helper to normalize coordinates
-function resolveCoordinates(st: any, index: number): [number, number] {
-  if (typeof st.geo_lat === 'number' && typeof st.geo_long === 'number' && st.geo_lat !== 0 && st.geo_long !== 0) {
-    return [st.geo_lat, st.geo_long];
+// Helper to validate geographic coordinates on land
+export function isValidCoordinate(lat: any, lon: any): boolean {
+  if (typeof lat !== 'number' || typeof lon !== 'number') return false;
+  if (isNaN(lat) || isNaN(lon)) return false;
+  if (lat === 0 && lon === 0) return false; // Exclude Null Island in Gulf of Guinea
+  return lat >= -85 && lat <= 85 && lon >= -180 && lon <= 180;
+}
+
+/**
+ * Detects if a coordinate is in an open ocean void or geographically incompatible with its country.
+ * Catches corrupt community-submitted coordinates (e.g. Chinese radio in the Atlantic, German radio in the tropical sea).
+ */
+export function isOceanOrCorruptCoordinate(lat: number, lon: number, countrycode?: string): boolean {
+  const code = (countrycode || '').toUpperCase();
+
+  // 1. Deep Mid-Atlantic Ocean void (except island nations like Cape Verde, Saint Helena, Iceland, Greenland, Azores/Canaries)
+  if (lat > -50 && lat < 60 && lon > -44 && lon < -26) {
+    if (!['CV', 'SH', 'IS', 'GL', 'PT', 'ES'].includes(code)) return true;
   }
-  const code = (st.countrycode || '').toUpperCase();
+
+  // 2. Deep South Atlantic void
+  if (lat > -45 && lat < -5 && lon > -25 && lon < 8) {
+    if (!['SH'].includes(code)) return true;
+  }
+
+  // 3. Deep Mid-Indian Ocean void (except Mauritius, Reunion, Seychelles)
+  if (lat > -45 && lat < -10 && lon > 65 && lon < 90) {
+    if (!['MU', 'RE', 'SC'].includes(code)) return true;
+  }
+
+  // 4. Deep Central Pacific Ocean void (except Hawaii, Fiji, Samoa, French Polynesia)
+  if (lat > -40 && lat < 45 && lon > -165 && lon < -125) {
+    if (!['US', 'FJ', 'WS', 'PF', 'KI', 'TO'].includes(code)) return true;
+  }
+
+  // 5. Inconsistency with reported country centroid
   if (COUNTRY_COORDS[code]) {
-    const [baseLat, baseLon] = COUNTRY_COORDS[code];
-    // Add deterministic subtle jitter so multiple stations in one country don't overlap exactly
-    const angle = (index * 137.5) * (Math.PI / 180);
-    const radius = ((index % 7) + 1) * 0.45;
-    return [baseLat + Math.sin(angle) * radius, baseLon + Math.cos(angle) * radius];
+    const [cLat, cLon] = COUNTRY_COORDS[code];
+    const maxDiff = ['US', 'RU', 'CA', 'CN', 'BR', 'AU', 'IN', 'KZ', 'AR', 'ID'].includes(code) ? 38 : 16;
+    if (Math.abs(lat - cLat) > maxDiff || Math.abs(lon - cLon) > maxDiff) {
+      return true;
+    }
   }
-  // Generic fallback: distributed across world latitudes/longitudes
-  const fallbackLat = 20 + ((index * 23) % 40) - 20;
-  const fallbackLon = ((index * 47) % 360) - 180;
-  return [fallbackLat, fallbackLon];
+
+  return false;
 }
 
 export function parseRadioStation(raw: any, index: number): RadioBrowserStation {
-  const [lat, lon] = resolveCoordinates(raw, index);
+  const latNum = typeof raw.geo_lat === 'number' ? raw.geo_lat : parseFloat(raw.geo_lat);
+  const lonNum = typeof raw.geo_long === 'number' ? raw.geo_long : parseFloat(raw.geo_long);
+  const code = (raw.countrycode || '').toUpperCase();
+  const hasBasicGeo = isValidCoordinate(latNum, lonNum);
+
+  let finalLat = 0;
+  let finalLon = 0;
+  let hasGeo = false;
+
+  if (hasBasicGeo && !isOceanOrCorruptCoordinate(latNum, lonNum, code)) {
+    // 100% verified genuine terrestrial broadcast coordinate
+    finalLat = latNum;
+    finalLon = lonNum;
+    hasGeo = true;
+  } else if (COUNTRY_COORDS[code]) {
+    // If coordinate was missing or corrupt (e.g. submitted in the sea), snap safely to the country's land center
+    const [baseLat, baseLon] = COUNTRY_COORDS[code];
+    const angle = (index * 137.5) * (Math.PI / 180);
+    const microRadius = ((index % 5) + 1) * 0.02; // max ~0.1 deg (~10km) tightly around land capital
+    finalLat = baseLat + Math.sin(angle) * microRadius;
+    finalLon = baseLon + Math.cos(angle) * microRadius;
+    hasGeo = true;
+  }
+
   return {
     stationuuid: raw.stationuuid || `station-${index}-${Date.now()}`,
     name: (raw.name || 'World Radio Station').trim(),
@@ -278,17 +441,18 @@ export function parseRadioStation(raw: any, index: number): RadioBrowserStation 
     favicon: raw.favicon || '',
     tags: raw.tags || '',
     country: raw.country || 'Global',
-    countrycode: (raw.countrycode || 'GL').toUpperCase(),
+    countrycode: code || 'GL',
     state: raw.state || '',
     language: raw.language || '',
     votes: Number(raw.votes) || 0,
     codec: raw.codec || 'MP3',
     bitrate: Number(raw.bitrate) || 128,
-    geo_lat: raw.geo_lat,
-    geo_long: raw.geo_long,
+    geo_lat: hasGeo ? finalLat : null,
+    geo_long: hasGeo ? finalLon : null,
+    hasGeo,
     clickcount: Number(raw.clickcount) || 0,
-    latitude: lat,
-    longitude: lon,
+    latitude: finalLat,
+    longitude: finalLon,
   };
 }
 
@@ -298,24 +462,29 @@ class RadioBrowserService {
   private async fetchApi(endpoint: string): Promise<any> {
     for (let i = 0; i < API_SERVERS.length; i++) {
       const server = API_SERVERS[(this.currentServerIndex + i) % API_SERVERS.length];
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
       try {
         const res = await fetch(`${server}${endpoint}`, {
           headers: {
             'User-Agent': 'EchoraRadio/2.0 (echora-bay.vercel.app)',
           },
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
         if (res.ok) {
           this.currentServerIndex = (this.currentServerIndex + i) % API_SERVERS.length;
           return await res.json();
         }
       } catch (err) {
+        clearTimeout(timeoutId);
         console.warn(`Radio browser server ${server} notice:`, err);
       }
     }
     throw new Error('All Radio Browser API mirrors are currently unreachable.');
   }
 
-  async getTopStations(limit = 100): Promise<RadioBrowserStation[]> {
+  async getTopStations(limit = 600): Promise<RadioBrowserStation[]> {
     try {
       const data = await this.fetchApi(
         `/stations/search?limit=${limit}&order=clickcount&reverse=true&hidebroken=true`
@@ -327,6 +496,87 @@ class RadioBrowserService {
       // Return initial curated stations
     }
     return INITIAL_CURATED_STATIONS;
+  }
+
+  async getCountries(): Promise<RadioCountry[]> {
+    try {
+      const data = await this.fetchApi(`/countries?order=stationcount&reverse=true`);
+      if (Array.isArray(data)) {
+        return data.filter((c: any) => c.iso_3166_1 && c.stationcount > 0);
+      }
+    } catch {}
+    return [];
+  }
+
+  private cachedWorldStations: RadioBrowserStation[] | null = null;
+
+  async getStationsWithGeo(limit = 1200): Promise<RadioBrowserStation[]> {
+    if (this.cachedWorldStations && this.cachedWorldStations.length > 0) {
+      return this.cachedWorldStations;
+    }
+
+    try {
+      // Fetch verified geographic radio stations worldwide with real lat/long coordinates on land
+      const data = await this.fetchApi(
+        `/stations/search?has_geo_info=true&limit=${limit}&order=clickcount&reverse=true&hidebroken=true`
+      );
+
+      if (Array.isArray(data) && data.length > 0) {
+        const validStations: RadioBrowserStation[] = [];
+        data.forEach((raw: any, index: number) => {
+          const st = parseRadioStation(raw, index);
+          if (st.hasGeo && isValidCoordinate(st.latitude, st.longitude)) {
+            validStations.push(st);
+          }
+        });
+
+        if (validStations.length > 0) {
+          this.cachedWorldStations = validStations;
+          return validStations;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch geo stations:', err);
+    }
+    return INITIAL_CURATED_STATIONS;
+  }
+
+  async getRandomStation(): Promise<RadioBrowserStation | null> {
+    try {
+      const data = await this.fetchApi(
+        `/stations/search?limit=1&order=random&hidebroken=true`
+      );
+      if (Array.isArray(data) && data.length > 0) {
+        return parseRadioStation(data[0], 0);
+      }
+    } catch {}
+    const randomIndex = Math.floor(Math.random() * INITIAL_CURATED_STATIONS.length);
+    return INITIAL_CURATED_STATIONS[randomIndex];
+  }
+
+  async getStats(): Promise<{ stations: number; countries: number; tags: number }> {
+    try {
+      const data = await this.fetchApi(`/stats`);
+      if (data && typeof data.stations === 'number') {
+        return {
+          stations: data.stations,
+          countries: data.countries || 228,
+          tags: data.tags || 12000,
+        };
+      }
+    } catch {}
+    return { stations: 65000, countries: 228, tags: 12800 };
+  }
+
+  async countClick(stationuuid: string): Promise<string | null> {
+    if (!stationuuid) return null;
+    try {
+      const data = await this.fetchApi(`/url/${encodeURIComponent(stationuuid)}`);
+      if (data && data.url) {
+        return data.url;
+      }
+    } catch {}
+    return null;
   }
 
   async getStationsByTag(tag: string, limit = 80): Promise<RadioBrowserStation[]> {
@@ -344,8 +594,8 @@ class RadioBrowserService {
     );
   }
 
-  async getStationsByCountry(countryCode: string, limit = 80): Promise<RadioBrowserStation[]> {
-    if (!countryCode || countryCode === 'GLOBAL') return this.getTopStations(limit);
+  async getStationsByCountry(countryCode: string, limit = 200): Promise<RadioBrowserStation[]> {
+    if (!countryCode || countryCode === 'GLOBAL') return this.getStationsWithGeo();
     try {
       const data = await this.fetchApi(
         `/stations/search?countrycode=${encodeURIComponent(countryCode)}&limit=${limit}&order=clickcount&reverse=true&hidebroken=true`
@@ -353,7 +603,9 @@ class RadioBrowserService {
       if (Array.isArray(data) && data.length > 0) {
         return data.map(parseRadioStation);
       }
-    } catch {}
+    } catch (err) {
+      console.warn('Failed to fetch country stations:', err);
+    }
     return INITIAL_CURATED_STATIONS.filter(
       (s) => s.countrycode.toUpperCase() === countryCode.toUpperCase()
     );
@@ -376,6 +628,60 @@ class RadioBrowserService {
         s.country.toLowerCase().includes(q.toLowerCase()) ||
         s.tags?.toLowerCase().includes(q.toLowerCase())
     );
+  }
+
+  async getCuratedForUser(countryCode: string, genres: string[] = [], limit = 40): Promise<RadioBrowserStation[]> {
+    const results: RadioBrowserStation[] = [];
+    const seenUuids = new Set<string>();
+
+    if (countryCode && countryCode !== 'GLOBAL') {
+      try {
+        const countryStations = await this.getStationsByCountry(countryCode, 30);
+        countryStations.forEach((st) => {
+          if (!seenUuids.has(st.stationuuid)) {
+            seenUuids.add(st.stationuuid);
+            results.push(st);
+          }
+        });
+      } catch {}
+    }
+
+    for (const g of genres.slice(0, 4)) {
+      if (results.length >= limit) break;
+      try {
+        const genreStations = await this.getStationsByTag(g, 15);
+        genreStations.forEach((st) => {
+          if (!seenUuids.has(st.stationuuid)) {
+            seenUuids.add(st.stationuuid);
+            results.push(st);
+          }
+        });
+      } catch {}
+    }
+
+    if (results.length < 8) {
+      INITIAL_CURATED_STATIONS.forEach((st) => {
+        if (!seenUuids.has(st.stationuuid)) {
+          seenUuids.add(st.stationuuid);
+          results.push(st);
+        }
+      });
+    }
+
+    return results.slice(0, limit);
+  }
+
+  async getStationsByUuids(uuids: string[]): Promise<RadioBrowserStation[]> {
+    if (!uuids || uuids.length === 0) return [];
+    try {
+      const data = await this.fetchApi(
+        `/stations/byuuid?uuids=${encodeURIComponent(uuids.join(','))}`
+      );
+      if (Array.isArray(data) && data.length > 0) {
+        return data.map(parseRadioStation);
+      }
+    } catch {}
+    return INITIAL_CURATED_STATIONS.filter((s) => uuids.includes(s.stationuuid));
   }
 }
 

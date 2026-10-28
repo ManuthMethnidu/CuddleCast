@@ -23,6 +23,8 @@ import { LiveSportsView } from './components/LiveSportsView';
 import { HistoryView } from './components/HistoryView';
 import { RadioPlayer } from './components/RadioPlayer';
 import { RadioView } from './components/RadioView';
+import { RadioScreensaver } from './components/RadioScreensaver';
+import { useRadioStore } from './store/radioStore';
 import { FloatingPiP } from './components/FloatingPiP';
 import { Footer } from './components/Footer';
 import { LoginView } from './components/LoginView';
@@ -77,6 +79,7 @@ const MainApp: React.FC = () => {
   // Zustand Player State
   const {
     currentMedia,
+    activeChannel,
     playMedia,
     closePlayer,
     setPiP,
@@ -130,6 +133,22 @@ const MainApp: React.FC = () => {
     columns: 4,
     enabled: !selectedItem && !currentMedia,
   });
+
+  // Pause background radio playback if video starts or when navigating back home
+  useEffect(() => {
+    if (currentMedia || activeChannel) {
+      useRadioStore.getState().pause();
+    }
+  }, [currentMedia, activeChannel]);
+
+  useEffect(() => {
+    if (activeCategory === 'all') {
+      const radioState = useRadioStore.getState();
+      if (radioState.isPlaying) {
+        radioState.pause();
+      }
+    }
+  }, [activeCategory]);
 
   // Sync Library on tab visit
   useEffect(() => {
@@ -260,17 +279,19 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#303841] text-[#F3F3F3] flex flex-col font-sans select-none">
-      {/* Sticky Top Navigation Bar */}
-      <Navbar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        activeCategory={activeCategory}
-        onCategoryChange={(cat) => {
-          if (searchQuery) setSearchQuery('');
-          navigate(cat === 'all' ? '/' : `/${cat}`);
-        }}
-        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
+      {/* Sticky Top Navigation Bar (Hidden in full-screen Radio view) */}
+      {activeCategory !== 'radio' && (
+        <Navbar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          activeCategory={activeCategory}
+          onCategoryChange={(cat) => {
+            if (searchQuery) setSearchQuery('');
+            navigate(cat === 'all' ? '/' : `/${cat}`);
+          }}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+      )}
 
       {/* Vidbox Left Sidebar Drawer with all 16 items */}
       <VidboxSidebar
@@ -281,8 +302,47 @@ const MainApp: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 pb-16 md:pb-0" data-grid-nav="true">
-        {isLoading ? (
+      <main
+        className={`flex-1 ${
+          activeCategory === 'radio'
+            ? 'h-screen w-screen overflow-hidden flex flex-col p-0 m-0 min-h-0'
+            : 'pb-16 md:pb-0 pt-16 sm:pt-20'
+        }`}
+        data-grid-nav="true"
+      >
+        {activeCategory === 'radio' ? (
+          <RadioView
+            onBack={() => {
+              useRadioStore.getState().pause();
+              navigate('/');
+            }}
+          />
+        ) : activeCategory === 'live-tv' || activeCategory === 'tv' ? (
+          <LiveTvView />
+        ) : activeCategory === 'live-sports' || activeCategory === 'sports' ? (
+          <LiveSportsView
+            onPlayStream={(url, title) => {
+              handlePlay({
+                id: Math.floor(Math.random() * 900000) + 100000,
+                title,
+                name: title,
+                overview: 'Live match broadcast',
+                poster_path:
+                  'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80',
+                backdrop_path:
+                  'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1280&q=80',
+                media_type: 'tv',
+                release_date: '2026-10-26',
+                vote_average: 9.0,
+                vote_count: 500,
+                genre_ids: [10770],
+                popularity: 300,
+                adult: false,
+                streamUrl: url,
+              });
+            }}
+          />
+        ) : isLoading ? (
           <div className="flex h-screen items-center justify-center bg-[#303841]">
             <div className="flex flex-col items-center gap-4">
               <div
@@ -327,33 +387,6 @@ const MainApp: React.FC = () => {
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
           />
-        ) : activeCategory === 'live-tv' || activeCategory === 'tv' ? (
-          <LiveTvView />
-        ) : activeCategory === 'live-sports' || activeCategory === 'sports' ? (
-          <LiveSportsView
-            onPlayStream={(url, title) => {
-              handlePlay({
-                id: Math.floor(Math.random() * 900000) + 100000,
-                title,
-                name: title,
-                overview: 'Live match broadcast',
-                poster_path:
-                  'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80',
-                backdrop_path:
-                  'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1280&q=80',
-                media_type: 'tv',
-                release_date: '2026-10-26',
-                vote_average: 9.0,
-                vote_count: 500,
-                genre_ids: [10770],
-                popularity: 300,
-                adult: false,
-                streamUrl: url,
-              });
-            }}
-          />
-        ) : activeCategory === 'radio' ? (
-          <RadioView onBack={() => navigate('/')} />
         ) : activeCategory === 'history' ? (
           <HistoryView
             items={allMedia}
@@ -433,6 +466,9 @@ const MainApp: React.FC = () => {
         )}
       </main>
 
+      {/* Audio Visualizer & 3D Screensaver */}
+      <RadioScreensaver />
+
       {/* Persistent Floating Radio Player */}
       <RadioPlayer
         isVisible={isRadioOpen}
@@ -448,8 +484,8 @@ const MainApp: React.FC = () => {
         />
       )}
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer (hidden in full-screen radio map) */}
+      {activeCategory !== 'radio' && <Footer />}
 
       {/* Title Detail Page View (Parallel / Modal Route) */}
       {selectedItem && (

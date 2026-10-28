@@ -12,7 +12,9 @@ const STORAGE_KEYS = {
   CUSTOM_TV_CHANNELS: 'echora_custom_tv_channels',
   TV_FAVORITES: 'echora_tv_favorites',
   RADIO_FAVORITES: 'echora_radio_favorites',
+  RADIO_FAVORITE_OBJECTS: 'echora_radio_favorite_objects',
   RADIO_RECENT: 'echora_radio_recent',
+  RADIO_PREFERENCES: 'echora_radio_preferences',
 };
 
 const LEGACY_STORAGE_KEYS = {
@@ -597,6 +599,49 @@ class StorageService {
     this.notify();
   }
 
+  getRadioFavoriteStations(userId?: string): any[] {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.RADIO_FAVORITE_OBJECTS, uid);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {}
+    }
+    return [];
+  }
+
+  saveRadioFavoriteStations(stations: any[], userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.RADIO_FAVORITE_OBJECTS, uid);
+    localStorage.setItem(key, JSON.stringify(stations));
+    this.notify();
+  }
+
+  toggleRadioFavoriteStation(station: any, userId?: string): boolean {
+    const uid = userId || this.activeUserId || 'guest';
+    const favIds = this.getRadioFavorites(uid);
+    const favStations = this.getRadioFavoriteStations(uid);
+    const stationId = station.stationuuid || station.id;
+    const exists = favIds.includes(stationId);
+
+    if (exists) {
+      const updatedIds = favIds.filter((id) => id !== stationId);
+      const updatedStations = favStations.filter(
+        (s) => (s.stationuuid || s.id) !== stationId
+      );
+      this.saveRadioFavorites(updatedIds, uid);
+      this.saveRadioFavoriteStations(updatedStations, uid);
+      return false;
+    } else {
+      const updatedIds = [...favIds, stationId];
+      const updatedStations = [station, ...favStations];
+      this.saveRadioFavorites(updatedIds, uid);
+      this.saveRadioFavoriteStations(updatedStations, uid);
+      return true;
+    }
+  }
+
   getRadioRecent(userId?: string): string[] {
     const uid = userId || this.activeUserId || 'guest';
     const key = this.getKey(STORAGE_KEYS.RADIO_RECENT, uid);
@@ -623,6 +668,124 @@ class StorageService {
     localStorage.setItem(key, JSON.stringify(recent));
     this.notify();
   }
+
+  getRadioOnboarding(userId?: string): {
+    completed: boolean;
+    countryCode?: string;
+    countryName?: string;
+    favoriteGenres?: string[];
+  } {
+    const uid = userId || this.activeUserId || 'guest';
+    const raw = localStorage.getItem(`echora_radio_onboarding_${uid}`);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {}
+    }
+    return { completed: false };
+  }
+
+  saveRadioOnboarding(
+    data: {
+      completed?: boolean;
+      countryCode?: string;
+      countryName?: string;
+      favoriteGenres?: string[];
+      isOnboardingCompleted?: boolean;
+    },
+    userId?: string
+  ): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const existing = this.getRadioOnboarding(uid);
+    const updated = {
+      ...existing,
+      ...data,
+      completed: data.completed ?? data.isOnboardingCompleted ?? true,
+    };
+    localStorage.setItem(`echora_radio_onboarding_${uid}`, JSON.stringify(updated));
+    this.notify();
+  }
+
+  // --- UNIFIED RADIO USER PREFERENCES ---
+  getRadioPreferences(userId?: string): RadioPreferencesPayload {
+    const uid = userId || this.activeUserId || 'guest';
+    const key = this.getKey(STORAGE_KEYS.RADIO_PREFERENCES, uid);
+    const raw = localStorage.getItem(key);
+    let parsed: Partial<RadioPreferencesPayload> = {};
+    if (raw) {
+      try {
+        parsed = JSON.parse(raw);
+      } catch {}
+    }
+
+    const onboarding = this.getRadioOnboarding(uid);
+    const favoriteStations = this.getRadioFavoriteStations(uid);
+    const recentStations = this.getRadioRecent(uid);
+
+    return {
+      countryCode: parsed.countryCode || onboarding.countryCode || 'US',
+      countryName: parsed.countryName || onboarding.countryName || 'United States',
+      favoriteGenres:
+        parsed.favoriteGenres || onboarding.favoriteGenres || ['lofi', 'chillout', 'electronic'],
+      isOnboardingCompleted: parsed.isOnboardingCompleted ?? onboarding.completed ?? false,
+      volume: typeof parsed.volume === 'number' ? parsed.volume : 0.85,
+      isMuted: parsed.isMuted ?? false,
+      screensaverTheme: 'waviz-bars',
+      lastStation: parsed.lastStation || null,
+      favoriteStations: parsed.favoriteStations || favoriteStations || [],
+      recentStations: parsed.recentStations || recentStations || [],
+    };
+  }
+
+  saveRadioPreferences(data: Partial<RadioPreferencesPayload>, userId?: string): void {
+    const uid = userId || this.activeUserId || 'guest';
+    const current = this.getRadioPreferences(uid);
+    const updated: RadioPreferencesPayload = {
+      ...current,
+      ...data,
+      screensaverTheme: 'waviz-bars', // Only bar screensaver is retained
+    };
+    const key = this.getKey(STORAGE_KEYS.RADIO_PREFERENCES, uid);
+    localStorage.setItem(key, JSON.stringify(updated));
+
+    if (
+      data.countryCode ||
+      data.countryName ||
+      data.favoriteGenres ||
+      typeof data.isOnboardingCompleted === 'boolean'
+    ) {
+      this.saveRadioOnboarding(
+        {
+          countryCode: updated.countryCode,
+          countryName: updated.countryName,
+          favoriteGenres: updated.favoriteGenres,
+          completed: updated.isOnboardingCompleted,
+        },
+        uid
+      );
+    }
+    if (data.favoriteStations) {
+      this.saveRadioFavoriteStations(data.favoriteStations, uid);
+    }
+    if (data.recentStations) {
+      this.saveRadioRecent(data.recentStations, uid);
+    }
+
+    this.notify();
+  }
+}
+
+export interface RadioPreferencesPayload {
+  countryCode: string;
+  countryName: string;
+  favoriteGenres: string[];
+  isOnboardingCompleted: boolean;
+  volume: number;
+  isMuted: boolean;
+  screensaverTheme: string;
+  lastStation?: any;
+  favoriteStations: any[];
+  recentStations: string[];
 }
 
 export const authStorage = new StorageService();
