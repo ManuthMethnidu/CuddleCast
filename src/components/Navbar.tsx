@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Search,
-  Users,
   X,
   Settings as SettingsIcon,
   Home,
@@ -11,15 +10,13 @@ import {
   Tv2,
   Trophy,
   UserCog,
-  Sliders,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import { useUser, useClerk, useSessionList } from '@clerk/react';
-import { WatchPartyModal } from './WatchPartyModal';
 import { EchoraLogo } from './EchoraLogo';
 import { SmoothTab, SwipeTabItem } from './SmoothTab';
 import { ProfileDropdown, Account, ProfileMenuItem } from './ProfileDropdown';
-import { NavbarCustomizerModal, ALL_NAV_ITEMS } from './NavbarCustomizerModal';
+import { ALL_NAV_ITEMS } from './NavbarCustomizerModal';
 import { useSettingsStore, DEFAULT_NAV_ITEMS } from '../store/settingsStore';
 
 interface NavbarProps {
@@ -42,18 +39,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { openUserProfile, openSignIn, signOut, setActive } = useClerk();
   const { sessions } = useSessionList();
 
-  const {
-    enabledNavItems = DEFAULT_NAV_ITEMS,
-    userStatus,
-    setUserStatus,
-    themeMode,
-    setThemeMode,
-  } = useSettingsStore();
+  const { enabledNavItems = DEFAULT_NAV_ITEMS } = useSettingsStore();
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [isWatchPartyOpen, setIsWatchPartyOpen] = useState(false);
-  const [isNavbarCustomizerOpen, setIsNavbarCustomizerOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -64,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (!ticking) {
         requestAnimationFrame(() => {
           const scrolled = window.scrollY > 20;
-          setIsScrolled(prev => (prev !== scrolled ? scrolled : prev));
+          setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
           ticking = false;
         });
         ticking = true;
@@ -130,14 +119,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           },
         ];
 
-  // Menu items inside KokonutUI ProfileDropdown
+  // Menu items inside KokonutUI ProfileDropdown (All settings centralized in System Settings)
   const profileMenuItems: ProfileMenuItem[] = [
-    {
-      label: 'Navbar Settings',
-      icon: <Sliders className="size-4" />,
-      value: 'Customize',
-      onSelect: () => setIsNavbarCustomizerOpen(true),
-    },
     {
       label: 'Profile',
       icon: <UserCog className="size-4" />,
@@ -156,11 +139,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       icon: <SettingsIcon className="size-4" />,
       value: '⌘,',
       onSelect: () => onCategoryChange('settings'),
-    },
-    {
-      label: 'Watch Party',
-      icon: <Users className="size-4" />,
-      onSelect: () => setIsWatchPartyOpen(true),
     },
   ];
 
@@ -213,7 +191,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             />
           </div>
 
-          {/* Right: Search, Watch Party & KokonutUI Profile Dropdown */}
+          {/* Right: Search & Profile Pic Dropdown */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Search Bar */}
             <div ref={searchContainerRef} className="relative flex items-center">
@@ -249,26 +227,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
-            {/* Watch Party Button (Desktop) */}
-            <div className="hidden xl:inline-flex">
-              <md-filled-tonal-button
-                onClick={() => setIsWatchPartyOpen(true)}
-                title="Watch Party"
-              >
-                <Users className="h-4 w-4" slot="icon" style={{ color: accentHex }} />
-                Party
-              </md-filled-tonal-button>
-            </div>
-
-            {/* KokonutUI Profile Dropdown with Morphing Layout & Navbar Settings */}
+            {/* Profile Dropdown with Profile Pic Only Trigger Button */}
             <ProfileDropdown
               accounts={dropdownAccounts}
               defaultAccountId={dropdownAccounts[0]?.id}
               items={profileMenuItems}
-              status={userStatus}
-              onStatusChange={setUserStatus}
-              theme={themeMode}
-              onThemeChange={setThemeMode}
               onAccountChange={(acc) => {
                 if (acc.id !== 'guest' && setActive) {
                   setActive({ session: acc.id });
@@ -347,18 +310,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </button>
       </nav>
-
-      {/* Watch Party Modal */}
-      <WatchPartyModal
-        isOpen={isWatchPartyOpen}
-        onClose={() => setIsWatchPartyOpen(false)}
-      />
-
-      {/* Navbar Customizer Modal */}
-      <NavbarCustomizerModal
-        isOpen={isNavbarCustomizerOpen}
-        onClose={() => setIsNavbarCustomizerOpen(false)}
-      />
     </>
   );
 };

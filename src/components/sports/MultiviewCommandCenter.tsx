@@ -479,7 +479,7 @@ export const MultiviewCommandCenter: React.FC<MultiviewCommandCenterProps> = ({
                     type="button"
                     role="tab"
                     aria-selected={drawerTab === 'CHAT'}
-                    aria-label="Watch Party Chat"
+                    aria-label="Community Live Chat"
                     onClick={() => setDrawerTab('CHAT')}
                     className={`
                       flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-semibold
@@ -608,7 +608,7 @@ export const MultiviewCommandCenter: React.FC<MultiviewCommandCenterProps> = ({
                     <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
                       <div className="flex items-center gap-1.5">
                         <MessageSquare className="h-3.5 w-3.5 text-[#0070F3]" />
-                        <span className="font-semibold text-zinc-200">Watch Party Chat</span>
+                        <span className="font-semibold text-zinc-200">Community Live Chat</span>
                       </div>
                       <span className="text-[10px] font-mono text-zinc-400">#watchitbetter</span>
                     </div>
@@ -619,7 +619,7 @@ export const MultiviewCommandCenter: React.FC<MultiviewCommandCenterProps> = ({
                         src={`https://www.twitch.tv/embed/watchitbetter/chat?darkpopout=true&parent=${encodeURIComponent(
                           hostname
                         )}`}
-                        title="Twitch Watch Party Chat"
+                        title="Twitch Community Live Chat"
                         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
                         referrerPolicy="strict-origin-when-cross-origin"
                         className="w-full h-full border-0"

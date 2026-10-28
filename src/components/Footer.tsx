@@ -39,7 +39,7 @@ export const Footer: React.FC = () => {
               <span className="font-semibold text-zinc-200">Echora Features</span>
               <a href="#billboard" className="hover:text-white transition-colors">Rotating Billboard</a>
               <a href="#hover" className="hover:text-white transition-colors">Hover Preview Cards</a>
-              <a href="#party" className="hover:text-white transition-colors">Encrypted Watch Party</a>
+              <a href="#sports" className="hover:text-white transition-colors">Formula 1 & Live Sports</a>
               <a href="#panel" className="hover:text-white transition-colors">Picture & Sound Panel</a>
             </div>
 

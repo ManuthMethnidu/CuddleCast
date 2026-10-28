@@ -11,16 +11,11 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  ChevronsUpDown,
   CreditCard,
   LogOut,
-  Monitor,
-  Moon,
   Plus,
   Settings,
-  Sun,
   User,
-  Sliders,
 } from 'lucide-react';
 import {
   animate,
@@ -97,27 +92,9 @@ const SAMPLE_ACCOUNTS: Account[] = [
 
 const SAMPLE_ITEMS: ProfileMenuItem[] = [
   { label: 'Profile', icon: <User className="size-4" /> },
-  { label: 'Navbar Settings', icon: <Sliders className="size-4" />, value: 'Customize' },
-  { label: 'Settings', icon: <Settings className="size-4" />, value: '⌘,' },
+  { label: 'System Settings', icon: <Settings className="size-4" />, value: '⌘,' },
   { label: 'Billing', icon: <CreditCard className="size-4" /> },
 ];
-
-const STATUSES: {
-  id: AccountStatus;
-  label: string;
-  name: string;
-  dot: string;
-}[] = [
-  { id: 'online', label: 'Online', name: 'Online', dot: 'bg-emerald-500' },
-  { id: 'away', label: 'Away', name: 'Away', dot: 'bg-amber-400' },
-  { id: 'busy', label: 'DND', name: 'Do not disturb', dot: 'bg-red-500' },
-];
-
-const THEMES = [
-  { id: 'light', label: 'Light', Icon: Sun },
-  { id: 'dark', label: 'Dark', Icon: Moon },
-  { id: 'system', label: 'System', Icon: Monitor },
-] as const;
 
 const AVATAR_TONES = [
   'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900',
@@ -129,11 +106,6 @@ const WHITESPACE = /\s+/;
 const PANEL_W = 288;
 const RADIUS = 16;
 const SPRING: Transition = { type: 'spring', duration: 0.3, bounce: 0 };
-const INDICATOR_SPRING: Transition = {
-  type: 'spring',
-  duration: 0.25,
-  bounce: 0,
-};
 const INSTANT: Transition = { duration: 0 };
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 const NAV_KEYS = new Set([
@@ -216,36 +188,20 @@ function nextTarget(
   return rowTarget(items, current, key === 'ArrowDown' ? 1 : -1);
 }
 
-function useControllable<T>(
-  value: T | undefined,
-  fallback: T,
-  onChange?: (next: T) => void
-) {
-  const [local, setLocal] = useState(fallback);
-  const set = (next: T) => {
-    setLocal(next);
-    onChange?.(next);
-  };
-  return [value ?? local, set] as const;
-}
-
 function Avatar({
   account,
   tone,
-  status,
   className,
 }: {
   account: Account;
   tone: number;
-  status?: AccountStatus;
   className?: string;
 }) {
-  const dot = STATUSES.find((entry) => entry.id === status)?.dot;
   return (
     <span
       aria-hidden="true"
       className={cn(
-        'relative grid shrink-0 select-none place-items-center rounded-full font-medium text-[11px] tracking-wide overflow-visible',
+        'relative grid shrink-0 select-none place-items-center rounded-full font-medium text-[11px] tracking-wide overflow-hidden',
         AVATAR_TONES[tone % AVATAR_TONES.length],
         className
       )}
@@ -259,14 +215,6 @@ function Avatar({
       ) : (
         initialsOf(account)
       )}
-      {dot ? (
-        <span
-          className={cn(
-            'absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-[#303841] transition-colors duration-200',
-            dot
-          )}
-        />
-      ) : null}
     </span>
   );
 }
@@ -276,7 +224,6 @@ function Identity({
   shared,
   account,
   tone,
-  status,
   transition,
   stacked,
 }: {
@@ -284,7 +231,6 @@ function Identity({
   shared: boolean;
   account: Account;
   tone: number;
-  status: AccountStatus;
   transition: Transition;
   stacked: boolean;
 }) {
@@ -305,7 +251,6 @@ function Identity({
         <Avatar
           account={account}
           className={stacked ? 'size-10' : 'size-8'}
-          status={status}
           tone={tone}
         />
       </motion.span>
@@ -455,99 +400,6 @@ function HoldSignOut({
   );
 }
 
-function StatusRow({
-  status,
-  onChange,
-}: {
-  status: AccountStatus;
-  onChange: (status: AccountStatus) => void;
-}) {
-  return (
-    <fieldset
-      aria-label="Status"
-      className="m-0 flex min-w-0 items-center justify-between border-0 py-1 pr-1 pl-2.5"
-    >
-      <span className="text-xs text-zinc-400">Status</span>
-      <span className="flex">
-        {STATUSES.map((entry) => {
-          const checked = entry.id === status;
-          return (
-            <button
-              aria-checked={checked}
-              aria-label={entry.name}
-              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-zinc-400 outline-none transition-colors duration-100 hover:text-white focus:bg-white/10 aria-checked:text-white aria-checked:font-bold"
-              data-menu-item=""
-              data-row="status"
-              key={entry.id}
-              onClick={() => onChange(entry.id)}
-              role="menuitemradio"
-              tabIndex={-1}
-              type="button"
-            >
-              <span
-                className={cn(
-                  'size-2 rounded-full transition-colors duration-200',
-                  checked ? entry.dot : 'bg-zinc-600'
-                )}
-              />
-              {entry.label}
-            </button>
-          );
-        })}
-      </span>
-    </fieldset>
-  );
-}
-
-function ThemeRow({
-  uid,
-  theme,
-  onChange,
-  reduced,
-}: {
-  uid: string;
-  theme: AccountTheme;
-  onChange: (theme: AccountTheme) => void;
-  reduced: boolean;
-}) {
-  return (
-    <fieldset
-      aria-label="Theme"
-      className="m-0 flex min-w-0 items-center justify-between border-0 py-1 pr-1 pl-2.5"
-    >
-      <span className="text-xs text-zinc-400">Theme</span>
-      <span className="flex rounded-[10px] bg-black/40 border border-white/10 p-0.5">
-        {THEMES.map(({ id, label, Icon }) => {
-          const checked = id === theme;
-          return (
-            <button
-              aria-checked={checked}
-              aria-label={label}
-              className="relative grid h-6 w-8 place-items-center rounded-md text-zinc-400 outline-none transition-colors duration-150 hover:text-white focus-visible:ring-2 focus-visible:ring-white/20 aria-checked:text-white"
-              data-menu-item=""
-              data-row="theme"
-              key={id}
-              onClick={() => onChange(id)}
-              role="menuitemradio"
-              tabIndex={-1}
-              type="button"
-            >
-              {checked ? (
-                <motion.span
-                  className="absolute inset-0 rounded-md bg-white/20 shadow-sm"
-                  layoutId={`${uid}-theme`}
-                  transition={reduced ? INSTANT : INDICATOR_SPRING}
-                />
-              ) : null}
-              <Icon className="relative size-3.5" />
-            </button>
-          );
-        })}
-      </span>
-    </fieldset>
-  );
-}
-
 function LinkItem({
   item,
   index,
@@ -600,12 +452,6 @@ export function ProfileDropdown({
   onAccountChange,
   onAddAccount,
   items = SAMPLE_ITEMS,
-  theme: themeProp,
-  defaultTheme = 'dark',
-  onThemeChange,
-  status: statusProp,
-  defaultStatus = 'online',
-  onStatusChange,
   onSignOut,
   holdDuration = 1200,
   className,
@@ -619,16 +465,6 @@ export function ProfileDropdown({
   const [openSeq, setOpenSeq] = useState(0);
   const [accountId, setAccountId] = useState(
     defaultAccountId ?? accounts[0]?.id
-  );
-  const [theme, setTheme] = useControllable(
-    themeProp,
-    defaultTheme,
-    onThemeChange
-  );
-  const [status, setStatus] = useControllable(
-    statusProp,
-    defaultStatus,
-    onStatusChange
   );
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -861,12 +697,13 @@ export function ProfileDropdown({
       ref={wrapperRef}
       {...props}
     >
-      {/* Morphing Trigger Button */}
+      {/* Profile Picture Only Trigger Button */}
       <button
         aria-controls={sharedInPanel ? menuId : undefined}
         aria-expanded={sharedInPanel}
         aria-haspopup="menu"
-        className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[#353f49]/80 p-1.5 pr-2.5 sm:p-2 sm:pr-3 text-left outline-none transition-colors duration-150 hover:border-white/20 hover:bg-[#353f49] focus-visible:ring-2 focus-visible:ring-white/30 backdrop-blur-md shadow-md max-w-[200px] sm:max-w-[240px]"
+        aria-label={`Profile: ${account.name || 'Account'}`}
+        className="relative flex items-center justify-center rounded-full p-0.5 border border-white/20 bg-white/5 hover:bg-white/15 hover:border-white/40 focus-visible:ring-2 focus-visible:ring-white/40 transition-all outline-none active:scale-95 shadow-md shrink-0"
         onClick={(event) => {
           const via = viaOf(event);
           openMenu(via, via === 'keyboard' ? 'first' : 'menu');
@@ -880,23 +717,10 @@ export function ProfileDropdown({
         ref={triggerRef}
         type="button"
       >
-        <span className="min-w-0 flex-1">
-          <Identity
-            account={account}
-            shared={!sharedInPanel}
-            stacked={false}
-            status={status}
-            tone={tone}
-            transition={sharedTransition}
-            uid={uid}
-          />
-        </span>
-        <ChevronsUpDown
-          aria-hidden="true"
-          className={cn(
-            'size-3.5 sm:size-4 shrink-0 text-zinc-400 transition-opacity duration-150',
-            phase !== 'closed' && 'opacity-0'
-          )}
+        <Avatar
+          account={account}
+          className="size-8 sm:size-9 rounded-full"
+          tone={tone}
         />
       </button>
 
@@ -944,7 +768,6 @@ export function ProfileDropdown({
                     account={account}
                     shared={sharedInPanel}
                     stacked
-                    status={status}
                     tone={tone}
                     transition={sharedTransition}
                     uid={uid}
@@ -966,13 +789,6 @@ export function ProfileDropdown({
                   style={{ opacity: bodyOpacity }}
                   tabIndex={-1}
                 >
-                  <StatusRow onChange={setStatus} status={status} />
-                  <ThemeRow
-                    onChange={setTheme}
-                    reduced={reduced}
-                    theme={theme}
-                    uid={uid}
-                  />
                   <Separator />
                   {items.map((item, index) => (
                     <LinkItem
@@ -1074,7 +890,6 @@ export function ProfileDropdown({
                         <Avatar
                           account={entry}
                           className="size-7"
-                          status={checked ? status : undefined}
                           tone={index}
                         />
                         <span className="flex min-w-0 flex-1 flex-col">

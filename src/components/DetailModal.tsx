@@ -5,7 +5,6 @@ import {
   Plus,
   Check,
   ThumbsUp,
-  Users,
   Sparkles,
   Zap,
   Server,
@@ -15,7 +14,6 @@ import { api } from '../services/api';
 import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
 import { useSettingsStore } from '../store/settingsStore';
-import { WatchPartyModal } from './WatchPartyModal';
 import {
   STREAM_PROVIDERS,
   ProviderCategory,
@@ -43,7 +41,6 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   const [isLiked, setIsLiked] = useState(() => authStorage.isLiked(item.id));
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
-  const [isPartyOpen, setIsPartyOpen] = useState(false);
   const { defaultProvider } = useSettingsStore();
   const [selectedCategory, setSelectedCategory] = useState<ProviderCategory>('fastest');
   const [selectedProviderId, setSelectedProviderId] = useState<string>(() => {
@@ -73,16 +70,12 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isPartyOpen) {
-          setIsPartyOpen(false);
-        } else {
-          onClose();
-        }
+        onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPartyOpen, onClose]);
+  }, [onClose]);
 
   const toggleWatchlist = () => {
     const state = authStorage.toggleWatchlist(item.id, item);
@@ -290,20 +283,6 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                   }}
                 />
               </md-outlined-icon-button>
-
-              <md-filled-tonal-button
-                onClick={() => setIsPartyOpen(true)}
-                title="Watch Party"
-                className="h-11 sm:h-12"
-                style={{
-                  '--md-filled-tonal-button-container-color': 'rgba(58, 71, 80, 0.85)',
-                  '--md-filled-tonal-button-label-text-color': '#FFFFFF',
-                  '--md-filled-tonal-button-icon-color': accentHex,
-                }}
-              >
-                <Users className="h-4 w-4" slot="icon" style={{ color: accentHex }} />
-                <span className="hidden sm:inline">Watch Party</span>
-              </md-filled-tonal-button>
             </div>
 
             {/* Mobile Tab Bar */}
@@ -662,12 +641,6 @@ export const DetailModal: React.FC<DetailModalProps> = ({
           </div>
         </div>
       </main>
-
-      {/* Watch Party Modal */}
-      <WatchPartyModal
-        isOpen={isPartyOpen}
-        onClose={() => setIsPartyOpen(false)}
-      />
     </div>
   );
 };

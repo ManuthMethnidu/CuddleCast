@@ -4,7 +4,6 @@ import {
   Server,
   ChevronDown,
   RefreshCw,
-  Users,
   Maximize2,
   Minimize2,
   AlertTriangle,
@@ -16,7 +15,6 @@ import { authStorage } from '../services/storage';
 import { useAccent } from '../context/AccentContext';
 import { usePlayerStore } from '../store/playerStore';
 import { useSettingsStore } from '../store/settingsStore';
-import { WatchPartyModal } from './WatchPartyModal';
 import {
   STREAM_PROVIDERS,
   VIDFAST_SERVERS,
@@ -74,7 +72,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [selectedServerId, setSelectedServerId] = useState<string>('Alpha');
   const [showServerMenu, setShowServerMenu] = useState(false);
   const [menuTab, setMenuTab] = useState<ProviderCategory | 'vidfast-nodes'>('fastest');
-  const [showParty, setShowParty] = useState(false);
   const [showTopBar, setShowTopBar] = useState(true);
   const [isIframeLoading, setIsIframeLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
@@ -214,11 +211,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       window.clearTimeout(hideTimerRef.current);
     }
     hideTimerRef.current = window.setTimeout(() => {
-      if (!showServerMenu && !showParty && !hasStreamError && !isIframeLoading) {
+      if (!showServerMenu && !hasStreamError && !isIframeLoading) {
         setShowTopBar(false);
       }
     }, 3800);
-  }, [showServerMenu, showParty, hasStreamError, isIframeLoading]);
+  }, [showServerMenu, hasStreamError, isIframeLoading]);
 
   useEffect(() => {
     return () => {
@@ -234,8 +231,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       if (e.key === 'Escape') {
         if (showServerMenu) {
           setShowServerMenu(false);
-        } else if (showParty) {
-          setShowParty(false);
         } else {
           onClose();
         }
@@ -247,7 +242,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showServerMenu, showParty, onClose, nextProvider]);
+  }, [showServerMenu, onClose, nextProvider]);
 
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
@@ -631,16 +626,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
             <RefreshCw className="h-3.5 w-3.5" />
           </button>
 
-          {/* Watch Party Button */}
-          <button
-            onClick={() => setShowParty(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 hover:bg-white/20 border border-white/15 text-xs font-semibold text-white backdrop-blur-md transition-all active:scale-95 shadow-lg"
-            title="Start Watch Party"
-          >
-            <Users className="h-3.5 w-3.5" style={{ color: accentHex }} />
-            <span className="hidden sm:inline">Party</span>
-          </button>
-
           {/* Fullscreen Button */}
           <button
             onClick={toggleFullscreen}
@@ -655,14 +640,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </button>
         </div>
       </div>
-
-      {/* Watch Party Modal */}
-      {showParty && (
-        <WatchPartyModal
-          isOpen={showParty}
-          onClose={() => setShowParty(false)}
-        />
-      )}
     </div>
   );
 };

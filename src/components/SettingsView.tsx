@@ -16,10 +16,12 @@ import {
   ArrowLeftRight,
   UserCog,
   Palette,
+  Sliders,
 } from 'lucide-react';
 import { useAccent, ACCENT_OPTIONS } from '../context/AccentContext';
 import { M3Badge } from './m3';
-import { useSettingsStore, PerformanceMode } from '../store/settingsStore';
+import { useSettingsStore, PerformanceMode, DEFAULT_NAV_ITEMS } from '../store/settingsStore';
+import { ALL_NAV_ITEMS } from './NavbarCustomizerModal';
 import { STREAM_PROVIDERS } from '../services/providers';
 import { authStorage } from '../services/storage';
 import { useUser, useClerk, useSessionList } from '@clerk/react';
@@ -522,6 +524,161 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </section>
 
         {/* ========================================================
+            TOP NAVIGATION BAR & SWIPE TABS CUSTOMIZATION
+           ======================================================== */}
+        <section className="space-y-4 border-t border-white/10 pt-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 border border-white/10"
+                style={{ color: accentHex }}
+              >
+                <Sliders className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white tracking-tight">
+                  Top Navigation Bar & Categories
+                </h2>
+                <p className="text-xs text-zinc-400">
+                  Select which categories appear on your top navigation bar. Menu, Logo, Search, and Profile remain permanently docked.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                settings.setEnabledNavItems(DEFAULT_NAV_ITEMS);
+                showNotification('Top navbar categories reset to defaults');
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all self-start sm:self-auto"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Reset Defaults</span>
+            </button>
+          </div>
+
+          {/* Swipe gesture physics note based on performanceMode */}
+          <div className="rounded-2xl bg-[#18181d] border border-white/10 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`p-1.5 rounded-lg ${
+                  settings.performanceMode === 'high'
+                    ? 'bg-emerald-500/20 text-emerald-400'
+                    : 'bg-white/10 text-zinc-400'
+                }`}
+              >
+                <Zap className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="font-bold text-white">
+                  Swipe Navigation Physics:{' '}
+                  <span
+                    className={
+                      settings.performanceMode === 'high'
+                        ? 'text-emerald-400 font-extrabold'
+                        : 'text-zinc-400 font-normal'
+                    }
+                  >
+                    {settings.performanceMode === 'high'
+                      ? 'Active (Spring & Rubber-Band Flick)'
+                      : 'Standard (Instant Switch)'}
+                  </span>
+                </p>
+                <p className="text-[11px] text-zinc-400 mt-0.5">
+                  {settings.performanceMode === 'high'
+                    ? 'Physics-based touch & pointer swipe gestures enabled across top bar categories.'
+                    : 'Set Performance Mode above to "High" to enable continuous spring swipe gestures.'}
+                </p>
+              </div>
+            </div>
+
+            <span className="font-mono text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300">
+              {settings.enabledNavItems.length} of {ALL_NAV_ITEMS.length} Tabs Visible
+            </span>
+          </div>
+
+          {/* Categories 12-Item Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pt-1">
+            {ALL_NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isEnabled = settings.enabledNavItems.includes(item.id);
+              const isHome = item.id === 'all';
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => {
+                    if (isHome) return;
+                    settings.toggleNavItem(item.id);
+                    showNotification(
+                      `${isEnabled ? 'Removed' : 'Added'} ${item.label} ${
+                        isEnabled ? 'from' : 'to'
+                      } navbar`
+                    );
+                  }}
+                  className={`
+                    flex items-center justify-between p-3.5 rounded-2xl border transition-all select-none
+                    ${
+                      isHome
+                        ? 'bg-white/10 border-white/20 opacity-90 cursor-default'
+                        : isEnabled
+                        ? 'bg-white/10 border-white/30 hover:border-white/40 cursor-pointer shadow-md'
+                        : 'bg-[#18181d] border-white/5 hover:border-white/15 opacity-60 hover:opacity-100 cursor-pointer'
+                    }
+                  `}
+                  style={{
+                    borderColor: isEnabled ? `${accentHex}60` : undefined,
+                  }}
+                >
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <div
+                      className="p-2 rounded-xl shrink-0"
+                      style={{
+                        backgroundColor: isEnabled
+                          ? `${accentHex}25`
+                          : 'rgba(255,255,255,0.06)',
+                        color: isEnabled ? accentHex : '#94a3b8',
+                      }}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-white truncate">
+                          {item.label}
+                        </span>
+                        {item.badge && (
+                          <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-full bg-white/10 text-zinc-300">
+                            {item.badge}
+                          </span>
+                        )}
+                        {isHome && (
+                          <span className="text-[9px] font-semibold text-emerald-400 uppercase tracking-wider">
+                            (Required)
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-zinc-400 truncate mt-0.5">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`h-5 w-5 rounded-md flex items-center justify-center shrink-0 border transition-all ${
+                      isEnabled
+                        ? 'bg-white text-black border-white shadow'
+                        : 'border-white/20 bg-white/5 text-transparent'
+                    }`}
+                  >
+                    <Check className="h-3 w-3 stroke-[3]" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ========================================================
             4. PLAYBACK ENGINE PREFERENCES
            ======================================================== */}
         <section className="space-y-4 border-t border-white/10 pt-8">
@@ -729,7 +886,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     You are currently browsing as a Guest
                   </h3>
                   <p className="text-xs text-zinc-400 mt-0.5">
-                    Sign in to synchronize your watchlist, watch party preferences, and playback history across devices.
+                    Sign in to synchronize your watchlist, playback preferences, and history across devices.
                   </p>
                 </div>
 
