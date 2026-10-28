@@ -12,12 +12,14 @@ import {
   Square,
   Sparkles,
   Waves,
+  Layers,
 } from 'lucide-react';
 import { useRadioStore, getGlobalRadioAudio } from '../store/radioStore';
 import { useAccent } from '../context/AccentContext';
 import { authStorage } from '../services/storage';
 import { radioRecorder, ActiveRecordingState } from '../services/radioRecorder';
-import { MicroSlats, PresetKey } from './MicroSlats';
+import { MicroSlats, PresetKey as SlatsPreset } from './MicroSlats';
+import { CrystalizedBall, BallPreset } from './CrystalizedBall';
 
 // Global persistent Web Audio bridge for Radio stream analysis
 let sharedAudioCtx: AudioContext | null = null;
@@ -56,7 +58,7 @@ function initSharedAudioBridge(audioEl: HTMLAudioElement) {
   }
 }
 
-// Resilient Audio Bridge implementing getFrequencyData for MicroSlats
+// Resilient Audio Bridge implementing getFrequencyData for visualizers
 class ResilientAudioBridge {
   private freqArray: Uint8Array = new Uint8Array(1024);
 
@@ -106,9 +108,11 @@ export const RadioScreensaver: React.FC = () => {
     currentStation,
     isPlaying,
     isScreensaverOpen,
+    screensaverTheme,
     volume,
     isMuted,
     setScreensaverOpen,
+    setScreensaverTheme,
     togglePlay,
     wander,
     setVolume,
@@ -122,7 +126,8 @@ export const RadioScreensaver: React.FC = () => {
   }
 
   const [isFavorited, setIsFavorited] = useState(false);
-  const [activePreset, setActivePreset] = useState<PresetKey>('storm');
+  const [activeBallPreset, setActiveBallPreset] = useState<BallPreset>('plasma');
+  const [activeSlatsPreset, setActiveSlatsPreset] = useState<SlatsPreset>('storm');
   const [isIdle, setIsIdle] = useState(false);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -154,20 +159,28 @@ export const RadioScreensaver: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!isScreensaverOpen) return;
+    if (!isScreensaverOpen) {
+      setIsIdle(false);
+      return;
+    }
+    setIsIdle(false);
     resetIdleTimer();
 
     const handleActivity = () => resetIdleTimer();
 
     window.addEventListener('mousemove', handleActivity, { passive: true });
+    window.addEventListener('pointermove', handleActivity, { passive: true });
     window.addEventListener('mousedown', handleActivity, { passive: true });
+    window.addEventListener('pointerdown', handleActivity, { passive: true });
     window.addEventListener('keydown', handleActivity, { passive: true });
     window.addEventListener('touchstart', handleActivity, { passive: true });
 
     return () => {
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('pointermove', handleActivity);
       window.removeEventListener('mousedown', handleActivity);
+      window.removeEventListener('pointerdown', handleActivity);
       window.removeEventListener('keydown', handleActivity);
       window.removeEventListener('touchstart', handleActivity);
     };
@@ -212,57 +225,99 @@ export const RadioScreensaver: React.FC = () => {
     setIsFavorited(!isFav);
   };
 
+  const isBallMode = screensaverTheme !== 'microslats';
+
+  const toggleVisualizerMode = () => {
+    const nextTheme = isBallMode ? 'microslats' : 'crystalized-ball';
+    setScreensaverTheme(nextTheme);
+  };
+
   const cyclePreset = () => {
-    const presets: PresetKey[] = ['storm', 'swell', 'tide', 'signal'];
-    const nextIdx = (presets.indexOf(activePreset) + 1) % presets.length;
-    setActivePreset(presets[nextIdx]);
+    if (isBallMode) {
+      const presets: BallPreset[] = [
+        'plasma',
+        'aurora',
+        'nebula',
+        'ember',
+        'frost',
+        'solar',
+        'abyss',
+        'eclipse',
+      ];
+      const nextIdx = (presets.indexOf(activeBallPreset) + 1) % presets.length;
+      setActiveBallPreset(presets[nextIdx]);
+    } else {
+      const presets: SlatsPreset[] = ['storm', 'swell', 'tide', 'signal'];
+      const nextIdx = (presets.indexOf(activeSlatsPreset) + 1) % presets.length;
+      setActiveSlatsPreset(presets[nextIdx]);
+    }
   };
 
   const isAudioActive = isPlaying && !isMuted && volume > 0;
+  const currentPresetName = isBallMode ? activeBallPreset : activeSlatsPreset;
 
   return (
     <div
       onClick={(e) => {
-        // Clicking directly on the canvas/background closes screensaver
+        // Clicking directly on background closes screensaver
         if (e.target === e.currentTarget) {
           setScreensaverOpen(false);
         }
       }}
       className="fixed inset-0 z-[1000] text-white select-none overflow-hidden bg-[#030712] animate-in fade-in duration-300"
     >
-      {/* Sound-Reactive MicroSlats WebGL Canvas */}
-      <div className="absolute inset-0 w-full h-full">
-        <MicroSlats
-          preset={activePreset}
-          color={accentHex}
-          glintColor="#ffffff"
-          backgroundColor="#030712"
-          audioProvider={audioBridgeRef.current}
-          isAudioPlaying={isAudioActive}
-          interactive={true}
-          cursorStrength={1.4}
-          cursorSize={52}
-          swirl={1.2}
-          trail={1.8}
-          lean={0.4}
-          intro={false}
-        />
+      {/* Sound-Reactive 3D Visualizer Canvas */}
+      <div className="absolute inset-0 w-full h-full z-0 pointer-events-auto">
+        {isBallMode ? (
+          <CrystalizedBall
+            preset={activeBallPreset}
+            color={accentHex}
+            theme="dark"
+            size={0.76}
+            speed={1.05}
+            interactive={true}
+            hoverStrength={0.85}
+            audioProvider={audioBridgeRef.current}
+            isAudioPlaying={isAudioActive}
+            intro={false}
+          />
+        ) : (
+          <MicroSlats
+            preset={activeSlatsPreset}
+            color={accentHex}
+            glintColor="#ffffff"
+            backgroundColor="#030712"
+            audioProvider={audioBridgeRef.current}
+            isAudioPlaying={isAudioActive}
+            interactive={true}
+            cursorStrength={1.4}
+            cursorSize={52}
+            swirl={1.2}
+            trail={1.8}
+            lean={0.4}
+            intro={false}
+          />
+        )}
       </div>
 
-      {/* Top subtle controls: Mode indicator & Exit button (Auto-hides on idle) */}
+      {/* Top subtle controls: Visualizer Badge & Exit button (Auto-hides on idle) */}
       <div
-        className={`fixed top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none transition-all duration-500 ease-out ${
-          isIdle
-            ? 'opacity-0 -translate-y-2'
-            : 'opacity-100 translate-y-0'
+        className={`absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-none transition-all duration-500 ease-out ${
+          isIdle ? 'opacity-0 -translate-y-2' : 'opacity-100 translate-y-0'
         }`}
       >
         <div className="flex items-center gap-2 pointer-events-auto">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 text-xs font-mono text-zinc-300 shadow-lg">
+          <button
+            onClick={cyclePreset}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 hover:bg-white/10 backdrop-blur-xl border border-white/10 text-xs font-mono text-zinc-300 shadow-lg transition-colors cursor-pointer"
+            title="Click to cycle color preset"
+          >
             <Sparkles className="w-3.5 h-3.5 animate-pulse" style={{ color: accentHex }} />
-            <span className="font-semibold tracking-wider uppercase">Sound MicroSlats</span>
-            <span className="text-[10px] text-zinc-500">• {activePreset}</span>
-          </div>
+            <span className="font-semibold tracking-wider uppercase">
+              {isBallMode ? 'Crystalized Ball' : 'Sound MicroSlats'}
+            </span>
+            <span className="text-[10px] text-zinc-400">• {currentPresetName}</span>
+          </button>
         </div>
 
         <button
@@ -281,7 +336,7 @@ export const RadioScreensaver: React.FC = () => {
           setIsIdle(false);
         }}
         onMouseLeave={resetIdleTimer}
-        className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 max-w-[94vw] transition-all duration-500 ease-out ${
+        className={`absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 max-w-[94vw] transition-all duration-500 ease-out ${
           isIdle
             ? 'opacity-0 translate-y-4 pointer-events-none'
             : 'opacity-100 translate-y-0 pointer-events-auto'
@@ -305,7 +360,7 @@ export const RadioScreensaver: React.FC = () => {
                 <Radio className="w-4 h-4 text-zinc-300" />
               </div>
             )}
-            <div className="flex flex-col min-w-0 max-w-[110px] xs:max-w-[140px] sm:max-w-[200px]">
+            <div className="flex flex-col min-w-0 max-w-[110px] xs:max-w-[140px] sm:max-w-[180px]">
               <span className="text-xs sm:text-sm font-semibold text-white truncate leading-tight">
                 {currentStation ? currentStation.name : 'No Station'}
               </span>
@@ -378,11 +433,22 @@ export const RadioScreensaver: React.FC = () => {
               <Compass className="w-4 h-4" />
             </button>
 
-            {/* Visualizer Preset Switcher */}
+            {/* Switch Visualizer Mode: Crystalized Ball <-> MicroSlats */}
+            <button
+              onClick={toggleVisualizerMode}
+              className="p-2 rounded-xl text-zinc-400 hover:text-purple-300 hover:bg-white/10 transition-all flex items-center gap-1"
+              title={`Switch Visualizer Mode (Active: ${
+                isBallMode ? 'Crystalized Ball' : 'MicroSlats'
+              })`}
+            >
+              <Layers className="w-4 h-4 text-purple-400" />
+            </button>
+
+            {/* Color Preset Switcher */}
             <button
               onClick={cyclePreset}
               className="p-2 rounded-xl text-zinc-400 hover:text-amber-300 hover:bg-white/10 transition-all"
-              title={`Switch wave preset (Current: ${activePreset})`}
+              title={`Switch color preset (Current: ${currentPresetName})`}
             >
               <Waves className="w-4 h-4" />
             </button>
@@ -427,7 +493,7 @@ export const RadioScreensaver: React.FC = () => {
 
         {/* Subtle idle helper hint */}
         <span className="text-[11px] font-mono text-zinc-500 drop-shadow select-none">
-          Click background or press Esc to exit • Drag surface to splash
+          Click background or press Esc to exit • Drag surface to interact
         </span>
       </div>
     </div>
