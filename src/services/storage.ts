@@ -730,7 +730,7 @@ class StorageService {
       isOnboardingCompleted: parsed.isOnboardingCompleted ?? onboarding.completed ?? false,
       volume: typeof parsed.volume === 'number' ? parsed.volume : 0.85,
       isMuted: parsed.isMuted ?? false,
-      screensaverTheme: 'waviz-bars',
+      screensaverTheme: parsed.screensaverTheme || 'microslats',
       lastStation: parsed.lastStation || null,
       favoriteStations: parsed.favoriteStations || favoriteStations || [],
       recentStations: parsed.recentStations || recentStations || [],
@@ -743,7 +743,7 @@ class StorageService {
     const updated: RadioPreferencesPayload = {
       ...current,
       ...data,
-      screensaverTheme: 'waviz-bars', // Only bar screensaver is retained
+      screensaverTheme: data.screensaverTheme || current.screensaverTheme || 'microslats',
     };
     const key = this.getKey(STORAGE_KEYS.RADIO_PREFERENCES, uid);
     localStorage.setItem(key, JSON.stringify(updated));

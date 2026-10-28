@@ -224,7 +224,7 @@ export const RadioSongPill: React.FC = () => {
         <button
           onClick={() => setScreensaverOpen(true)}
           className="p-1.5 sm:p-2 rounded-full text-zinc-400 hover:text-amber-300 hover:bg-white/10 transition-colors flex-shrink-0"
-          title="Open RPG / Low-Poly Screensaver"
+          title="Open Sound MicroSlats Screensaver"
         >
           <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>

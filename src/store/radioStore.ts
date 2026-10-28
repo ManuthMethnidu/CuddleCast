@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { RadioBrowserStation, radioBrowserApi } from '../services/radioBrowser';
 import { authStorage } from '../services/storage';
 
-export type ScreensaverTheme = 'waviz-bars';
+export type ScreensaverTheme = 'microslats' | 'waviz-bars';
 
 export interface UserRadioPreferences {
   countryCode: string;
@@ -86,7 +86,7 @@ export const useRadioStore = create<RadioState>()(
       isMuted: false,
       isPillVisible: false,
       isScreensaverOpen: false,
-      screensaverTheme: 'waviz-bars',
+      screensaverTheme: 'microslats',
       userPreferences: {
         countryCode: 'US',
         countryName: 'United States',
@@ -218,8 +218,9 @@ export const useRadioStore = create<RadioState>()(
         set({ isScreensaverOpen: open });
       },
 
-      setScreensaverTheme: (_theme: ScreensaverTheme) => {
-        set({ screensaverTheme: 'waviz-bars' });
+      setScreensaverTheme: (theme: ScreensaverTheme) => {
+        set({ screensaverTheme: theme });
+        authStorage.saveRadioPreferences({ screensaverTheme: theme });
       },
 
       setStreamStatus: ({ isLoading, hasError }) => {
