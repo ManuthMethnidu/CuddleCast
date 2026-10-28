@@ -2,10 +2,30 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type PerformanceMode = 'low' | 'medium' | 'high';
+export type AccountStatus = 'online' | 'away' | 'busy';
+export type AccountTheme = 'light' | 'dark' | 'system';
+
+export const DEFAULT_NAV_ITEMS = [
+  'all',
+  'sports',
+  'manga',
+  'anime',
+  'live-tv',
+  'radio',
+  'discover',
+  'library',
+];
 
 export interface UserSettingsState {
   // System Performance Mode (low = potato/max performance, medium = balanced, high = cinematic)
   performanceMode: PerformanceMode;
+
+  // Navigation Bar Customization
+  enabledNavItems: string[];
+
+  // User Profile Status & Theme
+  userStatus: AccountStatus;
+  themeMode: AccountTheme;
 
   // Browsing Experience
   billboard: boolean;
@@ -24,6 +44,10 @@ export interface UserSettingsState {
 
   // Actions
   setPerformanceMode: (mode: PerformanceMode) => void;
+  setEnabledNavItems: (items: string[]) => void;
+  toggleNavItem: (id: string) => void;
+  setUserStatus: (status: AccountStatus) => void;
+  setThemeMode: (theme: AccountTheme) => void;
   setBillboard: (enabled: boolean) => void;
   setRatings: (enabled: boolean) => void;
   setWideContinue: (enabled: boolean) => void;
@@ -40,6 +64,9 @@ export interface UserSettingsState {
 
 const DEFAULT_SETTINGS = {
   performanceMode: 'high' as PerformanceMode,
+  enabledNavItems: DEFAULT_NAV_ITEMS,
+  userStatus: 'online' as AccountStatus,
+  themeMode: 'dark' as AccountTheme,
   billboard: true,
   ratings: true,
   wideContinue: true,
@@ -55,7 +82,7 @@ const DEFAULT_SETTINGS = {
 
 export const useSettingsStore = create<UserSettingsState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...DEFAULT_SETTINGS,
 
       setPerformanceMode: (performanceMode) => {
@@ -63,6 +90,35 @@ export const useSettingsStore = create<UserSettingsState>()(
           document.documentElement.setAttribute('data-performance', performanceMode);
         }
         set({ performanceMode });
+      },
+      setEnabledNavItems: (enabledNavItems) => set({ enabledNavItems }),
+      toggleNavItem: (id: string) => {
+        const current = get().enabledNavItems || DEFAULT_NAV_ITEMS;
+        if (current.includes(id)) {
+          // Keep at least 1 nav item
+          if (current.length > 1) {
+            set({ enabledNavItems: current.filter((item) => item !== id) });
+          }
+        } else {
+          set({ enabledNavItems: [...current, id] });
+        }
+      },
+      setUserStatus: (userStatus) => set({ userStatus }),
+      setThemeMode: (themeMode) => {
+        if (typeof document !== 'undefined') {
+          if (themeMode === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+          } else if (themeMode === 'light') {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+          } else {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', prefersDark);
+            document.documentElement.classList.toggle('light', !prefersDark);
+          }
+        }
+        set({ themeMode });
       },
       setBillboard: (billboard) => set({ billboard }),
       setRatings: (ratings) => set({ ratings }),
