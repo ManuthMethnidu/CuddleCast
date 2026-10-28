@@ -10,13 +10,13 @@ import {
   Tv2,
   Trophy,
   UserCog,
+  Sliders,
 } from 'lucide-react';
 import { useAccent } from '../context/AccentContext';
 import { useUser, useClerk, useSessionList } from '@clerk/react';
 import { EchoraLogo } from './EchoraLogo';
-import { SmoothTab, SwipeTabItem } from './SmoothTab';
 import { ProfileDropdown, Account, ProfileMenuItem } from './ProfileDropdown';
-import { ALL_NAV_ITEMS } from './NavbarCustomizerModal';
+import { NavbarCustomizerModal, ALL_NAV_ITEMS } from './NavbarCustomizerModal';
 import { useSettingsStore, DEFAULT_NAV_ITEMS } from '../store/settingsStore';
 
 interface NavbarProps {
@@ -43,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [isNavbarCustomizerOpen, setIsNavbarCustomizerOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -78,17 +79,10 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [searchQuery]);
 
-  // Map enabled navigation items to KokonutUI SwipeTabItem[]
-  const visibleNavDefs = ALL_NAV_ITEMS.filter((item) =>
+  // Visible navigation categories dynamically driven by user selection
+  const visibleNavCategories = ALL_NAV_ITEMS.filter((item) =>
     enabledNavItems.includes(item.id)
   );
-
-  const swipeTabs: SwipeTabItem[] = visibleNavDefs.map((item) => ({
-    id: item.id,
-    title: item.label,
-    icon: item.icon as any,
-    badge: item.badge,
-  }));
 
   // Prepare accounts for KokonutUI ProfileDropdown
   const dropdownAccounts: Account[] =
@@ -119,8 +113,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           },
         ];
 
-  // Menu items inside KokonutUI ProfileDropdown (All settings centralized in System Settings)
+  // Menu items inside KokonutUI ProfileDropdown
   const profileMenuItems: ProfileMenuItem[] = [
+    {
+      label: 'Customize Navbar',
+      icon: <Sliders className="size-4" />,
+      value: 'Select',
+      onSelect: () => setIsNavbarCustomizerOpen(true),
+    },
     {
       label: 'Profile',
       icon: <UserCog className="size-4" />,
@@ -152,9 +152,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             : 'bg-gradient-to-b from-[#303841]/90 via-[#303841]/40 to-transparent pt-3 pb-2.5 sm:pt-4 sm:pb-3'
         }`}
       >
-        <div className="mx-auto flex items-center justify-between max-w-[1600px] px-3.5 sm:px-6 lg:px-8 gap-2 sm:gap-4">
-          {/* Left: Menu Trigger + Echora Logo */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div className="mx-auto flex items-center justify-between max-w-[1560px] px-3.5 sm:px-6 lg:px-8">
+          {/* Left: Menu Trigger + Echora Logo + Desktop Nav Tabs */}
+          <div className="flex items-center gap-2 sm:gap-5 lg:gap-7 min-w-0">
             {onToggleSidebar && (
               <md-icon-button
                 onClick={onToggleSidebar}
@@ -176,19 +176,75 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <EchoraLogo size="md" />
             </a>
-          </div>
 
-          {/* Center: KokonutUI Smooth Swipe Tabs (Swipes only on High Performance) */}
-          <div className="hidden md:flex items-center flex-1 justify-center min-w-0 max-w-3xl overflow-x-auto no-scrollbar py-0.5">
-            <SmoothTab
-              items={swipeTabs}
-              value={activeCategory}
-              onChange={(catId) => onCategoryChange(catId)}
-              hidePanels={true}
-              className="w-full flex justify-center"
-              activeColor="bg-white/20 backdrop-blur-md shadow-md"
-              activeTextColor="text-white font-semibold"
-            />
+            {/* Desktop Nav Tabs (Old classic nav links, dynamically driven by user selection) */}
+            <nav className="hidden md:flex items-center gap-5 lg:gap-6 text-sm font-medium overflow-x-auto no-scrollbar py-0.5">
+              {visibleNavCategories.map((cat) => {
+                const isSelected =
+                  activeCategory === cat.id ||
+                  (cat.id === 'all' && activeCategory === 'home');
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => onCategoryChange(cat.id)}
+                    className="relative py-1 font-medium transition-colors hover:text-white flex items-center gap-1.5 shrink-0"
+                    style={{
+                      color: isSelected ? '#ffffff' : 'var(--dx-text-2)',
+                      fontWeight: isSelected ? 700 : 500,
+                    }}
+                  >
+                    <span>{cat.label}</span>
+                    {cat.badge && (
+                      <span
+                        className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full leading-none"
+                        style={{
+                          backgroundColor: `${accentHex}30`,
+                          color: accentHex,
+                          border: `1px solid ${accentHex}60`,
+                        }}
+                      >
+                        {cat.badge}
+                      </span>
+                    )}
+                    {/* Underline */}
+                    {isSelected && (
+                      <span
+                        className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full transition-transform duration-300"
+                        style={{ background: accentHex }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+
+              {/* Settings Tab */}
+              <button
+                onClick={() => onCategoryChange('settings')}
+                className="relative py-1 font-medium transition-colors hover:text-white shrink-0"
+                style={{
+                  color: activeCategory === 'settings' ? '#ffffff' : 'var(--dx-text-2)',
+                  fontWeight: activeCategory === 'settings' ? 700 : 500,
+                }}
+              >
+                <span>Settings</span>
+                {activeCategory === 'settings' && (
+                  <span
+                    className="absolute -bottom-1 left-0 right-0 h-[2px] rounded-full transition-transform duration-300"
+                    style={{ background: accentHex }}
+                  />
+                )}
+              </button>
+
+              {/* Quick Customize Navigation button */}
+              <button
+                onClick={() => setIsNavbarCustomizerOpen(true)}
+                title="Customize Navigation Categories"
+                aria-label="Customize Navigation Categories"
+                className="p-1 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+              >
+                <Sliders className="h-3.5 w-3.5" />
+              </button>
+            </nav>
           </div>
 
           {/* Right: Search & Profile Pic Dropdown */}
@@ -310,6 +366,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </button>
       </nav>
+
+      {/* Navbar Customizer Modal for user category selection */}
+      <NavbarCustomizerModal
+        isOpen={isNavbarCustomizerOpen}
+        onClose={() => setIsNavbarCustomizerOpen(false)}
+      />
     </>
   );
 };
