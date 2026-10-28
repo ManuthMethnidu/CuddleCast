@@ -191,24 +191,24 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-2xl animate-in fade-in duration-200 select-none">
-      <div className="relative w-full max-w-2xl bg-[#0f141e] border border-white/15 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col max-h-[92vh] overflow-hidden text-white">
+      <div className="relative w-full max-w-2xl bg-[#252b32] border border-[rgba(243,243,243,0.15)] rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col max-h-[92vh] overflow-hidden text-[#F3F3F3]">
         {/* Top Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+        <div className="p-6 border-b border-[rgba(243,243,243,0.10)] flex items-center justify-between bg-[#1e252e]/60">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg"
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg ring-1 ring-white/10"
               style={{ backgroundColor: `${accentHex}25`, color: accentHex }}
             >
               <Radio className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+              <h2 className="text-lg font-bold tracking-tight text-[#F3F3F3] flex items-center gap-2">
                 <span>Personalize Your Radio</span>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-zinc-300">
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#353f49] text-[rgba(243,243,243,0.80)] border border-[rgba(243,243,243,0.10)]">
                   Step {step} of 3
                 </span>
               </h2>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-[rgba(243,243,243,0.60)]">
                 {step === 1 && 'Where in the world are you tuning in from?'}
                 {step === 2 && 'What vibes and genres match your day?'}
                 {step === 3 && 'Pick your starter favorites to curate your feed!'}
@@ -228,7 +228,7 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
               setIsOnboardingOpen(false);
               if (onClose) onClose();
             }}
-            className="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-full text-[rgba(243,243,243,0.50)] hover:text-white hover:bg-[rgba(243,243,243,0.08)] transition-colors active:scale-95"
             title="Skip and start exploring"
           >
             <X className="w-5 h-5" />
@@ -236,9 +236,9 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
         </div>
 
         {/* Step Progress Bar */}
-        <div className="h-1 bg-white/5 w-full">
+        <div className="h-1 bg-[#1e252e] w-full">
           <div
-            className="h-full transition-all duration-300"
+            className="h-full transition-all duration-300 shadow-[0_0_8px_rgba(33,133,213,0.6)]"
             style={{
               width: step === 1 ? '33.3%' : step === 2 ? '66.6%' : '100%',
               backgroundColor: accentHex,
@@ -252,25 +252,25 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
           {step === 1 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold text-zinc-300">Select Your Country</span>
+                <span className="text-sm font-semibold text-[#F3F3F3]">Select Your Country</span>
                 <button
                   onClick={handleCountryAutoDetect}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-zinc-200 transition-all active:scale-95 border border-white/10"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#353f49] hover:bg-[#3A4750] text-xs text-[#F3F3F3] transition-all active:scale-95 border border-[rgba(243,243,243,0.12)] shadow-sm"
                 >
-                  <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                  <MapPin className="w-3.5 h-3.5 text-[#2185D5]" />
                   <span>Auto-Detect</span>
                 </button>
               </div>
 
               {/* Search Country Input */}
               <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[rgba(243,243,243,0.45)]" />
                 <input
                   type="text"
                   placeholder="Search countries (e.g. Germany, Japan, United States)..."
                   value={countrySearch}
                   onChange={(e) => setCountrySearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-black/40 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#1e252e] border border-[rgba(243,243,243,0.14)] text-sm text-[#F3F3F3] placeholder-[rgba(243,243,243,0.45)] focus:outline-none focus:border-[#2185D5] focus:ring-1 focus:ring-[#2185D5]/50"
                 />
               </div>
 
@@ -282,12 +282,11 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
                     <button
                       key={c.code}
                       onClick={() => setSelectedCountry(c.code)}
-                      className={`flex items-center justify-between p-3 rounded-2xl text-left border transition-all ${
+                      className={`flex items-center justify-between p-3 rounded-2xl text-left border transition-all active:scale-[0.98] ${
                         isSelected
-                          ? 'bg-white/15 text-white font-semibold shadow-md'
-                          : 'bg-white/[0.03] hover:bg-white/[0.08] text-zinc-300 border-white/5'
+                          ? 'bg-[#3A4750] text-[#F3F3F3] font-semibold border-[#2185D5] shadow-md ring-1 ring-[#2185D5]/50'
+                          : 'bg-[#353f49]/70 hover:bg-[#3A4750] text-[rgba(243,243,243,0.80)] border-[rgba(243,243,243,0.08)]'
                       }`}
-                      style={isSelected ? { borderColor: accentHex } : {}}
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <span className="text-xl flex-shrink-0">{getCountryFlag(c.code)}</span>
@@ -305,10 +304,10 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
           {step === 2 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-zinc-300">
+                <span className="text-sm font-semibold text-[#F3F3F3]">
                   Select your favorite listening vibes:
                 </span>
-                <span className="text-xs text-zinc-400 font-mono">
+                <span className="text-xs text-[rgba(243,243,243,0.60)] font-mono tabular-nums">
                   {selectedGenres.length} selected
                 </span>
               </div>
@@ -321,27 +320,26 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
                     <button
                       key={g.id}
                       onClick={() => handleToggleGenre(g.id)}
-                      className={`relative flex items-center gap-3.5 p-3.5 rounded-2xl text-left border transition-all ${
+                      className={`relative flex items-center gap-3.5 p-3.5 rounded-2xl text-left border transition-all active:scale-[0.98] ${
                         isSelected
-                          ? 'bg-white/15 text-white shadow-lg'
-                          : 'bg-white/[0.03] hover:bg-white/[0.08] text-zinc-300 border-white/5'
+                          ? 'bg-[#3A4750] text-[#F3F3F3] shadow-lg border-[#2185D5] ring-1 ring-[#2185D5]/50'
+                          : 'bg-[#353f49]/70 hover:bg-[#3A4750] text-[rgba(243,243,243,0.80)] border-[rgba(243,243,243,0.08)]'
                       }`}
-                      style={isSelected ? { borderColor: `${accentHex}80` } : {}}
                     >
                       <div
-                        className={`w-10 h-10 rounded-xl bg-gradient-to-br ${g.color} flex items-center justify-center text-white shadow-md flex-shrink-0`}
+                        className={`w-10 h-10 rounded-xl bg-gradient-to-br ${g.color} flex items-center justify-center text-white shadow-md flex-shrink-0 ring-1 ring-white/10`}
                       >
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1 truncate">
-                        <h4 className="text-sm font-semibold text-white truncate">{g.label}</h4>
-                        <p className="text-xs text-zinc-400 truncate">{g.desc}</p>
+                        <h4 className="text-sm font-semibold text-[#F3F3F3] truncate">{g.label}</h4>
+                        <p className="text-xs text-[rgba(243,243,243,0.60)] truncate">{g.desc}</p>
                       </div>
                       <div
                         className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'bg-emerald-500 border-emerald-400 text-black'
-                            : 'border-white/20'
+                            ? 'bg-[#2185D5] border-[#2185D5] text-white'
+                            : 'border-[rgba(243,243,243,0.25)]'
                         }`}
                       >
                         {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -358,21 +356,21 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-semibold text-zinc-200">
+                  <span className="text-sm font-semibold text-[#F3F3F3]">
                     Recommended Stations for You
                   </span>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-[rgba(243,243,243,0.60)]">
                     Ranked by community votes in {allCountries.find((c) => c.code === selectedCountry)?.name || selectedCountry}
                   </p>
                 </div>
-                <span className="text-xs text-zinc-400 font-mono">
+                <span className="text-xs text-[rgba(243,243,243,0.60)] font-mono tabular-nums">
                   {preselectedStationIds.size} stations picked
                 </span>
               </div>
 
               {isLoadingStations ? (
-                <div className="py-16 flex flex-col items-center justify-center gap-3 text-zinc-400">
-                  <Loader2 className="w-7 h-7 animate-spin text-cyan-400" />
+                <div className="py-16 flex flex-col items-center justify-center gap-3 text-[rgba(243,243,243,0.60)]">
+                  <Loader2 className="w-7 h-7 animate-spin text-[#2185D5]" />
                   <p className="text-xs">Tuning in to stations from Radio Browser...</p>
                 </div>
               ) : (
@@ -386,13 +384,13 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
                         key={station.stationuuid}
                         className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
                           isChecked
-                            ? 'bg-white/[0.08] border-white/20'
-                            : 'bg-white/[0.02] border-white/5 opacity-70'
+                            ? 'bg-[#3A4750] border-[#2185D5]/60 ring-1 ring-[#2185D5]/30'
+                            : 'bg-[#353f49]/60 hover:bg-[#353f49] border-[rgba(243,243,243,0.08)] opacity-80'
                         }`}
                       >
                         <div className="flex items-center gap-3 truncate">
                           {/* Station Favicon */}
-                          <div className="relative w-11 h-11 rounded-xl bg-black/50 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <div className="relative w-11 h-11 rounded-xl bg-[#1e252e] border border-[rgba(243,243,243,0.12)] flex items-center justify-center overflow-hidden flex-shrink-0 ring-1 ring-white/10 ring-inset">
                             {station.favicon ? (
                               <img
                                 src={station.favicon}
@@ -404,18 +402,18 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
                                 }}
                               />
                             ) : (
-                              <Radio className="w-5 h-5 text-zinc-400" />
+                              <Radio className="w-5 h-5 text-[rgba(243,243,243,0.45)]" />
                             )}
                           </div>
 
                           <div className="truncate">
-                            <h4 className="text-sm font-semibold text-white truncate max-w-[260px] sm:max-w-md">
+                            <h4 className="text-sm font-semibold text-[#F3F3F3] truncate max-w-[260px] sm:max-w-md">
                               {station.name}
                             </h4>
-                            <div className="flex items-center gap-2 text-xs text-zinc-400">
+                            <div className="flex items-center gap-2 text-xs text-[rgba(243,243,243,0.60)]">
                               <span>{station.country}</span>
                               {station.codec && (
-                                <span className="px-1.5 py-0.2 rounded bg-white/10 text-[10px] font-mono text-zinc-300">
+                                <span className="px-1.5 py-0.5 rounded bg-[#303841] text-[10px] font-mono text-[rgba(243,243,243,0.75)] border border-[rgba(243,243,243,0.08)]">
                                   {station.codec} {station.bitrate > 0 ? `${station.bitrate}k` : ''}
                                 </span>
                               )}
@@ -433,22 +431,22 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
                                 playStation(station);
                               }
                             }}
-                            className="p-2 rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors"
+                            className="p-2 rounded-full hover:bg-[rgba(243,243,243,0.10)] text-[rgba(243,243,243,0.75)] hover:text-white transition-colors active:scale-95"
                             title={isCurrentPlaying ? 'Pause preview' : 'Preview station'}
                           >
                             {isCurrentPlaying ? (
-                              <Pause className="w-4 h-4 text-emerald-400 fill-emerald-400" />
+                              <Pause className="w-4 h-4 text-[#2185D5] fill-[#2185D5]" />
                             ) : (
-                              <Play className="w-4 h-4" />
+                              <Play className="w-4 h-4 fill-current ml-0.5" />
                             )}
                           </button>
 
                           <button
                             onClick={() => handleToggleStationPick(station.stationuuid)}
-                            className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
+                            className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all active:scale-95 ${
                               isChecked
-                                ? 'bg-emerald-500 border-emerald-400 text-black'
-                                : 'border-white/20 hover:border-white/40'
+                                ? 'bg-[#2185D5] border-[#2185D5] text-white shadow-sm'
+                                : 'border-[rgba(243,243,243,0.25)] hover:border-white'
                             }`}
                           >
                             {isChecked && <Check className="w-4 h-4 stroke-[3]" />}
@@ -464,11 +462,11 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
         </div>
 
         {/* Footer Navigation Buttons */}
-        <div className="p-4 sm:p-6 border-t border-white/10 bg-black/40 flex items-center justify-between">
+        <div className="p-4 sm:p-6 border-t border-[rgba(243,243,243,0.10)] bg-[#1e252e]/80 flex items-center justify-between">
           {step > 1 ? (
             <button
               onClick={() => setStep((s) => (s - 1) as any)}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-sm font-medium text-zinc-300 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#353f49] hover:bg-[#3A4750] text-sm font-medium text-[#F3F3F3] transition-all active:scale-95 border border-[rgba(243,243,243,0.10)]"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Back</span>
@@ -485,7 +483,7 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
                 setIsOnboardingOpen(false);
                 if (onClose) onClose();
               }}
-              className="text-xs text-zinc-400 hover:text-white hover:underline transition-all"
+              className="text-xs text-[rgba(243,243,243,0.50)] hover:text-white hover:underline transition-all"
             >
               Skip and explore
             </button>
@@ -495,8 +493,7 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
             <button
               onClick={() => setStep((s) => (s + 1) as any)}
               disabled={step === 2 && selectedGenres.length === 0}
-              className="flex items-center gap-1.5 px-6 py-2.5 rounded-2xl text-sm font-bold text-white transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none shadow-lg"
-              style={{ backgroundColor: accentHex }}
+              className="flex items-center gap-1.5 px-6 py-2.5 rounded-2xl text-sm font-bold text-white transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none shadow-lg bg-[#2185D5] hover:bg-[#1a74be]"
             >
               <span>Continue</span>
               <ChevronRight className="w-4 h-4" />
@@ -504,7 +501,7 @@ export const RadioOnboardingModal: React.FC<RadioOnboardingModalProps> = ({
           ) : (
             <button
               onClick={handleFinish}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-bold text-black transition-transform active:scale-95 shadow-xl bg-gradient-to-r from-emerald-400 to-cyan-400 hover:brightness-110"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-bold text-white transition-transform active:scale-95 shadow-xl bg-gradient-to-r from-[#2185D5] to-emerald-400 hover:brightness-110"
             >
               <Sparkles className="w-4 h-4" />
               <span>Start Listening</span>
