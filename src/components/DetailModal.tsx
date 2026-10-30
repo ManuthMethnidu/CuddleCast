@@ -64,7 +64,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
     api.searchMedia(item.title ? item.title.slice(0, 3) : 'a').then((results) => {
       setRelatedItems(results.filter((r) => r.id !== item.id).slice(0, 6));
     });
-  }, [item, selectedSeason]);
+  }, [item.id, selectedSeason]);
 
   // Keyboard shortcut: ESC to close detail modal
   useEffect(() => {

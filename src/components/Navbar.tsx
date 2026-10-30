@@ -160,6 +160,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     },
   ];
 
+  const isLowModeHome = performanceMode === 'low' && activeCategory === 'all';
+
   return (
     <>
       {/* Top Header Navbar */}
@@ -243,53 +245,55 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right: Search & Profile Pic Dropdown */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            {/* Search Bar */}
-            <div ref={searchContainerRef} className="relative flex items-center">
-              <div
-                className={`relative flex items-center rounded-full border transition-all duration-300 ${
-                  isSearchActive || inputValue
-                    ? performanceMode === 'low'
-                      ? 'w-36 sm:w-56 md:w-64 bg-[#09318D]/90 border-[#fd91cc] shadow-[0_4px_20px_rgba(253,145,204,0.3)] ring-1 ring-[#fd91cc]/40'
-                      : 'w-36 sm:w-56 md:w-64 bg-[#353f49] border-[#2185D5] shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
-                    : 'w-28 sm:w-44 md:w-52 bg-white/[0.08] border-white/10 hover:bg-white/[0.12]'
-                }`}
-              >
-                <div className="pl-3 pr-1 text-zinc-400">
-                  <Search
-                    className="h-4 w-4"
-                    style={{ color: (isSearchActive || inputValue) && performanceMode === 'low' ? '#fd91cc' : undefined }}
-                  />
-                </div>
+            {/* Search Bar (Hidden on low mode home unless scrolled to prioritize the centered Vidbox search) */}
+            {(!isLowModeHome || isScrolled) && (
+              <div ref={searchContainerRef} className="relative flex items-center">
+                <div
+                  className={`relative flex items-center rounded-full border transition-all duration-300 ${
+                    isSearchActive || inputValue
+                      ? performanceMode === 'low'
+                        ? 'w-36 sm:w-56 md:w-64 bg-[#09318D]/90 border-[#fd91cc] shadow-[0_4px_20px_rgba(253,145,204,0.3)] ring-1 ring-[#fd91cc]/40'
+                        : 'w-36 sm:w-56 md:w-64 bg-[#353f49] border-[#2185D5] shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
+                      : 'w-28 sm:w-44 md:w-52 bg-white/[0.08] border-white/10 hover:bg-white/[0.12]'
+                  }`}
+                >
+                  <div className="pl-3 pr-1 text-zinc-400">
+                    <Search
+                      className="h-4 w-4"
+                      style={{ color: (isSearchActive || inputValue) && performanceMode === 'low' ? '#fd91cc' : undefined }}
+                    />
+                  </div>
 
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      onSearchChange(inputValue);
-                    }
-                  }}
-                  onFocus={() => setIsSearchActive(true)}
-                  placeholder="Search Echora..."
-                  className="h-9 w-full bg-transparent pr-7 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
-                />
-
-                {inputValue && (
-                  <button
-                    onClick={() => {
-                      setInputValue('');
-                      onSearchChange('');
-                      searchInputRef.current?.focus();
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        onSearchChange(inputValue);
+                      }
                     }}
-                    className="absolute right-2.5 p-1 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )}
+                    onFocus={() => setIsSearchActive(true)}
+                    placeholder="Search Echora..."
+                    className="h-9 w-full bg-transparent pr-7 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
+                  />
+
+                  {inputValue && (
+                    <button
+                      onClick={() => {
+                        setInputValue('');
+                        onSearchChange('');
+                        searchInputRef.current?.focus();
+                      }}
+                      className="absolute right-2.5 p-1 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Profile Dropdown with Profile Pic Only Trigger Button */}
             <ProfileDropdown

@@ -182,15 +182,16 @@ const MainApp: React.FC = () => {
           billboardItems.find((m) => String(m.id) === titleId);
         if (localMatch) {
           setSelectedItem(localMatch);
+        } else {
+          api.getMediaDetails(Number(titleId) || 0).then((found) => {
+            if (found) setSelectedItem(found);
+          });
         }
-        api.getMediaDetails(Number(titleId) || 0).then((found) => {
-          if (found) setSelectedItem(found);
-        });
       }
     } else if (selectedItem) {
       setSelectedItem(null);
     }
-  }, [location.pathname, searchParams, selectedItem, allMedia, rails, billboardItems]);
+  }, [location.pathname, searchParams, allMedia, rails, billboardItems]);
 
   // 2. Sync Video Player with Route (/watch/:id)
   useEffect(() => {
@@ -466,6 +467,7 @@ const MainApp: React.FC = () => {
             rails={rails}
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
+            onSearch={setSearchQuery}
           />
         ) : (
           <>
