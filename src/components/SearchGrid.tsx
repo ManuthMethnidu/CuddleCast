@@ -67,9 +67,9 @@ export const SearchGrid: React.FC<SearchGridProps> = ({
             <div
               key={item.id}
               onClick={() => onSelect(item)}
-              className="group relative cursor-pointer overflow-hidden rounded-m3-md bg-[#18181d] border border-white/5 transition-transform duration-200 hover:scale-105"
+              className="group relative cursor-pointer overflow-hidden rounded-m3-md bg-[#18181d] border border-white/5 transition-transform duration-200 hover:scale-105 active:scale-95"
             >
-              <md-ripple></md-ripple>
+              <md-ripple className="pointer-events-none"></md-ripple>
               {/* Floating IMDb badge */}
               <div className="dx-badge">
                 <i>IMDb</i>

@@ -24,6 +24,7 @@ import { HistoryView } from './components/HistoryView';
 import { RadioPlayer } from './components/RadioPlayer';
 import { RadioView } from './components/RadioView';
 import { RadioScreensaver } from './components/RadioScreensaver';
+import { MinimalHomeView } from './components/MinimalHomeView';
 import { useRadioStore } from './store/radioStore';
 import { FloatingPiP } from './components/FloatingPiP';
 import { Footer } from './components/Footer';
@@ -75,6 +76,11 @@ const MainApp: React.FC = () => {
   const { performanceMode } = useSettingsStore();
   useEffect(() => {
     document.documentElement.setAttribute('data-performance', performanceMode);
+    if (performanceMode === 'low') {
+      document.body.style.backgroundColor = '#09318D';
+    } else {
+      document.body.style.backgroundColor = '#303841';
+    }
   }, [performanceMode]);
 
   // Zustand Player State
@@ -169,6 +175,14 @@ const MainApp: React.FC = () => {
 
     if (titleId) {
       if (!selectedItem || String(selectedItem.id) !== titleId) {
+        // Match immediately from cache so there is zero click latency or flash
+        const localMatch =
+          allMedia.find((m) => String(m.id) === titleId) ||
+          rails.flatMap((r) => r.items).find((m) => String(m.id) === titleId) ||
+          billboardItems.find((m) => String(m.id) === titleId);
+        if (localMatch) {
+          setSelectedItem(localMatch);
+        }
         api.getMediaDetails(Number(titleId) || 0).then((found) => {
           if (found) setSelectedItem(found);
         });
@@ -176,7 +190,7 @@ const MainApp: React.FC = () => {
     } else if (selectedItem) {
       setSelectedItem(null);
     }
-  }, [location.pathname, searchParams, selectedItem]);
+  }, [location.pathname, searchParams, selectedItem, allMedia, rails, billboardItems]);
 
   // 2. Sync Video Player with Route (/watch/:id)
   useEffect(() => {
@@ -223,6 +237,7 @@ const MainApp: React.FC = () => {
   };
 
   const handlePlay = (item: MediaItem, episode?: Episode, providerId?: string) => {
+    setSelectedItem(null);
     setPlayingEpisode(episode);
     setInitialProviderId(providerId);
     playMedia(item);
@@ -279,7 +294,13 @@ const MainApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#303841] text-[#F3F3F3] flex flex-col font-sans select-none">
+    <div
+      className={`min-h-screen ${
+        performanceMode === 'low'
+          ? 'bg-[#09318D] text-white'
+          : 'bg-[#303841] text-[#F3F3F3]'
+      } flex flex-col font-sans select-none`}
+    >
       {/* Sticky Top Navigation Bar (Hidden in full-screen Radio view) */}
       {activeCategory !== 'radio' && (
         <Navbar
@@ -438,6 +459,14 @@ const MainApp: React.FC = () => {
             onBack={() => navigate('/')}
             onNavigateLogin={() => navigate('/login')}
           />
+        ) : performanceMode === 'low' ? (
+          <MinimalHomeView
+            items={allMedia}
+            billboardItems={billboardItems}
+            rails={rails}
+            onSelect={handleOpenDetail}
+            onPlay={handlePlay}
+          />
         ) : (
           <>
             {/* Hero Billboard */}
@@ -467,8 +496,8 @@ const MainApp: React.FC = () => {
         )}
       </main>
 
-      {/* Audio Visualizer & 3D Screensaver */}
-      <RadioScreensaver />
+      {/* Audio Visualizer & 3D Screensaver (Disabled in Low Mode) */}
+      {performanceMode !== 'low' && <RadioScreensaver />}
 
       {/* Persistent Floating Radio Player */}
       <RadioPlayer

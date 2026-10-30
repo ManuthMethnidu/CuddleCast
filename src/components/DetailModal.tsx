@@ -41,7 +41,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   const [isLiked, setIsLiked] = useState(() => authStorage.isLiked(item.id));
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
-  const { defaultProvider } = useSettingsStore();
+  const { defaultProvider, performanceMode } = useSettingsStore();
   const [selectedCategory, setSelectedCategory] = useState<ProviderCategory>('fastest');
   const [selectedProviderId, setSelectedProviderId] = useState<string>(() => {
     if (defaultProvider && defaultProvider !== 'vidfast' && STREAM_PROVIDERS.some((p) => p.id === defaultProvider)) {
@@ -149,16 +149,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({
 
       {/* Top Navigation Bar with Back Button */}
       <header className="sticky top-0 z-40 flex items-center justify-between px-4 sm:px-12 h-14 sm:h-16 pt-[env(safe-area-inset-top,0px)] bg-gradient-to-b from-black/90 to-transparent backdrop-blur-md">
-        <md-filled-icon-button
+        <button
+          type="button"
           onClick={onClose}
           title="Back to Browse (Esc)"
-          style={{
-            '--md-filled-icon-button-container-color': 'rgba(0, 0, 0, 0.6)',
-            '--md-filled-icon-button-icon-color': '#FFFFFF',
-          }}
+          className="h-10 w-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-all active:scale-95 border border-white/20 cursor-pointer"
         >
           <ArrowLeft className="h-5 w-5 text-white" />
-        </md-filled-icon-button>
+        </button>
 
         <div className="flex items-center gap-3">
           <span
@@ -223,66 +221,65 @@ export const DetailModal: React.FC<DetailModalProps> = ({
               <span className="dx-pill">Direct Fast Embed</span>
             </div>
 
-            {/* Action Buttons Row using Material Web */}
+            {/* Action Buttons Row */}
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full">
-              <md-filled-button
+              <button
+                type="button"
                 onClick={() => handleLaunchStream()}
-                className="flex-1 sm:flex-initial h-11 sm:h-12 text-sm sm:text-base font-semibold"
+                className="flex-1 sm:flex-initial h-11 sm:h-12 px-6 sm:px-8 rounded-full font-bold text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-transform active:scale-95 hover:brightness-105"
                 style={{
-                  '--md-filled-button-container-color': '#FFFFFF',
-                  '--md-filled-button-label-text-color': '#000000',
-                  '--md-filled-button-icon-color': '#000000',
+                  backgroundColor: performanceMode === 'low' ? '#fd91cc' : '#FFFFFF',
+                  color: performanceMode === 'low' ? '#09318D' : '#000000',
                 }}
               >
-                <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-current" slot="icon" />
-                Play Now
-              </md-filled-button>
+                <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-current" />
+                <span>Play Now</span>
+              </button>
 
               {/* Server Indicator & Quick Selector */}
-              <md-outlined-button
+              <button
+                type="button"
                 onClick={() => setMobileTab('servers')}
                 title="Select Streaming Server"
-                className="h-11 sm:h-12 text-xs font-semibold"
-                style={{
-                  '--md-outlined-button-outline-color': 'rgba(243, 243, 243, 0.35)',
-                  '--md-outlined-button-label-text-color': '#F3F3F3',
-                }}
+                className="h-11 sm:h-12 px-4 rounded-full text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-white transition-transform active:scale-95"
               >
-                <Server className="h-4 w-4" slot="icon" style={{ color: accentHex }} />
-                Server: {STREAM_PROVIDERS.find(p => p.id === selectedProviderId)?.name || 'VidLink Pro'}
-              </md-outlined-button>
+                <Server
+                  className="h-4 w-4"
+                  style={{ color: performanceMode === 'low' ? '#fd91cc' : accentHex }}
+                />
+                <span>Server: {STREAM_PROVIDERS.find(p => p.id === selectedProviderId)?.name || 'VidLink Pro'}</span>
+              </button>
 
-              <md-outlined-icon-button
+              <button
+                type="button"
                 onClick={toggleWatchlist}
                 title={inWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
-                style={{
-                  '--md-outlined-icon-button-outline-color': 'rgba(243, 243, 243, 0.35)',
-                  '--md-outlined-icon-button-icon-color': '#FFFFFF',
-                }}
+                className="h-11 w-11 rounded-full border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-transform active:scale-95 cursor-pointer"
               >
                 {inWatchlist ? (
-                  <Check className="h-5 w-5 text-white" style={{ color: accentHex }} />
+                  <Check
+                    className="h-5 w-5"
+                    style={{ color: performanceMode === 'low' ? '#fd91cc' : accentHex }}
+                  />
                 ) : (
                   <Plus className="h-5 w-5 text-white" />
                 )}
-              </md-outlined-icon-button>
+              </button>
 
-              <md-outlined-icon-button
+              <button
+                type="button"
                 onClick={toggleLike}
                 title="Like"
-                style={{
-                  '--md-outlined-icon-button-outline-color': 'rgba(243, 243, 243, 0.35)',
-                  '--md-outlined-icon-button-icon-color': '#FFFFFF',
-                }}
+                className="h-11 w-11 rounded-full border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-transform active:scale-95 cursor-pointer"
               >
                 <ThumbsUp
-                  className="h-5 w-5 text-white"
+                  className="h-5 w-5"
                   style={{
-                    color: isLiked ? accentHex : '#fff',
-                    fill: isLiked ? accentHex : 'none',
+                    color: isLiked ? (performanceMode === 'low' ? '#fd91cc' : accentHex) : '#fff',
+                    fill: isLiked ? (performanceMode === 'low' ? '#fd91cc' : accentHex) : 'none',
                   }}
                 />
-              </md-outlined-icon-button>
+              </button>
             </div>
 
             {/* Mobile Tab Bar */}
@@ -478,8 +475,11 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                     {episodes.map((ep) => (
                       <div
                         key={ep.id}
-                        onClick={() => setSelectedEpisode(ep)}
-                        className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer border transition-all ${
+                        onClick={() => {
+                          setSelectedEpisode(ep);
+                          handleLaunchStream(undefined, ep);
+                        }}
+                        className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer border transition-all group/ep ${
                           selectedEpisode?.id === ep.id
                             ? 'bg-white/15 border-white/30 text-white'
                             : 'bg-white/[0.04] border-white/5 hover:bg-white/[0.08] text-zinc-300'

@@ -217,33 +217,42 @@ const HeroBillboardComponent: React.FC<HeroBillboardProps> = ({
           {currentItem.overview}
         </p>
 
-        {/* M3 Action Buttons using @material/web */}
+        {/* Action Buttons */}
         <div className="flex items-center gap-3 pt-1 sm:pt-2 w-full sm:w-auto">
-          <md-filled-button
-            onClick={() => onPlay(currentItem)}
-            className="h-11 sm:h-12 text-sm sm:text-base font-semibold"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPlay(currentItem);
+            }}
+            className="h-11 sm:h-12 px-6 sm:px-8 rounded-full font-bold text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer shadow-lg transition-transform active:scale-95 hover:brightness-105"
             style={{
-              '--md-filled-button-container-color': '#FFFFFF',
-              '--md-filled-button-label-text-color': '#000000',
-              '--md-filled-button-icon-color': '#000000',
+              backgroundColor: performanceMode === 'low' ? '#fd91cc' : '#FFFFFF',
+              color: performanceMode === 'low' ? '#09318D' : '#000000',
             }}
           >
-            <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-current" slot="icon" />
-            Play
-          </md-filled-button>
+            <Play className="h-4 sm:h-5 w-4 sm:w-5 fill-current" />
+            <span>Play</span>
+          </button>
 
-          <md-filled-tonal-button
-            onClick={() => onMoreInfo(currentItem)}
-            className="h-11 sm:h-12 text-sm sm:text-base font-medium"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onMoreInfo(currentItem);
+            }}
+            className="h-11 sm:h-12 px-5 sm:px-6 rounded-full font-medium text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer backdrop-blur-md transition-transform active:scale-95 border"
             style={{
-              '--md-filled-tonal-button-container-color': 'rgba(58, 71, 80, 0.85)',
-              '--md-filled-tonal-button-label-text-color': '#FFFFFF',
-              '--md-filled-tonal-button-icon-color': '#FFFFFF',
+              backgroundColor: 'rgba(58, 71, 80, 0.85)',
+              borderColor: performanceMode === 'low' ? 'rgba(253, 145, 204, 0.5)' : 'rgba(255, 255, 255, 0.15)',
+              color: '#FFFFFF',
             }}
           >
-            <Info className="h-4 sm:h-5 w-4 sm:w-5" slot="icon" />
-            More Info
-          </md-filled-tonal-button>
+            <Info className="h-4 sm:h-5 w-4 sm:w-5" />
+            <span>More Info</span>
+          </button>
         </div>
       </div>
 

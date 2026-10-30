@@ -137,7 +137,13 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
             <div
               key={`${item.id}-${index}`}
               data-media-card="true"
-              onClick={() => onSelect(item)}
+              onClick={() => {
+                if (rail.isContinueWatching) {
+                  onPlay(item);
+                } else {
+                  onSelect(item);
+                }
+              }}
               className="group/card relative flex-none cursor-pointer transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.98]"
             >
               {/* Poster Card Container */}
@@ -148,7 +154,7 @@ const CarouselRowComponent: React.FC<CarouselRowProps> = ({
                     : 'h-44 w-28 sm:h-64 sm:w-44 md:h-72 md:w-48'
                 }`}
               >
-                <md-ripple></md-ripple>
+                <md-ripple className="pointer-events-none"></md-ripple>
                 {/* Floating Hardware-Optimized IMDb Badge */}
                 <div className="dx-badge z-10">
                   <i>IMDb</i>

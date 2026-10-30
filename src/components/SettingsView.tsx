@@ -71,17 +71,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   }[] = [
     {
       id: 'low',
-      title: 'Low (Max Performance / Potato Mode)',
-      badge: 'Zero Lag · Potato Mode',
-      tagline: 'Strips down site for absolute raw FPS and 0ms latency',
+      title: 'Low (Minimal Striped Glass)',
+      badge: 'Zero Lag · Deep Blue & Pink',
+      tagline: 'Minimal striped glass home page with deep blue & bubblegum pink',
       description:
-        'Strips down GPU blurs, animations, CSS transitions, hover scale recalculations, and background trailer decoding. Delivers maximum 120 FPS on potato devices, older laptops, battery-saving mode, or slow connections.',
+        'Minimal striped glass home page (#09318D deep blue, #ffffff fonts, and #fd91cc bubblegum pink buttons & cards). Ultra lightweight, instant 120 FPS, 0ms input latency, and zero GPU heat.',
       optimizations: [
-        'Disabled all backdrop blurs & glassmorphism filters',
-        'Disabled all CSS animations and layout transitions',
-        'Disabled hover transforms & expensive rasterization shadows',
-        'Disabled billboard background video trailer decoding',
-        'Direct static fast rendering on all cards & pages',
+        'Minimal striped glass home page with deep blue #09318D & #fd91cc pink',
+        'Disabled heavy background video trailers & idle 3D screensavers',
+        'Direct instant media cards with 0-latency click streaming',
+        'Optimized for potato devices, battery-saving mode, or low power',
       ],
     },
     {

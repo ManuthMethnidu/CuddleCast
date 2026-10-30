@@ -39,11 +39,29 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { openUserProfile, openSignIn, signOut, setActive } = useClerk();
   const { sessions } = useSessionList();
 
-  const { enabledNavItems = DEFAULT_NAV_ITEMS } = useSettingsStore();
+  const { enabledNavItems = DEFAULT_NAV_ITEMS, performanceMode } = useSettingsStore();
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isNavbarCustomizerOpen, setIsNavbarCustomizerOpen] = useState(false);
+
+  // Responsive local search state to never drop keystrokes when typing fast
+  const [inputValue, setInputValue] = useState(searchQuery);
+
+  // Sync if searchQuery changed externally (e.g. tag clicked or cleared)
+  useEffect(() => {
+    setInputValue(searchQuery);
+  }, [searchQuery]);
+
+  // Debounced propagate to URL search params
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (inputValue !== searchQuery) {
+        onSearchChange(inputValue);
+      }
+    }, 150);
+    return () => clearTimeout(handler);
+  }, [inputValue, searchQuery, onSearchChange]);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -148,7 +166,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       <header
         className={`fixed top-0 z-[100] w-full transition-all duration-300 pt-[env(safe-area-inset-top,0px)] ${
           isScrolled
-            ? 'bg-[#303841]/95 backdrop-blur-xl border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-2.5 sm:py-3'
+            ? performanceMode === 'low'
+              ? 'bg-[#09318D]/95 backdrop-blur-md border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.4)] py-2.5 sm:py-3'
+              : 'bg-[#303841]/95 backdrop-blur-xl border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-2.5 sm:py-3'
+            : performanceMode === 'low'
+            ? 'bg-[#09318D]/85 backdrop-blur-sm border-b border-white/5 pt-3 pb-2.5 sm:pt-4 sm:pb-3'
             : 'bg-gradient-to-b from-[#303841]/90 via-[#303841]/40 to-transparent pt-3 pb-2.5 sm:pt-4 sm:pb-3'
         }`}
       >
@@ -225,28 +247,42 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div ref={searchContainerRef} className="relative flex items-center">
               <div
                 className={`relative flex items-center rounded-full border transition-all duration-300 ${
-                  isSearchActive || searchQuery
-                    ? 'w-36 sm:w-56 md:w-64 bg-[#353f49] border-[#2185D5] shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
+                  isSearchActive || inputValue
+                    ? performanceMode === 'low'
+                      ? 'w-36 sm:w-56 md:w-64 bg-[#09318D]/90 border-[#fd91cc] shadow-[0_4px_20px_rgba(253,145,204,0.3)] ring-1 ring-[#fd91cc]/40'
+                      : 'w-36 sm:w-56 md:w-64 bg-[#353f49] border-[#2185D5] shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
                     : 'w-28 sm:w-44 md:w-52 bg-white/[0.08] border-white/10 hover:bg-white/[0.12]'
                 }`}
               >
                 <div className="pl-3 pr-1 text-zinc-400">
-                  <Search className="h-4 w-4" />
+                  <Search
+                    className="h-4 w-4"
+                    style={{ color: (isSearchActive || inputValue) && performanceMode === 'low' ? '#fd91cc' : undefined }}
+                  />
                 </div>
 
                 <input
                   ref={searchInputRef}
                   type="text"
-                  value={searchQuery}
-                  onChange={(e) => onSearchChange(e.target.value)}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      onSearchChange(inputValue);
+                    }
+                  }}
                   onFocus={() => setIsSearchActive(true)}
                   placeholder="Search Echora..."
                   className="h-9 w-full bg-transparent pr-7 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
                 />
 
-                {searchQuery && (
+                {inputValue && (
                   <button
-                    onClick={() => onSearchChange('')}
+                    onClick={() => {
+                      setInputValue('');
+                      onSearchChange('');
+                      searchInputRef.current?.focus();
+                    }}
                     className="absolute right-2.5 p-1 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white"
                   >
                     <X className="h-3.5 w-3.5" />
