@@ -309,7 +309,9 @@ const MainApp: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen ${
+      className={`${
+        isLowModePortal ? 'h-screen max-h-screen overflow-hidden' : 'min-h-screen'
+      } ${
         performanceMode === 'low'
           ? 'bg-[#050a14] text-white'
           : 'bg-[#303841] text-[#F3F3F3]'
@@ -346,7 +348,7 @@ const MainApp: React.FC = () => {
           activeCategory === 'radio'
             ? 'h-screen w-screen overflow-hidden flex flex-col p-0 m-0 min-h-0'
             : isLowModePortal
-            ? 'p-0 m-0 min-h-screen'
+            ? 'h-screen max-h-screen w-full overflow-hidden p-0 m-0'
             : 'pb-16 md:pb-0 pt-16 sm:pt-20'
         }`}
         data-grid-nav="true"
