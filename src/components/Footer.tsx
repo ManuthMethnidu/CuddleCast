@@ -45,17 +45,29 @@ export const Footer: React.FC = () => {
 
             <div className="flex flex-col gap-2.5">
               <span className="font-semibold text-zinc-200">Connect</span>
+              <a
+                href="mailto:contact.echora@proton.me"
+                className="hover:text-white transition-colors flex items-center gap-1.5 text-zinc-300 font-medium"
+              >
+                <span>contact.echora@proton.me</span>
+              </a>
               <a href="https://github.com/ManuthMethnidu/CuddleCast" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub Repository</a>
               <span className="text-zinc-600">v2.15 Echora Edition</span>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between text-zinc-600">
+        <div className="mt-12 border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between text-zinc-500 text-xs">
           <p>© {new Date().getFullYear()} Echora · Next-Gen Cinema & Multi-Provider Streaming Platform.</p>
-          <p className="mt-2 sm:mt-0 text-zinc-500">
-            Evidence-backed REA inspection from notdxbi/dxbi-stremio.
-          </p>
+          <div className="mt-2 sm:mt-0 flex items-center gap-2">
+            <span>Support & Inquiries:</span>
+            <a
+              href="mailto:contact.echora@proton.me"
+              className="text-zinc-300 hover:text-white underline transition-colors"
+            >
+              contact.echora@proton.me
+            </a>
+          </div>
         </div>
       </div>
     </footer>

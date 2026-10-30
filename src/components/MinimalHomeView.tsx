@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Play,
   Search,
@@ -6,10 +6,18 @@ import {
   Clock,
   Dice5,
   ArrowRight,
+  Star,
+  Film,
+  Home,
+  X,
+  Settings as SettingsIcon,
+  Menu,
 } from 'lucide-react';
+import { useUser, useClerk } from '@clerk/react';
 import { MediaItem, BillboardData, CarouselRail } from '../types/schema';
 import { useNavigate } from 'react-router-dom';
 import { authStorage } from '../services/storage';
+import { api } from '../services/api';
 
 interface MinimalHomeViewProps {
   items: MediaItem[];
@@ -18,6 +26,8 @@ interface MinimalHomeViewProps {
   onSelect: (item: MediaItem) => void;
   onPlay: (item: MediaItem) => void;
   onSearch: (query: string) => void;
+  onGoToMainHome: () => void;
+  onToggleSidebar?: () => void;
 }
 
 export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
@@ -27,18 +37,29 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
   onSelect: _onSelect,
   onPlay,
   onSearch,
+  onGoToMainHome,
+  onToggleSidebar,
 }) => {
   const navigate = useNavigate();
+  const { isSignedIn, user } = useUser();
+  const { openUserProfile, openSignIn } = useClerk();
+
   const [searchInput, setSearchInput] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'movie' | 'tv' | 'anime'>('all');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+
+  // Live autocomplete search dropdown state (Vidbox style)
+  const [liveResults, setLiveResults] = useState<MediaItem[]>([]);
+  const [isSearchingLive, setIsSearchingLive] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Retrieve user watch progress directly from storage to be 100% synchronized
   const progressList = useMemo(() => {
     return authStorage.getProgressList();
   }, []);
 
-  // Continue Watching rail items
+  // Continue Watching rail items (ONLY Continue Watching is displayed)
   const continueWatchingItems = useMemo(() => {
     const cwRail = rails.find((r) => r.isContinueWatching);
     if (cwRail && cwRail.items.length > 0) {
@@ -78,9 +99,91 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
     return items.slice(0, 4);
   }, [rails, progressList, items]);
 
+  // Live autocomplete search matching Vidbox behavior
+  useEffect(() => {
+    const trimmed = searchInput.trim();
+    if (!trimmed) {
+      setLiveResults([]);
+      setIsDropdownOpen(false);
+      return;
+    }
+
+    setIsDropdownOpen(true);
+
+    // 1. Instant local search from already loaded items
+    const q = trimmed.toLowerCase();
+    const localMatches = items.filter((item) => {
+      const title = (item.title || item.name || '').toLowerCase();
+      const overview = (item.overview || '').toLowerCase();
+      const matchesText = title.includes(q) || overview.includes(q);
+      if (!matchesText) return false;
+
+      if (selectedFilter === 'movie') return item.media_type === 'movie';
+      if (selectedFilter === 'tv') return item.media_type === 'tv';
+      if (selectedFilter === 'anime') {
+        return (
+          item.genre_ids?.includes(16) ||
+          item.genres?.some((g) => g.toLowerCase().includes('animation'))
+        );
+      }
+      return true;
+    });
+
+    setLiveResults(localMatches.slice(0, 6));
+
+    // 2. Debounced API search for full catalog coverage
+    const timeout = setTimeout(async () => {
+      try {
+        setIsSearchingLive(true);
+        const remoteResults = await api.searchMedia(trimmed);
+
+        let filteredRemote = remoteResults;
+        if (selectedFilter === 'movie') {
+          filteredRemote = remoteResults.filter((i) => i.media_type === 'movie');
+        } else if (selectedFilter === 'tv') {
+          filteredRemote = remoteResults.filter((i) => i.media_type === 'tv');
+        } else if (selectedFilter === 'anime') {
+          filteredRemote = remoteResults.filter(
+            (i) =>
+              i.genre_ids?.includes(16) ||
+              i.genres?.some((g) => g.toLowerCase().includes('animation'))
+          );
+        }
+
+        // Deduplicate local + remote results
+        const resultMap = new Map<number, MediaItem>();
+        localMatches.forEach((i) => resultMap.set(i.id, i));
+        filteredRemote.forEach((i) => resultMap.set(i.id, i));
+
+        setLiveResults(Array.from(resultMap.values()).slice(0, 6));
+      } catch (err) {
+        console.warn('Live search autocomplete notice:', err);
+      } finally {
+        setIsSearchingLive(false);
+      }
+    }, 200);
+
+    return () => clearTimeout(timeout);
+  }, [searchInput, selectedFilter, items]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(e.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (searchInput.trim()) {
+      setIsDropdownOpen(false);
       onSearch(searchInput.trim());
       navigate(`/?q=${encodeURIComponent(searchInput.trim())}`);
     }
@@ -97,7 +200,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
 
   return (
     <div
-      className="min-h-screen text-white select-none flex flex-col justify-between"
+      className="min-h-screen text-white select-none flex flex-col justify-between relative overflow-x-hidden"
       style={{
         backgroundColor: '#09318D',
         backgroundImage: `
@@ -112,7 +215,62 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
         `,
       }}
     >
-      <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 pt-10 sm:pt-16 pb-16 space-y-10 flex-1 flex flex-col justify-center items-center">
+      {/* ========================================================
+          TOP-RIGHT ACTION ICONS (VIDBOX STYLE: SETTINGS, MENU, USER)
+         ======================================================== */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-2.5 z-40">
+        {/* Settings button */}
+        <button
+          type="button"
+          onClick={() => navigate('/settings')}
+          title="Settings"
+          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+        >
+          <SettingsIcon className="w-4 h-4 text-white" />
+        </button>
+
+        {/* Vidbox Sidebar Menu Drawer button */}
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          title="Open Menu"
+          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+        >
+          <Menu className="w-4 h-4 text-white" />
+        </button>
+
+        {/* User Profile / Sign In button */}
+        {isSignedIn ? (
+          <button
+            type="button"
+            onClick={() => openUserProfile()}
+            title={user?.fullName || 'User Profile'}
+            className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#fd91cc] transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer flex items-center justify-center bg-white/10"
+          >
+            {user?.imageUrl ? (
+              <img
+                src={user.imageUrl}
+                alt={user.fullName || 'User'}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-xs font-bold text-white">
+                {(user?.firstName || 'U')[0]}
+              </span>
+            )}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => openSignIn()}
+            className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#fd91cc] text-[#09318D] transition-all hover:brightness-110 active:scale-95 shadow-md cursor-pointer"
+          >
+            Sign In
+          </button>
+        )}
+      </div>
+
+      <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 pt-16 sm:pt-20 pb-16 space-y-10 flex-1 flex flex-col justify-center items-center">
         {/* ========================================================
             1. CENTERED HERO (VIDBOX STYLE)
            ======================================================== */}
@@ -138,83 +296,217 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
             Watch Movies & Series Online in HD for Free!
           </p>
 
-          {/* Centered Pill Search Bar */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="w-full max-w-2xl relative pt-2"
+          {/* Centered Pill Search Bar with Live Vidbox Autocomplete Dropdown */}
+          <div
+            ref={searchContainerRef}
+            className="w-full max-w-2xl relative pt-2 z-30"
           >
-            <div className="relative flex items-center w-full rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/20 hover:border-white/35 focus-within:border-[#fd91cc] focus-within:ring-2 focus-within:ring-[#fd91cc]/40 shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all h-12 sm:h-14 px-2 sm:px-3">
-              {/* Filters Pill Button */}
-              <div className="relative">
+            <form onSubmit={handleSearchSubmit} className="relative w-full">
+              <div className="relative flex items-center w-full rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/20 hover:border-white/35 focus-within:border-[#fd91cc] focus-within:ring-2 focus-within:ring-[#fd91cc]/40 shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all h-12 sm:h-14 px-2 sm:px-3">
+                {/* Filters Pill Button */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-[#fd91cc]" />
+                    <span className="capitalize">
+                      {selectedFilter === 'all' ? 'Filters' : selectedFilter}
+                    </span>
+                  </button>
+
+                  {showFilterDropdown && (
+                    <div className="absolute top-full left-0 mt-2 w-36 rounded-xl bg-[#061847] border border-white/20 shadow-2xl p-1.5 z-50 text-left space-y-1">
+                      {[
+                        { id: 'all', label: 'All Media' },
+                        { id: 'movie', label: 'Movies' },
+                        { id: 'tv', label: 'Series' },
+                        { id: 'anime', label: 'Anime' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedFilter(opt.id as any);
+                            setShowFilterDropdown(false);
+                          }}
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                            selectedFilter === opt.id
+                              ? 'bg-[#fd91cc] text-[#09318D]'
+                              : 'text-white hover:bg-white/10'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Input */}
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onFocus={() => {
+                    if (searchInput.trim()) setIsDropdownOpen(true);
+                  }}
+                  placeholder="Search movies, series, anime..."
+                  className="w-full bg-transparent px-3 text-xs sm:text-sm text-white placeholder:text-white/60 focus:outline-none"
+                />
+
+                {/* Clear button if text present */}
+                {searchInput && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchInput('');
+                      setLiveResults([]);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="p-1 text-white/50 hover:text-white transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+
+                {/* Search Submit Button */}
+                <button
+                  type="submit"
+                  title="Search"
+                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-white hover:text-[#fd91cc] hover:bg-white/10 transition-colors cursor-pointer flex-shrink-0"
+                >
+                  <Search className="w-4 sm:w-5 h-4 sm:h-5" />
+                </button>
+              </div>
+            </form>
+
+            {/* ========================================================
+                ATTACHED LIVE SEARCH AUTOCOMPLETE DROPDOWN (VIDBOX STYLE)
+               ======================================================== */}
+            {isDropdownOpen && searchInput.trim().length > 0 && (
+              <div
+                className="absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl bg-[#061847]/95 backdrop-blur-2xl border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.65)] overflow-hidden divide-y divide-white/10"
+                style={{
+                  outline: '1px solid rgba(253, 145, 204, 0.25)',
+                }}
+              >
+                {/* Result Items */}
+                <div className="max-h-[380px] overflow-y-auto divide-y divide-white/5">
+                  {liveResults.length > 0 ? (
+                    liveResults.map((item) => {
+                      const year = (
+                        item.release_date ||
+                        item.first_air_date ||
+                        ''
+                      ).slice(0, 4);
+                      const rating = item.vote_average
+                        ? item.vote_average.toFixed(1)
+                        : 'N/A';
+                      const isTv = item.media_type === 'tv';
+
+                      return (
+                        <div
+                          key={`autocomplete-${item.id}`}
+                          onClick={() => {
+                            setIsDropdownOpen(false);
+                            onPlay(item);
+                          }}
+                          className="flex items-center gap-3.5 p-3 sm:p-3.5 hover:bg-white/10 cursor-pointer transition-colors group text-left"
+                        >
+                          {/* Poster Thumbnail */}
+                          <div className="relative w-11 sm:w-12 h-16 sm:h-18 flex-shrink-0 rounded-lg overflow-hidden bg-black/50 border border-white/10 shadow-sm">
+                            {item.poster_path ? (
+                              <img
+                                src={item.poster_path}
+                                alt={item.title || item.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-white/5 text-white/40">
+                                <Film className="w-5 h-5" />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Details */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm sm:text-base font-bold text-white group-hover:text-[#fd91cc] transition-colors truncate">
+                              {item.title || item.name}
+                            </h4>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-white/75 font-mono">
+                              <span className="capitalize font-semibold text-white/90">
+                                {isTv ? 'Tv' : 'Movie'}
+                              </span>
+                              <span className="text-white/30">•</span>
+                              <span className="flex items-center gap-1 text-[#fd91cc] font-bold">
+                                <Star className="w-3.5 h-3.5 fill-[#fd91cc] text-[#fd91cc]" />
+                                {rating}
+                              </span>
+                              {year && (
+                                <>
+                                  <span className="text-white/30">•</span>
+                                  <span className="text-white/70">{year}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Quick Play Icon on Hover */}
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#fd91cc] text-[#09318D] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                            <Play className="w-4 h-4 fill-current ml-0.5" />
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="p-6 text-center text-white/70 text-xs sm:text-sm">
+                      {isSearchingLive ? (
+                        <div className="flex items-center justify-center gap-2 text-white">
+                          <div className="w-4 h-4 rounded-full border-2 border-[#fd91cc] border-t-transparent animate-spin" />
+                          <span>Searching movies & series...</span>
+                        </div>
+                      ) : (
+                        <span>No matching titles found for "{searchInput}"</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer: "See more results" button */}
                 <button
                   type="button"
-                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    onSearch(searchInput.trim());
+                    navigate(`/?q=${encodeURIComponent(searchInput.trim())}`);
+                  }}
+                  className="w-full p-3 sm:p-3.5 flex items-center justify-between bg-white/[0.04] hover:bg-white/[0.08] text-xs sm:text-sm font-bold text-white group transition-colors border-t border-white/10 cursor-pointer"
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-[#fd91cc]" />
-                  <span className="capitalize">{selectedFilter === 'all' ? 'Filters' : selectedFilter}</span>
+                  <span className="text-white/80 group-hover:text-white">
+                    See more results for "{searchInput}"
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-[#fd91cc] group-hover:translate-x-1 transition-transform" />
                 </button>
-
-                {showFilterDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-36 rounded-xl bg-[#07246b] border border-white/20 shadow-2xl p-1.5 z-50 text-left space-y-1">
-                    {[
-                      { id: 'all', label: 'All Media' },
-                      { id: 'movie', label: 'Movies' },
-                      { id: 'tv', label: 'Series' },
-                      { id: 'anime', label: 'Anime' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedFilter(opt.id as any);
-                          setShowFilterDropdown(false);
-                        }}
-                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                          selectedFilter === opt.id
-                            ? 'bg-[#fd91cc] text-[#09318D]'
-                            : 'text-white hover:bg-white/10'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
+            )}
+          </div>
 
-              {/* Input */}
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search movies, series, anime..."
-                className="w-full bg-transparent px-3 text-xs sm:text-sm text-white placeholder:text-white/60 focus:outline-none"
-              />
-
-              {/* Search Submit Button */}
-              <button
-                type="submit"
-                title="Search"
-                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-white hover:text-[#fd91cc] hover:bg-white/10 transition-colors cursor-pointer flex-shrink-0"
-              >
-                <Search className="w-4 sm:w-5 h-4 sm:h-5" />
-              </button>
-            </div>
-          </form>
-
-          {/* Two Action Buttons (Explore Now & Surprise Me) */}
+          {/* Action Buttons: "Main Home" (Takes to Main Home) & "Surprise Me" */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
             <button
               type="button"
-              onClick={() => navigate('/discover')}
+              onClick={onGoToMainHome}
               className="h-11 sm:h-12 px-7 sm:px-9 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_24px_rgba(253,145,204,0.45)] transition-all active:scale-95 hover:brightness-110"
               style={{
                 backgroundColor: '#fd91cc',
                 color: '#09318D',
               }}
             >
-              <span>Explore Now</span>
+              <Home className="w-4 h-4" />
+              <span>Main Home</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
@@ -226,6 +518,25 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
               <Dice5 className="w-4 h-4 text-[#fd91cc]" />
               <span>Surprise Me</span>
             </button>
+          </div>
+
+          {/* Quick Category Chips */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            {[
+              { label: 'Movies', path: '/movies' },
+              { label: 'TV Shows', path: '/series' },
+              { label: 'Trending', path: '/discover' },
+              { label: 'Anime', path: '/anime' },
+            ].map((cat) => (
+              <button
+                key={cat.label}
+                type="button"
+                onClick={() => navigate(cat.path)}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.16] border border-white/15 text-white transition-colors cursor-pointer"
+              >
+                {cat.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -251,7 +562,12 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
             {continueWatchingItems.map((item, idx) => {
               const progressPercent =
                 item.progress_seconds && item.total_seconds
-                  ? Math.min(100, Math.round((item.progress_seconds / item.total_seconds) * 100))
+                  ? Math.min(
+                      100,
+                      Math.round(
+                        (item.progress_seconds / item.total_seconds) * 100
+                      )
+                    )
                   : 45 + ((idx * 17) % 50);
 
               return (
@@ -285,7 +601,10 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <div
                         className="h-10 w-10 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 active:scale-95"
-                        style={{ backgroundColor: '#fd91cc', color: '#09318D' }}
+                        style={{
+                          backgroundColor: '#fd91cc',
+                          color: '#09318D',
+                        }}
                       >
                         <Play className="w-5 h-5 fill-current ml-0.5" />
                       </div>
@@ -304,7 +623,9 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                         {item.title || item.name}
                       </h3>
                       <p className="text-[10px] text-white/70 font-mono truncate">
-                        {item.media_type === 'tv' ? 'Series · Resume Ep' : 'Movie · Resume'}
+                        {item.media_type === 'tv'
+                          ? 'Series · Resume Ep'
+                          : 'Movie · Resume'}
                       </p>
                     </div>
 
@@ -315,7 +636,10 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                         onPlay(item);
                       }}
                       className="flex-none px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase transition-all shadow-sm cursor-pointer"
-                      style={{ backgroundColor: '#fd91cc', color: '#09318D' }}
+                      style={{
+                        backgroundColor: '#fd91cc',
+                        color: '#09318D',
+                      }}
                     >
                       Resume
                     </button>
@@ -327,10 +651,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
         </section>
       </div>
 
-      {/* Subtle Footer info */}
-      <footer className="text-center py-4 text-xs font-mono text-white/60 border-t border-white/10">
-        Echora Minimal Mode · 120 FPS Striped Glass Portal · Zero Latency
-      </footer>
+      {/* No footer rendered in minimal low mode, exactly as requested */}
     </div>
   );
 };

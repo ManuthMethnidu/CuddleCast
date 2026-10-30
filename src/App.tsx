@@ -74,6 +74,8 @@ const MainApp: React.FC = () => {
 
   // Apply performance mode attribute to root element
   const { performanceMode } = useSettingsStore();
+  const [showFullHome, setShowFullHome] = useState(false);
+
   useEffect(() => {
     document.documentElement.setAttribute('data-performance', performanceMode);
     if (performanceMode === 'low') {
@@ -102,6 +104,13 @@ const MainApp: React.FC = () => {
     }
     return currentPath;
   }, [currentPath, location.state]);
+
+  // Reset full home view if navigating away from home
+  useEffect(() => {
+    if (activeCategory !== 'all') {
+      setShowFullHome(false);
+    }
+  }, [activeCategory]);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRadioOpen, setIsRadioOpen] = useState(false);
@@ -294,6 +303,10 @@ const MainApp: React.FC = () => {
     );
   }
 
+  // In low performance mode, display the clean Vidbox-style portal on home with NO top bar and NO footer
+  const isLowModePortal =
+    performanceMode === 'low' && activeCategory === 'all' && !searchQuery && !showFullHome;
+
   return (
     <div
       className={`min-h-screen ${
@@ -302,14 +315,17 @@ const MainApp: React.FC = () => {
           : 'bg-[#303841] text-[#F3F3F3]'
       } flex flex-col font-sans select-none`}
     >
-      {/* Sticky Top Navigation Bar (Hidden in full-screen Radio view) */}
-      {activeCategory !== 'radio' && (
+      {/* Sticky Top Navigation Bar (Hidden in full-screen Radio view and in Low Mode Home Portal) */}
+      {!isLowModePortal && activeCategory !== 'radio' && (
         <Navbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           activeCategory={activeCategory}
           onCategoryChange={(cat) => {
             if (searchQuery) setSearchQuery('');
+            if (cat === 'all' && performanceMode === 'low') {
+              setShowFullHome(false);
+            }
             navigate(cat === 'all' ? '/' : `/${cat}`);
           }}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -329,6 +345,8 @@ const MainApp: React.FC = () => {
         className={`flex-1 ${
           activeCategory === 'radio'
             ? 'h-screen w-screen overflow-hidden flex flex-col p-0 m-0 min-h-0'
+            : isLowModePortal
+            ? 'p-0 m-0 min-h-screen'
             : 'pb-16 md:pb-0 pt-16 sm:pt-20'
         }`}
         data-grid-nav="true"
@@ -460,7 +478,7 @@ const MainApp: React.FC = () => {
             onBack={() => navigate('/')}
             onNavigateLogin={() => navigate('/login')}
           />
-        ) : performanceMode === 'low' ? (
+        ) : isLowModePortal ? (
           <MinimalHomeView
             items={allMedia}
             billboardItems={billboardItems}
@@ -468,9 +486,24 @@ const MainApp: React.FC = () => {
             onSelect={handleOpenDetail}
             onPlay={handlePlay}
             onSearch={setSearchQuery}
+            onGoToMainHome={() => setShowFullHome(true)}
+            onToggleSidebar={() => setIsSidebarOpen(true)}
           />
         ) : (
           <>
+            {/* If in low mode and viewing full home, provide an easy toggle button to return to minimal portal */}
+            {performanceMode === 'low' && showFullHome && (
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-2 pb-2 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setShowFullHome(false)}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#fd91cc] text-[#09318D] flex items-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                >
+                  <span>⚡ Return to Minimal Portal</span>
+                </button>
+              </div>
+            )}
+
             {/* Hero Billboard */}
             {billboardItems.length > 0 && (
               <HeroBillboard
@@ -516,8 +549,8 @@ const MainApp: React.FC = () => {
         />
       )}
 
-      {/* Footer (hidden in full-screen radio map) */}
-      {activeCategory !== 'radio' && <Footer />}
+      {/* Footer (hidden in full-screen radio map and in Low Mode Home Portal) */}
+      {!isLowModePortal && activeCategory !== 'radio' && <Footer />}
 
       {/* Title Detail Page View (Parallel / Modal Route) */}
       {selectedItem && (
