@@ -191,6 +191,15 @@ export const BubbleMenu: React.FC<BubbleMenuProps> = ({
           transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
           transform-origin: center;
         }
+        .bubble-menu-overlay {
+          background-color: rgba(0, 0, 0, 0.4) !important;
+          backdrop-filter: blur(10px) !important;
+          -webkit-backdrop-filter: blur(10px) !important;
+        }
+        .toggle-bubble {
+          backdrop-filter: blur(8px) !important;
+          -webkit-backdrop-filter: blur(8px) !important;
+        }
         .bubble-menu-items .pill-link {
           transform: rotate(var(--item-rot, 0deg));
           transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
@@ -224,8 +233,12 @@ export const BubbleMenu: React.FC<BubbleMenuProps> = ({
           onClick={handleToggle}
           aria-label={menuAriaLabel}
           aria-pressed={isMenuOpen}
-          className="bubble toggle-bubble menu-btn relative inline-flex flex-col items-center justify-center rounded-full w-9 h-9 sm:w-10 sm:h-10 border border-white/20 hover:border-white/40 shadow-md cursor-pointer transition-all hover:scale-105 active:scale-95 z-50 backdrop-blur-md"
-          style={{ background: menuBg }}
+          className="bubble toggle-bubble menu-btn relative inline-flex flex-col items-center justify-center rounded-full w-9 h-9 sm:w-10 sm:h-10 border border-white/20 hover:border-white/40 shadow-md cursor-pointer transition-all hover:scale-105 active:scale-95 z-50"
+          style={{
+            backgroundColor: menuBg || 'rgba(0, 0, 0, 0.45)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
         >
           <span
             className="menu-line block rounded-full"
@@ -249,7 +262,7 @@ export const BubbleMenu: React.FC<BubbleMenuProps> = ({
         </button>
       </div>
 
-      {/* Pop-up Overlay with Staggered Bubbles: Transparent with Subtle Blur */}
+      {/* Pop-up Overlay with Staggered Bubbles: Fully Transparent with Subtle Blur */}
       {showOverlay && (
         <div
           ref={overlayRef}
@@ -258,9 +271,14 @@ export const BubbleMenu: React.FC<BubbleMenuProps> = ({
               handleClose();
             }
           }}
-          className={`bubble-menu-items ${
+          className={`bubble-menu-overlay bubble-menu-items ${
             useFixedPosition ? 'fixed' : 'fixed'
-          } inset-0 flex items-center justify-center z-[200] bg-black/25 backdrop-blur-sm p-4 transition-opacity`}
+          } inset-0 flex items-center justify-center z-[200] p-4 transition-opacity`}
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.35)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+          }}
           aria-hidden={!isMenuOpen}
         >
           {/* Subtle backdrop close hint */}
