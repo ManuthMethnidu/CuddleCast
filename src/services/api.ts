@@ -5,7 +5,15 @@ import { authStorage } from './storage';
 const DATA_MODE = (import.meta.env?.VITE_DATA_MODE as string) || 'auto';
 
 /**
- * Secure Serverless Proxy Requester
+ * High-performance Cache & In-Flight Request Deduplicator
+ * Caches serverless responses in memory & sessionStorage for instant 0ms responses.
+ */
+const apiCache = new Map<string, { data: any; expiry: number }>();
+const pendingRequests = new Map<string, Promise<any>>();
+const CACHE_TTL_MS = 1000 * 60 * 15; // 15 minutes TTL
+
+/**
+ * Secure Serverless Proxy Requester with LRU & Storage Caching
  * Requests are routed through /api/tmdb (Vercel Edge Function or Vite dev proxy),
  * where the private TMDB_API_KEY is attached securely on the server side.
  * The browser NEVER sees or receives the secret API key.
@@ -22,11 +30,59 @@ async function fetchFromTMDB(
     }
   }
 
-  const res = await fetch(`/api/tmdb?${query.toString()}`);
-  if (!res.ok) {
-    throw new Error(`TMDB Proxy HTTP ${res.status}`);
+  const cacheKey = `tmdb:${query.toString()}`;
+
+  // 1. Check in-memory cache (0ms instant return)
+  const cached = apiCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiry) {
+    return cached.data;
   }
-  return await res.json();
+
+  // 2. Check sessionStorage if in-memory missed
+  try {
+    const stored = typeof window !== 'undefined' ? sessionStorage.getItem(cacheKey) : null;
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && parsed.expiry > Date.now()) {
+        apiCache.set(cacheKey, parsed);
+        return parsed.data;
+      }
+    }
+  } catch {
+    // SessionStorage quota fallback
+  }
+
+  // 3. Deduplicate in-flight requests for identical parameters
+  if (pendingRequests.has(cacheKey)) {
+    return pendingRequests.get(cacheKey);
+  }
+
+  const fetchPromise = (async () => {
+    try {
+      const res = await fetch(`/api/tmdb?${query.toString()}`);
+      if (!res.ok) {
+        throw new Error(`TMDB Proxy HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      const entry = { data, expiry: Date.now() + CACHE_TTL_MS };
+      apiCache.set(cacheKey, entry);
+
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(cacheKey, JSON.stringify(entry));
+        }
+      } catch {
+        // Safe quota ignore
+      }
+
+      return data;
+    } finally {
+      pendingRequests.delete(cacheKey);
+    }
+  })();
+
+  pendingRequests.set(cacheKey, fetchPromise);
+  return fetchPromise;
 }
 
 /**

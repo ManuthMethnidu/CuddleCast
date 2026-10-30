@@ -9,6 +9,7 @@ import {
   Film,
   Home,
   X,
+  ChevronLeft,
   ChevronRight,
   Settings,
   User,
@@ -62,6 +63,17 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
   const [isSearchingLive, setIsSearchingLive] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const continueScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollContinueWatching = (direction: 'left' | 'right') => {
+    if (continueScrollRef.current) {
+      const scrollAmount = 300;
+      continueScrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   // Accounts for ProfileDropdown (same as top navbar)
   const dropdownAccounts: Account[] =
@@ -625,20 +637,48 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
               </h2>
             </div>
 
-            <span
-              className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-black/40 border backdrop-blur"
-              style={{
-                borderColor: `${accentHex}40`,
-                color: accentHex,
-              }}
-            >
-              {continueWatchingItems.length} in progress
-            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-black/40 border backdrop-blur"
+                style={{
+                  borderColor: `${accentHex}40`,
+                  color: accentHex,
+                }}
+              >
+                {continueWatchingItems.length} in progress
+              </span>
+
+              {/* Horizontal Scroll Navigation Buttons */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => scrollContinueWatching('left')}
+                  aria-label="Scroll left"
+                  title="Scroll left"
+                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center transition-all border border-white/15 text-white cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollContinueWatching('right')}
+                  aria-label="Scroll right"
+                  title="Scroll right"
+                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center transition-all border border-white/15 text-white cursor-pointer"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Clean Compact Continue Watching Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-            {continueWatchingItems.slice(0, 4).map((item, idx) => {
+          {/* Clean Compact Continue Watching Cards (Horizontally Scrollable) */}
+          <div
+            ref={continueScrollRef}
+            className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar scroll-smooth py-0.5"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {continueWatchingItems.map((item, idx) => {
               const progressPercent =
                 item.progress_seconds && item.total_seconds
                   ? Math.min(
@@ -653,7 +693,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                 <div
                   key={`${item.id}-${idx}`}
                   onClick={() => handleSelectTitle(item)}
-                  className="group relative cursor-pointer overflow-hidden rounded-xl bg-black/40 backdrop-blur-md border border-white/15 hover:border-white/40 shadow-md transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] flex flex-col"
+                  className="w-[200px] sm:w-[240px] md:w-[260px] flex-none group relative cursor-pointer overflow-hidden rounded-xl bg-black/40 backdrop-blur-md border border-white/15 hover:border-white/40 shadow-md transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] flex flex-col"
                 >
                   {/* Backdrop / Thumbnail */}
                   <div className="relative aspect-[16/9] w-full overflow-hidden bg-black/50 max-h-20 sm:max-h-24">

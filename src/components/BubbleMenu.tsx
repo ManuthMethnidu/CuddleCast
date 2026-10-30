@@ -249,7 +249,7 @@ export const BubbleMenu: React.FC<BubbleMenuProps> = ({
         </button>
       </div>
 
-      {/* Pop-up Overlay with Staggered Bubbles */}
+      {/* Pop-up Overlay with Staggered Bubbles: Transparent with Subtle Blur */}
       {showOverlay && (
         <div
           ref={overlayRef}
@@ -260,16 +260,16 @@ export const BubbleMenu: React.FC<BubbleMenuProps> = ({
           }}
           className={`bubble-menu-items ${
             useFixedPosition ? 'fixed' : 'fixed'
-          } inset-0 flex items-center justify-center z-[200] bg-black/75 backdrop-blur-lg p-4 transition-opacity`}
+          } inset-0 flex items-center justify-center z-[200] bg-black/25 backdrop-blur-sm p-4 transition-opacity`}
           aria-hidden={!isMenuOpen}
         >
           {/* Subtle backdrop close hint */}
-          <div className="absolute top-6 left-6 text-xs font-mono text-white/50 pointer-events-none uppercase tracking-widest">
+          <div className="absolute top-6 left-6 text-xs font-mono text-white/70 pointer-events-none uppercase tracking-widest bg-black/40 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
             Navigation · Click anywhere to close
           </div>
 
-          <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center gap-3 sm:gap-4 pointer-events-auto">
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4.5 w-full">
+          <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center gap-4 sm:gap-6 pointer-events-auto">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 w-full">
               {menuItems.map((item, idx) => (
                 <button
                   key={`bubble-nav-${item.label}-${idx}`}
@@ -284,13 +284,13 @@ export const BubbleMenu: React.FC<BubbleMenuProps> = ({
                     }
                   }}
                   aria-label={item.ariaLabel || item.label}
-                  className="pill-link flex items-center justify-center px-6 sm:px-9 py-3 sm:py-4.5 rounded-full text-base sm:text-xl font-black uppercase tracking-wider cursor-pointer border border-white/20 shadow-xl backdrop-blur-xl"
+                  className="pill-link flex items-center justify-center px-8 sm:px-12 md:px-14 py-4 sm:py-5 md:py-6 rounded-full text-lg sm:text-2xl md:text-3xl font-black uppercase tracking-wider cursor-pointer border border-white/30 shadow-[0_16px_40px_rgba(0,0,0,0.7)] transition-transform"
                   style={
                     {
                       ['--item-rot']: `${item.rotation ?? (idx % 2 === 0 ? -4 : 4)}deg`,
                       ['--hover-bg']: item.hoverStyles?.bgColor || '#3b82f6',
                       ['--hover-color']: item.hoverStyles?.textColor || '#ffffff',
-                      backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                      backgroundColor: '#0a1329',
                       color: '#ffffff',
                       outline: 'none',
                     } as CSSProperties
