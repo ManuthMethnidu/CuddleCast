@@ -6,6 +6,11 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        bebas: ['Bebas Neue', 'sans-serif'],
+        typographica: ['Typographica', 'sans-serif'],
+      },
       colors: {
         background: 'var(--dx-bg, #303841)',
         foreground: 'var(--dx-text, #F3F3F3)',

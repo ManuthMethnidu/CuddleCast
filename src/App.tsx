@@ -79,7 +79,7 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-performance', performanceMode);
     if (performanceMode === 'low') {
-      document.body.style.backgroundColor = '#09318D';
+      document.body.style.backgroundColor = '#050a14';
     } else {
       document.body.style.backgroundColor = '#303841';
     }
@@ -311,7 +311,7 @@ const MainApp: React.FC = () => {
     <div
       className={`min-h-screen ${
         performanceMode === 'low'
-          ? 'bg-[#09318D] text-white'
+          ? 'bg-[#050a14] text-white'
           : 'bg-[#303841] text-[#F3F3F3]'
       } flex flex-col font-sans select-none`}
     >
@@ -497,7 +497,8 @@ const MainApp: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowFullHome(false)}
-                  className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#fd91cc] text-[#09318D] flex items-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                  style={{ backgroundColor: accentHex }}
                 >
                   <span>⚡ Return to Minimal Portal</span>
                 </button>

@@ -12,12 +12,14 @@ import {
   X,
   Settings as SettingsIcon,
   Menu,
+  ChevronRight,
 } from 'lucide-react';
 import { useUser, useClerk } from '@clerk/react';
 import { MediaItem, BillboardData, CarouselRail } from '../types/schema';
 import { useNavigate } from 'react-router-dom';
 import { authStorage } from '../services/storage';
 import { api } from '../services/api';
+import { useAccent } from '../context/AccentContext';
 
 interface MinimalHomeViewProps {
   items: MediaItem[];
@@ -34,13 +36,14 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
   items,
   billboardItems,
   rails,
-  onSelect: _onSelect,
+  onSelect,
   onPlay,
   onSearch,
   onGoToMainHome,
   onToggleSidebar,
 }) => {
   const navigate = useNavigate();
+  const { accentHex, accentGlow } = useAccent();
   const { isSignedIn, user } = useUser();
   const { openUserProfile, openSignIn } = useClerk();
 
@@ -180,6 +183,14 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Handle selecting an item from the autocomplete dropdown:
+  // Directs to title detail page (e.g. /title/:id) instead of instant playback
+  const handleSelectTitle = (item: MediaItem) => {
+    setIsDropdownOpen(false);
+    onSelect(item);
+    navigate(`/title/${item.id}`);
+  };
+
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (searchInput.trim()) {
@@ -192,26 +203,20 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
   const handleSurpriseMe = () => {
     if (items.length > 0) {
       const randomItem = items[Math.floor(Math.random() * items.length)];
-      onPlay(randomItem);
+      handleSelectTitle(randomItem);
     } else if (billboardItems.length > 0) {
-      onPlay(billboardItems[0]);
+      handleSelectTitle(billboardItems[0]);
     }
   };
 
   return (
     <div
-      className="min-h-screen text-white select-none flex flex-col justify-between relative overflow-x-hidden"
+      className="min-h-screen text-white select-none flex flex-col justify-between relative overflow-x-hidden bg-cover bg-center bg-no-repeat bg-fixed"
       style={{
-        backgroundColor: '#09318D',
+        backgroundColor: '#050a14',
         backgroundImage: `
-          repeating-linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.035) 0px,
-            rgba(255, 255, 255, 0.035) 1px,
-            transparent 1px,
-            transparent 36px
-          ),
-          radial-gradient(ellipse at 50% 18%, rgba(253, 145, 204, 0.16) 0%, transparent 68%)
+          linear-gradient(rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.82)),
+          url('/portal-bg.jpg')
         `,
       }}
     >
@@ -224,7 +229,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
           type="button"
           onClick={() => navigate('/settings')}
           title="Settings"
-          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+          className="w-10 h-10 rounded-full bg-black/40 hover:bg-white/15 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer backdrop-blur-md"
         >
           <SettingsIcon className="w-4 h-4 text-white" />
         </button>
@@ -234,7 +239,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
           type="button"
           onClick={onToggleSidebar}
           title="Open Menu"
-          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+          className="w-10 h-10 rounded-full bg-black/40 hover:bg-white/15 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer backdrop-blur-md"
         >
           <Menu className="w-4 h-4 text-white" />
         </button>
@@ -245,7 +250,8 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
             type="button"
             onClick={() => openUserProfile()}
             title={user?.fullName || 'User Profile'}
-            className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#fd91cc] transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer flex items-center justify-center bg-white/10"
+            className="w-10 h-10 rounded-full overflow-hidden border-2 transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer flex items-center justify-center bg-black/40 backdrop-blur-md"
+            style={{ borderColor: accentHex }}
           >
             {user?.imageUrl ? (
               <img
@@ -263,7 +269,12 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
           <button
             type="button"
             onClick={() => openSignIn()}
-            className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#fd91cc] text-[#09318D] transition-all hover:brightness-110 active:scale-95 shadow-md cursor-pointer"
+            className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all hover:brightness-110 active:scale-95 shadow-md cursor-pointer"
+            style={{
+              backgroundColor: accentHex,
+              color: '#ffffff',
+              boxShadow: `0 2px 12px ${accentGlow}`,
+            }}
           >
             Sign In
           </button>
@@ -272,25 +283,26 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
 
       <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 pt-16 sm:pt-20 pb-16 space-y-10 flex-1 flex flex-col justify-center items-center">
         {/* ========================================================
-            1. CENTERED HERO (VIDBOX STYLE)
+            1. CENTERED HERO (VIDBOX STYLE WITH TYPOGRAPHICA FONT)
            ======================================================== */}
         <div className="w-full flex flex-col items-center text-center space-y-4">
-          {/* Logo with Bubblegum Pink Accent */}
+          {/* Logo with Typographica Font & Global Accent */}
           <div className="inline-flex items-center gap-1.5 transition-transform hover:scale-105">
-            <span
-              className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight"
+            <h1
+              className="text-5xl sm:text-7xl md:text-8xl tracking-wider select-none uppercase font-normal drop-shadow-2xl"
               style={{
-                color: '#fd91cc',
-                textShadow: '0 4px 28px rgba(253, 145, 204, 0.45)',
+                fontFamily: "'Typographica', sans-serif",
+                color: accentHex,
+                textShadow: `0 4px 32px ${accentGlow}`,
               }}
             >
               ECHORA
-            </span>
+            </h1>
           </div>
 
           {/* Subtitle */}
           <p
-            className="text-sm sm:text-lg md:text-xl font-bold text-white tracking-wide"
+            className="text-sm sm:text-lg md:text-xl font-bold text-white tracking-wide drop-shadow-md"
             style={{ textWrap: 'balance' }}
           >
             Watch Movies & Series Online in HD for Free!
@@ -302,7 +314,12 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
             className="w-full max-w-2xl relative pt-2 z-30"
           >
             <form onSubmit={handleSearchSubmit} className="relative w-full">
-              <div className="relative flex items-center w-full rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/20 hover:border-white/35 focus-within:border-[#fd91cc] focus-within:ring-2 focus-within:ring-[#fd91cc]/40 shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all h-12 sm:h-14 px-2 sm:px-3">
+              <div
+                className="relative flex items-center w-full rounded-full bg-black/40 backdrop-blur-xl border border-white/20 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all h-12 sm:h-14 px-2 sm:px-3 focus-within:ring-2"
+                style={{
+                  outlineColor: accentHex,
+                }}
+              >
                 {/* Filters Pill Button */}
                 <div className="relative">
                   <button
@@ -310,14 +327,17 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                     onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
                   >
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-[#fd91cc]" />
+                    <SlidersHorizontal
+                      className="w-3.5 h-3.5"
+                      style={{ color: accentHex }}
+                    />
                     <span className="capitalize">
                       {selectedFilter === 'all' ? 'Filters' : selectedFilter}
                     </span>
                   </button>
 
                   {showFilterDropdown && (
-                    <div className="absolute top-full left-0 mt-2 w-36 rounded-xl bg-[#061847] border border-white/20 shadow-2xl p-1.5 z-50 text-left space-y-1">
+                    <div className="absolute top-full left-0 mt-2 w-36 rounded-xl bg-[#0a1222]/95 backdrop-blur-xl border border-white/20 shadow-2xl p-1.5 z-50 text-left space-y-1">
                       {[
                         { id: 'all', label: 'All Media' },
                         { id: 'movie', label: 'Movies' },
@@ -331,11 +351,17 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                             setSelectedFilter(opt.id as any);
                             setShowFilterDropdown(false);
                           }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                          className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                          style={
                             selectedFilter === opt.id
-                              ? 'bg-[#fd91cc] text-[#09318D]'
-                              : 'text-white hover:bg-white/10'
-                          }`}
+                              ? {
+                                  backgroundColor: accentHex,
+                                  color: '#ffffff',
+                                }
+                              : {
+                                  color: '#ffffff',
+                                }
+                          }
                         >
                           {opt.label}
                         </button>
@@ -375,7 +401,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                 <button
                   type="submit"
                   title="Search"
-                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-white hover:text-[#fd91cc] hover:bg-white/10 transition-colors cursor-pointer flex-shrink-0"
+                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors cursor-pointer flex-shrink-0"
                 >
                   <Search className="w-4 sm:w-5 h-4 sm:h-5" />
                 </button>
@@ -384,12 +410,13 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
 
             {/* ========================================================
                 ATTACHED LIVE SEARCH AUTOCOMPLETE DROPDOWN (VIDBOX STYLE)
+                Directs to title details page (e.g. /title/2734)
                ======================================================== */}
             {isDropdownOpen && searchInput.trim().length > 0 && (
               <div
-                className="absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl bg-[#061847]/95 backdrop-blur-2xl border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.65)] overflow-hidden divide-y divide-white/10"
+                className="absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl bg-[#091122]/95 backdrop-blur-2xl border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.75)] overflow-hidden divide-y divide-white/10"
                 style={{
-                  outline: '1px solid rgba(253, 145, 204, 0.25)',
+                  outline: `1px solid ${accentHex}40`,
                 }}
               >
                 {/* Result Items */}
@@ -409,10 +436,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                       return (
                         <div
                           key={`autocomplete-${item.id}`}
-                          onClick={() => {
-                            setIsDropdownOpen(false);
-                            onPlay(item);
-                          }}
+                          onClick={() => handleSelectTitle(item)}
                           className="flex items-center gap-3.5 p-3 sm:p-3.5 hover:bg-white/10 cursor-pointer transition-colors group text-left"
                         >
                           {/* Poster Thumbnail */}
@@ -433,7 +457,9 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
 
                           {/* Details */}
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm sm:text-base font-bold text-white group-hover:text-[#fd91cc] transition-colors truncate">
+                            <h4
+                              className="text-sm sm:text-base font-bold text-white transition-colors truncate"
+                            >
                               {item.title || item.name}
                             </h4>
                             <div className="flex items-center gap-2 mt-1 text-xs text-white/75 font-mono">
@@ -441,8 +467,14 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                                 {isTv ? 'Tv' : 'Movie'}
                               </span>
                               <span className="text-white/30">•</span>
-                              <span className="flex items-center gap-1 text-[#fd91cc] font-bold">
-                                <Star className="w-3.5 h-3.5 fill-[#fd91cc] text-[#fd91cc]" />
+                              <span
+                                className="flex items-center gap-1 font-bold"
+                                style={{ color: accentHex }}
+                              >
+                                <Star
+                                  className="w-3.5 h-3.5 fill-current"
+                                  style={{ color: accentHex }}
+                                />
                                 {rating}
                               </span>
                               {year && (
@@ -454,9 +486,15 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                             </div>
                           </div>
 
-                          {/* Quick Play Icon on Hover */}
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#fd91cc] text-[#09318D] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
-                            <Play className="w-4 h-4 fill-current ml-0.5" />
+                          {/* Details Arrow on Hover */}
+                          <div
+                            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md group-hover:scale-105"
+                            style={{
+                              backgroundColor: accentHex,
+                              color: '#ffffff',
+                            }}
+                          >
+                            <ChevronRight className="w-4 h-4" />
                           </div>
                         </div>
                       );
@@ -465,7 +503,10 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                     <div className="p-6 text-center text-white/70 text-xs sm:text-sm">
                       {isSearchingLive ? (
                         <div className="flex items-center justify-center gap-2 text-white">
-                          <div className="w-4 h-4 rounded-full border-2 border-[#fd91cc] border-t-transparent animate-spin" />
+                          <div
+                            className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
+                            style={{ borderColor: accentHex, borderTopColor: 'transparent' }}
+                          />
                           <span>Searching movies & series...</span>
                         </div>
                       ) : (
@@ -488,7 +529,10 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                   <span className="text-white/80 group-hover:text-white">
                     See more results for "{searchInput}"
                   </span>
-                  <ArrowRight className="w-4 h-4 text-[#fd91cc] group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight
+                    className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                    style={{ color: accentHex }}
+                  />
                 </button>
               </div>
             )}
@@ -499,10 +543,11 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
             <button
               type="button"
               onClick={onGoToMainHome}
-              className="h-11 sm:h-12 px-7 sm:px-9 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_24px_rgba(253,145,204,0.45)] transition-all active:scale-95 hover:brightness-110"
+              className="h-11 sm:h-12 px-7 sm:px-9 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 hover:brightness-110 shadow-lg"
               style={{
-                backgroundColor: '#fd91cc',
-                color: '#09318D',
+                backgroundColor: accentHex,
+                color: '#ffffff',
+                boxShadow: `0 4px 24px ${accentGlow}`,
               }}
             >
               <Home className="w-4 h-4" />
@@ -513,9 +558,12 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
             <button
               type="button"
               onClick={handleSurpriseMe}
-              className="h-11 sm:h-12 px-5 sm:px-7 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer bg-white/10 hover:bg-white/15 text-white border border-[#fd91cc]/40 hover:border-[#fd91cc] backdrop-blur-md transition-all active:scale-95 shadow-md"
+              className="h-11 sm:h-12 px-5 sm:px-7 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer bg-black/40 hover:bg-white/15 text-white border backdrop-blur-md transition-all active:scale-95 shadow-md"
+              style={{
+                borderColor: `${accentHex}66`,
+              }}
             >
-              <Dice5 className="w-4 h-4 text-[#fd91cc]" />
+              <Dice5 className="w-4 h-4" style={{ color: accentHex }} />
               <span>Surprise Me</span>
             </button>
           </div>
@@ -532,7 +580,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                 key={cat.label}
                 type="button"
                 onClick={() => navigate(cat.path)}
-                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.16] border border-white/15 text-white transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-black/40 hover:bg-white/15 border border-white/15 text-white transition-colors cursor-pointer backdrop-blur-md"
               >
                 {cat.label}
               </button>
@@ -541,18 +589,24 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
         </div>
 
         {/* ========================================================
-            2. ONLY CONTINUE WATCHING SECTION (EXACTLY AS ASKED)
+            2. ONLY CONTINUE WATCHING SECTION (WITH GLOBAL THEME)
            ======================================================== */}
         <section className="w-full space-y-4 pt-4">
           <div className="flex items-center justify-between border-b border-white/15 pb-2.5">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 sm:w-5 h-4 sm:h-5 text-[#fd91cc]" />
+              <Clock className="w-4 sm:w-5 h-4 sm:h-5" style={{ color: accentHex }} />
               <h2 className="text-base sm:text-lg font-black text-white tracking-tight uppercase">
                 Continue Watching
               </h2>
             </div>
 
-            <span className="text-[11px] font-mono text-[#fd91cc] font-bold px-2 py-0.5 rounded-full bg-white/10 border border-[#fd91cc]/30">
+            <span
+              className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-black/40 border backdrop-blur"
+              style={{
+                borderColor: `${accentHex}40`,
+                color: accentHex,
+              }}
+            >
               {continueWatchingItems.length} in progress
             </span>
           </div>
@@ -573,15 +627,15 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
               return (
                 <div
                   key={`${item.id}-${idx}`}
-                  onClick={() => onPlay(item)}
-                  className="group relative cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-white/[0.08] backdrop-blur-md border border-white/20 hover:border-[#fd91cc] shadow-lg hover:shadow-[0_8px_30px_rgba(253,145,204,0.3)] transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] flex flex-col"
+                  onClick={() => handleSelectTitle(item)}
+                  className="group relative cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-black/40 backdrop-blur-md border border-white/20 shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] flex flex-col"
                   style={{
                     outline: '1px solid rgba(255, 255, 255, 0.12)',
                     outlineOffset: '-1px',
                   }}
                 >
                   {/* Backdrop / Thumbnail */}
-                  <div className="relative aspect-video w-full overflow-hidden bg-black/40">
+                  <div className="relative aspect-video w-full overflow-hidden bg-black/50">
                     <img
                       src={item.backdrop_path || item.poster_path}
                       alt={item.title || item.name}
@@ -589,11 +643,14 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
 
-                    {/* Progress Bar (Bubblegum Pink) */}
-                    <div className="absolute bottom-0 inset-x-0 h-1.5 bg-black/60">
+                    {/* Progress Bar (Global Accent) */}
+                    <div className="absolute bottom-0 inset-x-0 h-1.5 bg-black/70">
                       <div
-                        className="h-full bg-[#fd91cc]"
-                        style={{ width: `${progressPercent}%` }}
+                        className="h-full transition-all"
+                        style={{
+                          backgroundColor: accentHex,
+                          width: `${progressPercent}%`,
+                        }}
                       />
                     </div>
 
@@ -602,8 +659,8 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                       <div
                         className="h-10 w-10 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 active:scale-95"
                         style={{
-                          backgroundColor: '#fd91cc',
-                          color: '#09318D',
+                          backgroundColor: accentHex,
+                          color: '#ffffff',
                         }}
                       >
                         <Play className="w-5 h-5 fill-current ml-0.5" />
@@ -611,7 +668,13 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                     </div>
 
                     {/* Progress Badge */}
-                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-black/80 text-[#fd91cc] border border-[#fd91cc]/40 backdrop-blur">
+                    <div
+                      className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-black/80 border backdrop-blur"
+                      style={{
+                        borderColor: `${accentHex}50`,
+                        color: accentHex,
+                      }}
+                    >
                       {progressPercent}%
                     </div>
                   </div>
@@ -619,7 +682,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                   {/* Card Content */}
                   <div className="p-3 flex items-center justify-between gap-2 bg-white/[0.03]">
                     <div className="min-w-0">
-                      <h3 className="font-bold text-xs sm:text-sm text-white truncate group-hover:text-[#fd91cc] transition-colors">
+                      <h3 className="font-bold text-xs sm:text-sm text-white truncate transition-colors">
                         {item.title || item.name}
                       </h3>
                       <p className="text-[10px] text-white/70 font-mono truncate">
@@ -637,8 +700,8 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                       }}
                       className="flex-none px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase transition-all shadow-sm cursor-pointer"
                       style={{
-                        backgroundColor: '#fd91cc',
-                        color: '#09318D',
+                        backgroundColor: accentHex,
+                        color: '#ffffff',
                       }}
                     >
                       Resume
