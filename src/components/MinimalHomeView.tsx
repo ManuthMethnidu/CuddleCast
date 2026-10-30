@@ -4,22 +4,26 @@ import {
   Search,
   SlidersHorizontal,
   Clock,
-  Dice5,
   ArrowRight,
   Star,
   Film,
   Home,
   X,
-  Settings as SettingsIcon,
-  Menu,
   ChevronRight,
+  Settings,
+  User,
+  Sliders,
 } from 'lucide-react';
-import { useUser, useClerk } from '@clerk/react';
+import { useUser, useClerk, useSessionList } from '@clerk/react';
 import { MediaItem, BillboardData, CarouselRail } from '../types/schema';
 import { useNavigate } from 'react-router-dom';
 import { authStorage } from '../services/storage';
 import { api } from '../services/api';
 import { useAccent } from '../context/AccentContext';
+import { useSettingsStore, DEFAULT_NAV_ITEMS } from '../store/settingsStore';
+import { ALL_NAV_ITEMS } from './NavbarCustomizerModal';
+import { ProfileDropdown, Account, ProfileMenuItem } from './ProfileDropdown';
+import { BubbleMenu, BubbleMenuItem } from './BubbleMenu';
 
 interface MinimalHomeViewProps {
   items: MediaItem[];
@@ -34,18 +38,20 @@ interface MinimalHomeViewProps {
 
 export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
   items,
-  billboardItems,
+  billboardItems: _billboardItems,
   rails,
   onSelect,
   onPlay,
   onSearch,
   onGoToMainHome,
-  onToggleSidebar,
 }) => {
   const navigate = useNavigate();
   const { accentHex, accentGlow } = useAccent();
   const { isSignedIn, user } = useUser();
-  const { openUserProfile, openSignIn } = useClerk();
+  const { openUserProfile, openSignIn, signOut, setActive } = useClerk();
+  const { sessions } = useSessionList();
+
+  const { enabledNavItems = DEFAULT_NAV_ITEMS } = useSettingsStore();
 
   const [searchInput, setSearchInput] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'movie' | 'tv' | 'anime'>('all');
@@ -56,6 +62,91 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
   const [isSearchingLive, setIsSearchingLive] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Accounts for ProfileDropdown (same as top navbar)
+  const dropdownAccounts: Account[] =
+    sessions && sessions.length > 0
+      ? sessions.map((s) => ({
+          id: s.id,
+          name: s.user?.fullName || s.user?.username || 'Clerk User',
+          email: s.user?.primaryEmailAddress?.emailAddress || '',
+          imageUrl: s.user?.imageUrl,
+          plan: 'Pro',
+        }))
+      : user
+      ? [
+          {
+            id: user.id,
+            name: user.fullName || user.username || 'User',
+            email: user.primaryEmailAddress?.emailAddress || '',
+            imageUrl: user.imageUrl,
+            plan: 'Pro',
+          },
+        ]
+      : [
+          {
+            id: 'guest',
+            name: 'Guest User',
+            email: 'guest@echora.stream',
+            plan: 'Free',
+          },
+        ];
+
+  // Menu items for ProfileDropdown (moving settings into the profile dropdown)
+  const profileMenuItems: ProfileMenuItem[] = [
+    {
+      label: 'System Settings',
+      icon: <Settings className="size-4" />,
+      value: '⌘,',
+      onSelect: () => navigate('/settings'),
+    },
+    {
+      label: 'Profile',
+      icon: <User className="size-4" />,
+      onSelect: () => {
+        if (isSignedIn && openUserProfile) {
+          openUserProfile();
+        } else if (openSignIn) {
+          openSignIn();
+        }
+      },
+    },
+    {
+      label: 'Customize Navigation',
+      icon: <Sliders className="size-4" />,
+      onSelect: () => navigate('/settings'),
+    },
+  ];
+
+  // BubbleMenu navigation items (take max 5 from previously enabled items on top bar, omitting 'all')
+  const bubbleMenuItems: BubbleMenuItem[] = useMemo(() => {
+    const bubbleColors = [
+      { bgColor: '#3b82f6', textColor: '#ffffff' }, // blue
+      { bgColor: '#10b981', textColor: '#ffffff' }, // emerald
+      { bgColor: '#f59e0b', textColor: '#ffffff' }, // amber
+      { bgColor: '#ef4444', textColor: '#ffffff' }, // red
+      { bgColor: '#8b5cf6', textColor: '#ffffff' }, // purple
+    ];
+
+    // Filter out 'all' because "Go to Home" is already a dedicated button
+    const filteredIds = enabledNavItems.filter((id) => id !== 'all');
+    const selectedIds = filteredIds.length > 0 ? filteredIds.slice(0, 5) : ['movies', 'series', 'anime', 'live-tv', 'radio'];
+
+    return selectedIds.map((id, idx) => {
+      const match = ALL_NAV_ITEMS.find((nav) => nav.id === id);
+      const label = match ? match.label : id.charAt(0).toUpperCase() + id.slice(1);
+      const href = id === 'all' ? '/' : `/${id}`;
+
+      return {
+        label,
+        href,
+        ariaLabel: label,
+        rotation: idx % 2 === 0 ? -6 : 6,
+        hoverStyles: bubbleColors[idx % bubbleColors.length],
+        onClick: () => navigate(href),
+      };
+    });
+  }, [enabledNavItems, navigate]);
 
   // Retrieve user watch progress directly from storage to be 100% synchronized
   const progressList = useMemo(() => {
@@ -200,15 +291,6 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
     }
   };
 
-  const handleSurpriseMe = () => {
-    if (items.length > 0) {
-      const randomItem = items[Math.floor(Math.random() * items.length)];
-      handleSelectTitle(randomItem);
-    } else if (billboardItems.length > 0) {
-      handleSelectTitle(billboardItems[0]);
-    }
-  };
-
   return (
     <div
       className="h-screen max-h-screen w-full overflow-hidden text-white select-none flex flex-col justify-between p-3 sm:p-5 relative bg-cover bg-center bg-no-repeat bg-fixed"
@@ -221,80 +303,73 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
       }}
     >
       {/* ========================================================
-          TOP-RIGHT ACTION ICONS (VIDBOX STYLE: SETTINGS, MENU, USER)
+          TOP-RIGHT CONTROLS: "GO TO HOME" + BUBBLE MENU + PROFILE DROPDOWN
          ======================================================== */}
-      <div className="absolute top-3 right-3 sm:top-4 sm:right-6 flex items-center gap-2 z-40">
-        {/* Settings button */}
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-6 flex items-center gap-2.5 z-40">
+        {/* Go to Home Button */}
         <button
           type="button"
-          onClick={() => navigate('/settings')}
-          title="Settings"
-          className="w-9 h-9 rounded-full bg-black/40 hover:bg-white/15 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer backdrop-blur-md"
+          onClick={onGoToMainHome}
+          className="h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 hover:brightness-110 shadow-lg border border-white/20"
+          style={{
+            backgroundColor: accentHex,
+            color: '#ffffff',
+            boxShadow: `0 3px 18px ${accentGlow}`,
+          }}
         >
-          <SettingsIcon className="w-4 h-4 text-white" />
+          <Home className="w-3.5 h-3.5" />
+          <span>Go to Home</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
 
-        {/* Vidbox Sidebar Menu Drawer button */}
-        <button
-          type="button"
-          onClick={onToggleSidebar}
-          title="Open Menu"
-          className="w-9 h-9 rounded-full bg-black/40 hover:bg-white/15 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer backdrop-blur-md"
-        >
-          <Menu className="w-4 h-4 text-white" />
-        </button>
+        {/* Pop-up Navigation via BubbleMenu (Max 5 previous top-bar items) */}
+        <BubbleMenu
+          items={bubbleMenuItems}
+          menuAriaLabel="Toggle navigation"
+          menuBg="rgba(0, 0, 0, 0.45)"
+          menuContentColor="#ffffff"
+          useFixedPosition={true}
+          animationEase="back.out(1.5)"
+          animationDuration={0.45}
+          staggerDelay={0.08}
+          onItemSelect={(item) => navigate(item.href)}
+        />
 
-        {/* User Profile / Sign In button */}
-        {isSignedIn ? (
-          <button
-            type="button"
-            onClick={() => openUserProfile()}
-            title={user?.fullName || 'User Profile'}
-            className="w-9 h-9 rounded-full overflow-hidden border-2 transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer flex items-center justify-center bg-black/40 backdrop-blur-md"
-            style={{ borderColor: accentHex }}
-          >
-            {user?.imageUrl ? (
-              <img
-                src={user.imageUrl}
-                alt={user.fullName || 'User'}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-xs font-bold text-white">
-                {(user?.firstName || 'U')[0]}
-              </span>
-            )}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => openSignIn()}
-            className="px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:brightness-110 active:scale-95 shadow-md cursor-pointer"
-            style={{
-              backgroundColor: accentHex,
-              color: '#ffffff',
-              boxShadow: `0 2px 12px ${accentGlow}`,
-            }}
-          >
-            Sign In
-          </button>
-        )}
+        {/* Profile Dropdown with Settings moved inside */}
+        <ProfileDropdown
+          accounts={dropdownAccounts}
+          defaultAccountId={dropdownAccounts[0]?.id}
+          items={profileMenuItems}
+          onAccountChange={(acc) => {
+            if (acc.id !== 'guest' && setActive) {
+              setActive({ session: acc.id });
+            }
+          }}
+          onAddAccount={() => {
+            if (openSignIn) openSignIn();
+            else navigate('/login');
+          }}
+          onSignOut={() => {
+            if (signOut) signOut();
+          }}
+          holdDuration={1200}
+        />
       </div>
 
       {/* ========================================================
           SINGLE-SCREEN VIEWPORT CONTAINER (ZERO SCROLLING)
          ======================================================== */}
       <div className="mx-auto w-full max-w-4xl h-full flex flex-col justify-between z-10">
-        {/* 1. CENTERED HERO (VIDBOX STYLE WITH TYPOGRAPHICA FONT) */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center space-y-2.5 sm:space-y-3 my-auto max-w-2xl mx-auto w-full">
-          {/* Logo with Typographica Font & Global Accent */}
-          <div className="inline-flex items-center gap-1.5 transition-transform hover:scale-105">
+        {/* 1. CENTERED HERO (BIG TV TITLE + SEARCH BAR ONLY) */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center space-y-2.5 sm:space-y-3.5 my-auto max-w-2xl mx-auto w-full">
+          {/* Big TV-Scale Logo in Typographica Font */}
+          <div className="inline-flex items-center gap-1.5 transition-transform hover:scale-105 select-none">
             <h1
-              className="text-4xl sm:text-5xl md:text-6xl tracking-wider select-none uppercase font-normal drop-shadow-2xl leading-none"
+              className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl tracking-widest uppercase font-normal drop-shadow-2xl leading-none"
               style={{
                 fontFamily: "'Typographica', sans-serif",
                 color: accentHex,
-                textShadow: `0 4px 28px ${accentGlow}`,
+                textShadow: `0 4px 36px ${accentGlow}`,
               }}
             >
               ECHORA
@@ -303,7 +378,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
 
           {/* Subtitle */}
           <p
-            className="text-xs sm:text-sm font-semibold text-white/85 tracking-wide drop-shadow-md"
+            className="text-xs sm:text-sm md:text-base font-semibold text-white/85 tracking-wide drop-shadow-md"
             style={{ textWrap: 'balance' }}
           >
             Watch Movies & Series Online in HD for Free!
@@ -316,7 +391,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
           >
             <form onSubmit={handleSearchSubmit} className="relative w-full">
               <div
-                className="relative flex items-center w-full rounded-full bg-black/40 backdrop-blur-xl border border-white/20 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all h-10 sm:h-11 px-2 focus-within:ring-2"
+                className="relative flex items-center w-full rounded-full bg-black/40 backdrop-blur-xl border border-white/20 hover:border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all h-11 sm:h-12 px-2.5 focus-within:ring-2"
                 style={{
                   outlineColor: accentHex,
                 }}
@@ -326,10 +401,10 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-[11px] sm:text-xs font-bold transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors cursor-pointer"
                   >
                     <SlidersHorizontal
-                      className="w-3 h-3"
+                      className="w-3.5 h-3.5"
                       style={{ color: accentHex }}
                     />
                     <span className="capitalize">
@@ -352,7 +427,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                             setSelectedFilter(opt.id as any);
                             setShowFilterDropdown(false);
                           }}
-                          className="w-full text-left px-2 py-1 rounded-lg text-xs font-semibold transition-colors"
+                          className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors"
                           style={
                             selectedFilter === opt.id
                               ? {
@@ -380,7 +455,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                     if (searchInput.trim()) setIsDropdownOpen(true);
                   }}
                   placeholder="Search movies, series, anime..."
-                  className="w-full bg-transparent px-2.5 text-xs sm:text-sm text-white placeholder:text-white/60 focus:outline-none"
+                  className="w-full bg-transparent px-3 text-xs sm:text-sm text-white placeholder:text-white/60 focus:outline-none"
                 />
 
                 {/* Clear button if text present */}
@@ -394,7 +469,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                     }}
                     className="p-1 text-white/50 hover:text-white transition-colors"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 )}
 
@@ -402,9 +477,9 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                 <button
                   type="submit"
                   title="Search"
-                  className="h-8 w-8 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors cursor-pointer flex-shrink-0"
+                  className="h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors cursor-pointer flex-shrink-0"
                 >
-                  <Search className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                  <Search className="w-4 h-4" />
                 </button>
               </div>
             </form>
@@ -517,7 +592,7 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                   )}
                 </div>
 
-                {/* Footer: "See more results" button */}
+                {/* Footer: "See all results" button */}
                 <button
                   type="button"
                   onClick={() => {
@@ -537,55 +612,6 @@ export const MinimalHomeView: React.FC<MinimalHomeViewProps> = ({
                 </button>
               </div>
             )}
-          </div>
-
-          {/* Action Buttons: "Main Home" & "Surprise Me" + Quick Chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onGoToMainHome}
-              className="h-8 sm:h-9 px-4 sm:px-5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 hover:brightness-110 shadow-md"
-              style={{
-                backgroundColor: accentHex,
-                color: '#ffffff',
-                boxShadow: `0 3px 16px ${accentGlow}`,
-              }}
-            >
-              <Home className="w-3.5 h-3.5" />
-              <span>Main Home</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSurpriseMe}
-              className="h-8 sm:h-9 px-3.5 sm:px-4 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer bg-black/40 hover:bg-white/15 text-white border backdrop-blur-md transition-all active:scale-95 shadow-sm"
-              style={{
-                borderColor: `${accentHex}66`,
-              }}
-            >
-              <Dice5 className="w-3.5 h-3.5" style={{ color: accentHex }} />
-              <span>Surprise Me</span>
-            </button>
-
-            {/* Quick Category Chips */}
-            <div className="flex items-center gap-1.5">
-              {[
-                { label: 'Movies', path: '/movies' },
-                { label: 'TV Shows', path: '/series' },
-                { label: 'Trending', path: '/discover' },
-                { label: 'Anime', path: '/anime' },
-              ].map((cat) => (
-                <button
-                  key={cat.label}
-                  type="button"
-                  onClick={() => navigate(cat.path)}
-                  className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-black/40 hover:bg-white/15 border border-white/15 text-white transition-colors cursor-pointer backdrop-blur-md"
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
